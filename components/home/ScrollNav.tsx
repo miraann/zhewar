@@ -80,7 +80,7 @@ export default function ScrollNav({ profile }: { profile: BarberProfile }) {
           className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-amber-500/60 bg-amber-500/10 text-amber-700 text-xs font-semibold tracking-wide touch-manipulation active:bg-amber-500/20 transition-colors"
         >
           <CalendarPlus className="w-3.5 h-3.5" />
-          نەوبەت
+          کاتی سەردانیکردن
         </Link>
       </div>
     </header>

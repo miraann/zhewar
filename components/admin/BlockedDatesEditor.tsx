@@ -58,7 +58,7 @@ export default function BlockedDatesEditor() {
     <div className="px-4 py-6 space-y-5">
       <div>
         <h2 className="text-white font-semibold text-lg">رووژانی داخراو</h2>
-        <p className="text-neutral-500 text-sm mt-0.5">رووژە دیاریکراوەکان ببەستە — هیچ نەوبەتێک وەرناگیرێت</p>
+        <p className="text-neutral-500 text-sm mt-0.5">رووژە دیاریکراوەکان ببەستە — هیچ کاتی سەردانیکردنێک وەرناگیرێت</p>
       </div>
 
       {/* Add form */}

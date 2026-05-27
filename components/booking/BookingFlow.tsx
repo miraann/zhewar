@@ -169,7 +169,7 @@ function WelcomeScreen({ customer }: { customer: Customer | null }) {
         <h1 className="font-display text-4xl font-bold text-neutral-900">بەربەری لوکس</h1>
         {customer
           ? <p className="text-neutral-600 text-base">خۆشحاڵبووین کە دیسانەوە هاتیت، <span className="text-amber-600 font-semibold">{firstName}</span>.</p>
-          : <p className="text-neutral-500 text-sm leading-relaxed">چاکسازی بەرز، بە ئاسانی نەوبەت وەردەگیرێت.</p>
+          : <p className="text-neutral-500 text-sm leading-relaxed">چاکسازی بەرز، بە ئاسانی کاتی سەردانیکردن وەردەگیرێت.</p>
         }
       </div>
       <Dots />

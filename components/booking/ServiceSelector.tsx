@@ -28,7 +28,7 @@ export default function ServiceSelector({ services, selected, customer, onSelect
           خزمەتگوزاریەکەت<br />
           <span className="text-amber-400">هەڵبژێرە</span>
         </h2>
-        <p className="text-neutral-500 text-sm mt-2">چاکسازییەک هەڵبژێرە بۆ دەستپێکردنی نەوبەتەکەت</p>
+        <p className="text-neutral-500 text-sm mt-2">چاکسازییەک هەڵبژێرە بۆ دەستپێکردنی کاتی سەردانیکردنەکەت</p>
       </div>
 
       {/* Cards */}

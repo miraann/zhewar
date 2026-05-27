@@ -85,7 +85,7 @@ export default function BookingSummary({ customer, date, time, confirming, onBac
           <span className="relative z-10 flex items-center justify-center gap-2.5">
             {confirming
               ? <><Loader2 className="w-5 h-5 animate-spin" /> دڵنیاکردنەوە...</>
-              : 'نەوبەت دڵنیا بکەرەوە'
+              : 'کاتی سەردانیکردن دڵنیا بکەرەوە'
             }
           </span>
         </button>

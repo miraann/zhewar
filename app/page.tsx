@@ -1,17 +1,17 @@
-import { createClient } from '@supabase/supabase-js';
-import type { BarberProfile, GalleryPhoto } from '@/lib/types';
-import ScrollNav      from '@/components/home/ScrollNav';
-import HeroSection    from '@/components/home/HeroSection';
-import AboutSection   from '@/components/home/AboutSection';
+import AboutSection from '@/components/home/AboutSection';
 import GallerySection from '@/components/home/GallerySection';
-import SocialSection  from '@/components/home/SocialSection';
+import HeroSection from '@/components/home/HeroSection';
+import ScrollNav from '@/components/home/ScrollNav';
+import SocialSection from '@/components/home/SocialSection';
+import type { BarberProfile, GalleryPhoto } from '@/lib/types';
+import { createClient } from '@supabase/supabase-js';
 
 export const revalidate = 30;
 
 const DEFAULT_PROFILE: BarberProfile = {
   id: '',
   name: 'بەربەری لوکس',
-  tagline: 'چاکسازی بەرز بۆ پیاوی مۆدێرن',
+  tagline: 'شێوازی تۆ، ناسنامەی تۆیە. لێرە کوالێتی و وردەکاری کۆدەبنەوە',
   logo_url: null,
   instagram_url: null,
   facebook_url: null,

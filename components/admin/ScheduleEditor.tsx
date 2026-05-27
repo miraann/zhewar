@@ -105,7 +105,7 @@ export default function ScheduleEditor() {
 
               {/* Slot interval */}
               <div>
-                <label className="text-neutral-500 text-[0.65rem] tracking-wider">ماوەی هەر نەوبەتێک</label>
+                <label className="text-neutral-500 text-[0.65rem] tracking-wider">ماوەی هەر کاتی سەردانیکردنێک</label>
                 <div className="flex gap-2 mt-1">
                   {INTERVALS.map((min) => (
                     <button

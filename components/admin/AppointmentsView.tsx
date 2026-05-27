@@ -87,7 +87,7 @@ export default function AppointmentsView() {
     <div className="px-4 py-6 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-white font-semibold text-lg">نەوبەتەکان</h2>
+          <h2 className="text-white font-semibold text-lg">کاتەکانی سەردانیکردن</h2>
           <p className="text-neutral-500 text-sm">{filtered.length} دیارە</p>
         </div>
         <button onClick={load} className="p-2 text-neutral-500 active:text-white touch-manipulation">
@@ -124,7 +124,7 @@ export default function AppointmentsView() {
       {!loading && filtered.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 gap-3">
           <Calendar className="w-10 h-10 text-neutral-700" />
-          <p className="text-neutral-600 text-sm">هیچ نەوبەتێک نەدۆزرایەوە</p>
+          <p className="text-neutral-600 text-sm">هیچ کاتی سەردانیکردنێک نەدۆزرایەوە</p>
         </div>
       )}
 

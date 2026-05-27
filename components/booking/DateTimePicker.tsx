@@ -220,7 +220,7 @@ export default function DateTimePicker({
               : 'bg-neutral-100 text-neutral-400 border border-neutral-200 cursor-not-allowed',
           ].join(' ')}
         >
-          {canProceed ? '← پشکنینی نەوبەت' : 'رووژ و کات هەڵبژێرە'}
+          {canProceed ? '← پشکنینی کاتی سەردانیکردن' : 'رووژ و کات هەڵبژێرە'}
         </button>
       </div>
     </div>

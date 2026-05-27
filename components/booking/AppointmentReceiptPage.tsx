@@ -63,17 +63,17 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl 
   const sid           = shortId(appointment.id);
 
   const wa = encodeURIComponent(
-    `✂️ *بەربەری لوکس – نەوبەت دڵنیاکراوە!*\n\n` +
+    `✂️ *بەربەری لوکس – کاتی سەردانیکردن دڵنیاکراوە!*\n\n` +
     `📅 *رووژ:* ${formattedDate}\n` +
     `⏰ *کات:* ${formattedTime}\n\n` +
-    `ژمارەی نەوبەت: ${sid}`
+    `ژمارەی کاتی سەردانیکردن: ${sid}`
   );
 
   function handleDownload() {
     const canvas = qrRef.current?.querySelector<HTMLCanvasElement>('canvas');
     if (!canvas) return;
     const link = document.createElement('a');
-    link.download = `نەوبەت-${sid.replace('#', '')}.png`;
+    link.download = `سەردانیکردن-${sid.replace('#', '')}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
   }
@@ -95,7 +95,7 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl 
         </div>
         <div className="text-center space-y-1.5">
           <h2 className="text-2xl font-bold text-neutral-900">بەزووی دیاری دەبین، {firstName}!</h2>
-          <p className="text-neutral-500 text-sm">نەوبەتەکەت بەسەرکەوتویی تۆمارکرا.</p>
+          <p className="text-neutral-500 text-sm">کاتی سەردانیکردنەکەت بەسەرکەوتویی تۆمارکرا.</p>
         </div>
       </div>
 
@@ -106,7 +106,7 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl 
 
           <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100">
             <span className="text-amber-600 font-mono text-sm font-bold tracking-wider">{sid}</span>
-            <span className="text-neutral-400 text-[0.65rem] tracking-widest">ژمارەی نەوبەت</span>
+            <span className="text-neutral-400 text-[0.65rem] tracking-widest">ژمارەی کاتی سەردانیکردن</span>
           </div>
 
           {[
@@ -170,7 +170,7 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl 
                 />
               </div>
               <p className="text-neutral-400 text-[0.6rem] text-center leading-relaxed">
-                بەربەرخانەکەت دەتوانێت ئەم کیوئارە بخوێنێتەوە بۆ پشکنینی نەوبەت
+                بەربەرخانەکەت دەتوانێت ئەم کیوئارە بخوێنێتەوە بۆ پشکنینی کاتی سەردانیکردن
               </p>
               <button
                 onClick={handleDownload}
@@ -200,7 +200,7 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl 
           className="flex items-center justify-center gap-2.5 w-full py-[18px] rounded-2xl border-2 border-neutral-200 bg-white text-neutral-700 font-semibold text-base active:bg-neutral-50 active:scale-[0.98] transition-all touch-manipulation select-none shadow-sm"
         >
           <RotateCcw className="w-4 h-4" />
-          نەوبەتێکی دیکە وەربگرە
+          کاتی سەردانیکردنێکی دیکە وەربگرە
         </Link>
       </div>
     </div>

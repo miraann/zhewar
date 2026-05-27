@@ -132,7 +132,7 @@ export default function CustomerRegistration({ onComplete }: Props) {
         </div>
         <h1 className="text-[1.75rem] font-bold text-neutral-900 leading-tight">بەخێربێیت</h1>
         <p className="text-neutral-500 text-sm mt-1.5 leading-relaxed">
-          زانیارییەکانت داخڵ بکە بۆ تۆمارکردنی نەوبەت
+          زانیارییەکانت داخڵ بکە بۆ تۆمارکردنی کاتی سەردانیکردن
         </p>
       </div>
 

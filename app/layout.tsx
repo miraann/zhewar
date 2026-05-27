@@ -1,12 +1,20 @@
 import type { Metadata, Viewport } from 'next';
+import { Inter } from 'next/font/google';
 import './globals.css';
 
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
 export const metadata: Metadata = {
-  title: 'بەربەری لوکس | چاکسازی بەرز',
-  description: 'نەوبەتەکەت لە چرکەیەکدا وەربگرە. چاکسازی بەرز بۆ پیاوی مۆدێرن.',
+  title: 'Luxe Barber | Premium Grooming',
+  description:
+    'Book your premium barber experience in seconds. Luxury grooming for the modern gentleman.',
   openGraph: {
-    title: 'بەربەری لوکس | چاکسازی بەرز',
-    description: 'نەوبەتەکەت لە چرکەیەکدا وەربگرە.',
+    title: 'Luxe Barber | Premium Grooming',
+    description: 'Book your premium barber appointment instantly.',
     type: 'website',
   },
 };
@@ -22,8 +30,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ckb" dir="rtl">
-      <body className="bg-neutral-950 text-white antialiased">
+    <html lang="en" className={inter.variable}>
+      <body className="bg-neutral-950 text-white antialiased min-h-screen">
         {children}
       </body>
     </html>

@@ -34,10 +34,10 @@ export default function SuccessReceipt({ customer, date, time, appointment, onBo
   const firstName     = customer?.full_name.split(' ')[0];
 
   const wa = encodeURIComponent(
-    `✂️ *بەربەری لوکس – نەوبەت دڵنیاکراوە!*\n\n` +
+    `✂️ *بەربەری لوکس – کاتی سەردانیکردن دڵنیاکراوە!*\n\n` +
     `📅 *رووژ:* ${formattedDate}\n` +
     `⏰ *کات:* ${formattedTime}\n\n` +
-    `ژمارەی نەوبەت: ${shortId(appointment.id)}`
+    `ژمارەی کاتی سەردانیکردن: ${shortId(appointment.id)}`
   );
   const waUrl = `https://wa.me/?text=${wa}`;
 
@@ -57,9 +57,9 @@ export default function SuccessReceipt({ customer, date, time, appointment, onBo
         </div>
         <div className="text-center space-y-1.5">
           <h2 className="text-2xl font-bold text-neutral-900">
-            {firstName ? `بەزووی دیاری دەبین، ${firstName}!` : 'نەوبەتەکەت دڵنیاکراوە!'}
+            {firstName ? `بەزووی دیاری دەبین، ${firstName}!` : 'کاتی سەردانیکردنەکەت دڵنیاکراوە!'}
           </h2>
-          <p className="text-neutral-500 text-sm">نەوبەتەکەت بەسەرکەوتویی تۆمارکرا.</p>
+          <p className="text-neutral-500 text-sm">کاتی سەردانیکردنەکەت بەسەرکەوتویی تۆمارکرا.</p>
         </div>
       </div>
 
@@ -72,7 +72,7 @@ export default function SuccessReceipt({ customer, date, time, appointment, onBo
             <span className="text-amber-600 font-mono text-sm font-bold tracking-wider">
               {shortId(appointment.id)}
             </span>
-            <span className="text-neutral-400 text-[0.65rem] tracking-widest">ژمارەی نەوبەت</span>
+            <span className="text-neutral-400 text-[0.65rem] tracking-widest">ژمارەی کاتی سەردانیکردن</span>
           </div>
 
           {[
@@ -112,7 +112,7 @@ export default function SuccessReceipt({ customer, date, time, appointment, onBo
           className="flex items-center justify-center gap-2.5 w-full py-[18px] rounded-2xl border-2 border-neutral-200 bg-white text-neutral-700 font-semibold text-base active:bg-neutral-50 active:scale-[0.98] transition-all touch-manipulation select-none shadow-sm"
         >
           <RotateCcw className="w-4 h-4" />
-          نەوبەتێکی دیکە وەربگرە
+          کاتی سەردانیکردنێکی دیکە وەربگرە
         </button>
       </div>
     </div>

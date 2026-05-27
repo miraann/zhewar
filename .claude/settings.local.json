@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git commit *)",
+      "Bash(mkdir -p \"g:/zhewar/app/appointment/[id]\")"
+    ],
+    "additionalDirectories": [
+      "g:\\zhewar\\app\\appointment"
+    ]
+  }
+}

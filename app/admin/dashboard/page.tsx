@@ -14,7 +14,7 @@ import GalleryEditor      from '@/components/admin/GalleryEditor';
 type Tab = 'appointments' | 'schedule' | 'blocked' | 'profile' | 'gallery';
 
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
-  { id: 'appointments', label: 'نەوبەتەکان', icon: LayoutDashboard },
+  { id: 'appointments', label: 'کاتەکانی سەردانیکردن', icon: LayoutDashboard },
   { id: 'schedule',     label: 'خشتەی کار',  icon: Clock           },
   { id: 'blocked',      label: 'رووژی داخراو', icon: Calendar       },
   { id: 'profile',      label: 'پرۆفایل',    icon: User            },
