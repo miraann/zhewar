@@ -63,6 +63,12 @@ export default function SocialSection({ profile }: { profile: BarberProfile }) {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_50%,rgba(245,158,11,0.18)_0%,transparent_68%)] pointer-events-none" />
 
       <div className="relative z-10 w-full max-w-sm mx-auto space-y-8">
+        {/* Header */}
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-[2px] bg-gradient-to-l from-amber-500 to-transparent rounded-full" />
+          <span className="text-amber-600 text-[0.65rem] tracking-[0.4em] font-medium">تۆڕی کۆمەڵایەتی</span>
+        </div>
+
         {/* Social cards */}
         <div className="space-y-3">
           {CARDS.map(({ key, platform, icon: Icon, gradient, border, iconBg, iconColor, glow }) => {
