@@ -1,15 +1,15 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Scissors } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import type { Customer, Service, Appointment, WorkingSchedule } from '@/lib/types';
+import type { Customer, Service, WorkingSchedule } from '@/lib/types';
 import DateTimePicker from './DateTimePicker';
 import BookingSummary from './BookingSummary';
-import SuccessReceipt from './SuccessReceipt';
 import CustomerRegistration from './CustomerRegistration';
 
-type Step = 'splash' | 'welcome' | 'register' | 'datetime' | 'summary' | 'success';
+type Step = 'splash' | 'welcome' | 'register' | 'datetime' | 'summary';
 
 interface Props {
   initialName?:  string;
@@ -17,6 +17,7 @@ interface Props {
 }
 
 export default function BookingFlow({ initialName, initialPhone }: Props) {
+  const router = useRouter();
   const [step, setStep]                       = useState<Step>('splash');
   const [customer, setCustomer]               = useState<Customer | null>(null);
   const [service, setService]                 = useState<Service | null>(null);
@@ -24,7 +25,6 @@ export default function BookingFlow({ initialName, initialPhone }: Props) {
   const [blockedDates, setBlockedDates]       = useState<string[]>([]);
   const [selectedDate, setSelectedDate]       = useState<Date | null>(null);
   const [selectedTime, setSelectedTime]       = useState<string | null>(null);
-  const [appointment, setAppointment]         = useState<Appointment | null>(null);
   const [confirming, setConfirming]           = useState(false);
 
   useEffect(() => {
@@ -101,13 +101,8 @@ export default function BookingFlow({ initialName, initialPhone }: Props) {
       .select()
       .single();
     setConfirming(false);
-    if (data && !error) { setAppointment(data); setStep('success'); }
-  }, [customer, service, selectedDate, selectedTime]);
-
-  const handleBookAgain = useCallback(() => {
-    setSelectedDate(null); setSelectedTime(null); setAppointment(null);
-    setStep('datetime');
-  }, []);
+    if (data && !error) { router.push(`/appointment/${data.id}`); }
+  }, [customer, service, selectedDate, selectedTime, router]);
 
   if (step === 'splash')   return <SplashScreen />;
   if (step === 'welcome')  return <WelcomeScreen customer={customer} />;
@@ -130,12 +125,6 @@ export default function BookingFlow({ initialName, initialPhone }: Props) {
         <BookingSummary
           customer={customer} date={selectedDate} time={selectedTime}
           confirming={confirming} onBack={() => setStep('datetime')} onConfirm={handleConfirm}
-        />
-      )}
-      {step === 'success' && appointment && selectedDate && selectedTime && (
-        <SuccessReceipt
-          customer={customer} date={selectedDate}
-          time={selectedTime} appointment={appointment} onBookAgain={handleBookAgain}
         />
       )}
     </div>
