@@ -67,7 +67,8 @@ export default function AppointmentsView() {
   useEffect(() => { load(); }, [load]);
 
   async function updateStatus(id: string, status: 'confirmed' | 'cancelled') {
-    await supabase.from('appointments').update({ status: status as string }).eq('id', id);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase as any).from('appointments').update({ status }).eq('id', id);
     setAppointments((prev) =>
       prev.map((a) => (a.id === id ? { ...a, status } : a))
     );
