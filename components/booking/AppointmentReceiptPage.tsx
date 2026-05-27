@@ -1,9 +1,10 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
-import { CheckCircle2, Calendar, Clock, MessageCircle, Download, QrCode, RotateCcw } from 'lucide-react';
+import { CheckCircle2, Calendar, Clock, MessageCircle, Download, Scissors, RotateCcw } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import Link from 'next/link';
+import Image from 'next/image';
 import type { AppointmentFull } from '@/lib/types';
 import { formatTimeFull } from './DateTimePicker';
 
@@ -38,7 +39,13 @@ function shortId(id: string) {
   return `#${id.replace(/-/g, '').slice(0, 8).toUpperCase()}`;
 }
 
-export default function AppointmentReceiptPage({ appointment }: { appointment: AppointmentFull }) {
+interface Props {
+  appointment: AppointmentFull;
+  shopName: string;
+  logoUrl: string | null;
+}
+
+export default function AppointmentReceiptPage({ appointment, shopName, logoUrl }: Props) {
   const [mounted, setMounted] = useState(false);
   const [origin, setOrigin]   = useState('');
   const qrRef = useRef<HTMLDivElement>(null);
@@ -133,15 +140,30 @@ export default function AppointmentReceiptPage({ appointment }: { appointment: A
         {origin && (
           <div className={`mt-4 rounded-3xl border border-neutral-200 bg-white shadow-md overflow-hidden ${fadeClass}`} style={{ transitionDelay: '300ms' }}>
             <div className="h-[3px] bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400" />
-            <div className="flex flex-col items-center gap-3 px-5 py-5">
-              <div className="flex items-center gap-2">
-                <QrCode className="w-4 h-4 text-amber-500" />
-                <span className="text-neutral-500 text-xs tracking-widest">کیوئاری نەوبەت</span>
+
+            {/* Shop identity header */}
+            <div className="flex flex-col items-center gap-2 pt-5 pb-4 border-b border-neutral-100 bg-gradient-to-b from-amber-50/60 to-white">
+              {logoUrl ? (
+                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-amber-200 shadow-sm flex-shrink-0">
+                  <Image src={logoUrl} alt={shopName} width={56} height={56} className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <div className="w-14 h-14 rounded-full bg-amber-50 border-2 border-amber-200 flex items-center justify-center shadow-sm">
+                  <Scissors className="w-6 h-6 text-amber-500" />
+                </div>
+              )}
+              <div className="text-center">
+                <p className="text-neutral-900 font-bold text-sm">{shopName}</p>
+                <p className="text-amber-600 font-semibold text-xs mt-0.5">{appointment.customers.full_name}</p>
               </div>
+            </div>
+
+            {/* QR code */}
+            <div className="flex flex-col items-center gap-3 px-5 py-5">
               <div ref={qrRef} className="p-3 rounded-2xl border-2 border-neutral-100 bg-white shadow-inner">
                 <QRCodeCanvas
                   value={apptUrl}
-                  size={160}
+                  size={168}
                   bgColor="#ffffff"
                   fgColor="#171717"
                   level="M"
