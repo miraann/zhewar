@@ -1,5 +1,5 @@
 import type { BarberProfile } from '@/lib/types';
-import { ExternalLink, Instagram, Facebook, MessageCircle, Music2, CalendarPlus } from 'lucide-react';
+import { ExternalLink, Instagram, Facebook, MessageCircle, Music2, CalendarPlus, MapPin } from 'lucide-react';
 import Link from 'next/link';
 
 interface SocialCard {
@@ -54,6 +54,16 @@ const CARDS: SocialCard[] = [
     iconColor: 'text-neutral-700',
     glow: 'shadow-[0_4px_20px_rgba(0,0,0,0.08)]',
   },
+  {
+    key: 'maps_url',
+    platform: 'شوێنی ئێمە',
+    icon: MapPin,
+    gradient: 'from-red-50 to-orange-50/70',
+    border: 'border-red-300/60',
+    iconBg: 'bg-red-100',
+    iconColor: 'text-red-500',
+    glow: 'shadow-[0_4px_20px_rgba(239,68,68,0.15)]',
+  },
 ];
 
 export default function SocialSection({ profile }: { profile: BarberProfile }) {
@@ -100,7 +110,9 @@ export default function SocialSection({ profile }: { profile: BarberProfile }) {
                   <p className="text-neutral-900 font-bold text-base">{platform}</p>
                   <p className="text-neutral-500 text-xs mt-0.5 truncate">
                     {isActive
-                      ? (value!.startsWith('http') ? value!.replace(/https?:\/\/(www\.)?/, '') : value)
+                      ? key === 'maps_url'
+                        ? 'گوگڵ مەپس — کرتە بکە بۆ نەقشە'
+                        : (value!.startsWith('http') ? value!.replace(/https?:\/\/(www\.)?/, '') : value)
                       : 'دانەنراوە'}
                   </p>
                 </div>

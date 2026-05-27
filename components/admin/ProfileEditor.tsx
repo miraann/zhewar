@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { BarberProfile } from '@/lib/types';
-import { Save, Loader2, Instagram, Facebook, MessageCircle, Music2, MapPin, User, Upload, X } from 'lucide-react';
+import { Save, Loader2, Instagram, Facebook, MessageCircle, Music2, MapPin, Map, User, Upload, X } from 'lucide-react';
 
 type EditableFields = Omit<BarberProfile, 'id' | 'updated_at'>;
 
@@ -12,11 +12,12 @@ const SOCIAL_FIELDS: { key: keyof EditableFields; label: string; icon: React.Ele
   { key: 'facebook_url',    label: 'بەستەری فەیسبوک',   icon: Facebook,      placeholder: 'https://facebook.com/yourpage'    },
   { key: 'whatsapp_number', label: 'ژمارەی واتسئاپ',    icon: MessageCircle, placeholder: '+9647501234567'                   },
   { key: 'tiktok_url',      label: 'بەستەری تیکتۆک',    icon: Music2,        placeholder: 'https://tiktok.com/@yourhandle'   },
+  { key: 'maps_url',        label: 'بەستەری گوگڵ مەپس', icon: Map,           placeholder: 'https://maps.google.com/?q=...'   },
 ];
 
 const DEFAULT: EditableFields = {
   name: '', tagline: '', logo_url: '', address: '',
-  instagram_url: '', facebook_url: '', whatsapp_number: '', tiktok_url: '',
+  instagram_url: '', facebook_url: '', whatsapp_number: '', tiktok_url: '', maps_url: '',
 };
 
 export default function ProfileEditor() {

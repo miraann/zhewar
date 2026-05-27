@@ -53,6 +53,7 @@ export interface BarberProfile {
   facebook_url: string | null;
   whatsapp_number: string | null;
   tiktok_url: string | null;
+  maps_url: string | null;
   address: string | null;
   updated_at: string;
 }
