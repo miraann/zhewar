@@ -1,0 +1,201 @@
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/lib/supabase';
+import type { AppointmentFull } from '@/lib/types';
+import { Phone, Clock, CheckCircle2, XCircle, RefreshCw, Calendar } from 'lucide-react';
+
+const MONTH_SHORT = ['ک٢','شوب','ئاز','نیس','ئای','حوز','تەم','ئاب','ئەی','تش١','تش٢','ک١'];
+
+function formatDT(iso: string) {
+  const d = new Date(iso);
+  const h = d.getHours();
+  const m = d.getMinutes();
+  let period: string;
+  if (h < 12)        period = 'بەیانی';
+  else if (h === 12) period = 'نیوەڕۆ';
+  else if (h <= 16)  period = 'دوا نیوەڕۆ';
+  else if (h <= 18)  period = 'ئێوارە';
+  else               period = 'شەو';
+  const display = h > 12 ? h - 12 : h === 0 ? 12 : h;
+  const timeStr = `${display}${m ? `:${String(m).padStart(2,'0')}` : ''} ${period}`;
+  return {
+    date: `${MONTH_SHORT[d.getMonth()]} ${d.getDate()}`,
+    time: timeStr,
+    isPast: d < new Date(),
+  };
+}
+
+const STATUS_STYLE: Record<string, string> = {
+  confirmed:  'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+  pending:    'bg-amber-500/15   text-amber-400   border-amber-500/30',
+  cancelled:  'bg-red-500/15     text-red-400     border-red-500/30',
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  confirmed: 'دڵنیاکراوە',
+  pending:   'چاوەڕوانکردن',
+  cancelled: 'هەڵوەشاوە',
+};
+
+type Filter = 'upcoming' | 'today' | 'all';
+
+const FILTER_LABELS: Record<Filter, string> = {
+  upcoming: 'داهاتوو',
+  today:    'ئەمڕۆ',
+  all:      'هەموو',
+};
+
+export default function AppointmentsView() {
+  const [appointments, setAppointments] = useState<AppointmentFull[]>([]);
+  const [loading, setLoading]           = useState(true);
+  const [filter, setFilter]             = useState<Filter>('upcoming');
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from('appointments')
+      .select(`id, appointment_time, status, created_at,
+               customers(full_name, phone_number, photo_url),
+               services(name, duration, price)`)
+      .order('appointment_time', { ascending: true });
+
+    if (data) setAppointments(data as unknown as AppointmentFull[]);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  async function updateStatus(id: string, status: 'confirmed' | 'cancelled') {
+    await supabase.from('appointments').update({ status }).eq('id', id);
+    setAppointments((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, status } : a))
+    );
+  }
+
+  const now   = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  const filtered = appointments.filter((a) => {
+    const dt = new Date(a.appointment_time);
+    if (filter === 'today')    return dt >= today && dt < new Date(today.getTime() + 86400000);
+    if (filter === 'upcoming') return dt >= now && a.status !== 'cancelled';
+    return true;
+  });
+
+  return (
+    <div className="px-4 py-6 space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-white font-semibold text-lg">نەوبەتەکان</h2>
+          <p className="text-neutral-500 text-sm">{filtered.length} دیارە</p>
+        </div>
+        <button onClick={load} className="p-2 text-neutral-500 active:text-white touch-manipulation">
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+        </button>
+      </div>
+
+      {/* Filter pills */}
+      <div className="flex gap-2">
+        {(['upcoming', 'today', 'all'] as Filter[]).map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={[
+              'px-4 py-2 rounded-full text-xs font-medium border transition-all touch-manipulation',
+              filter === f
+                ? 'border-amber-500 bg-amber-500/15 text-amber-400'
+                : 'border-white/10 bg-white/[0.04] text-neutral-400',
+            ].join(' ')}
+          >
+            {FILTER_LABELS[f]}
+          </button>
+        ))}
+      </div>
+
+      {loading && (
+        <div className="space-y-3">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-24 rounded-2xl bg-white/[0.04] border border-white/[0.06] animate-pulse" />
+          ))}
+        </div>
+      )}
+
+      {!loading && filtered.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-16 gap-3">
+          <Calendar className="w-10 h-10 text-neutral-700" />
+          <p className="text-neutral-600 text-sm">هیچ نەوبەتێک نەدۆزرایەوە</p>
+        </div>
+      )}
+
+      {!loading && filtered.map((appt) => {
+        const { date, time, isPast } = formatDT(appt.appointment_time);
+        return (
+          <div
+            key={appt.id}
+            className={[
+              'rounded-2xl border p-4 space-y-3',
+              isPast ? 'border-white/[0.05] bg-white/[0.02] opacity-60' : 'border-white/[0.09] bg-white/[0.04]',
+            ].join(' ')}
+          >
+            {/* Header row */}
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                {/* Customer photo */}
+                <div className="w-10 h-10 rounded-full flex-shrink-0 overflow-hidden border border-white/20 bg-white/[0.08]">
+                  {appt.customers.photo_url
+                    ? <img src={appt.customers.photo_url} alt={appt.customers.full_name} className="w-full h-full object-cover" />
+                    : <div className="w-full h-full flex items-center justify-center text-neutral-400 text-sm font-bold">
+                        {appt.customers.full_name.charAt(0)}
+                      </div>
+                  }
+                </div>
+                <div className="min-w-0">
+                  <p className="text-white font-semibold text-sm truncate">{appt.customers.full_name}</p>
+                  <p className="text-neutral-500 text-xs mt-0.5">{appt.services.name}</p>
+                </div>
+              </div>
+              <span className={`flex-shrink-0 text-[0.6rem] font-semibold tracking-wider px-2.5 py-1 rounded-full border ${STATUS_STYLE[appt.status]}`}>
+                {STATUS_LABEL[appt.status] ?? appt.status}
+              </span>
+            </div>
+
+            {/* Details */}
+            <div className="flex items-center gap-4 text-xs text-neutral-500">
+              <span className="flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-amber-500/50" />
+                {date}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-amber-500/50" />
+                {time}
+              </span>
+              <a href={`tel:${appt.customers.phone_number}`} className="flex items-center gap-1.5 active:text-white mr-auto">
+                <Phone className="w-3.5 h-3.5" />
+                {appt.customers.phone_number}
+              </a>
+            </div>
+
+            {/* Actions */}
+            {appt.status === 'pending' && !isPast && (
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={() => updateStatus(appt.id, 'confirmed')}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold touch-manipulation active:bg-emerald-500/25"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" /> دڵنیاکردنەوە
+                </button>
+                <button
+                  onClick={() => updateStatus(appt.id, 'cancelled')}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/25 text-red-400 text-xs font-semibold touch-manipulation active:bg-red-500/20"
+                >
+                  <XCircle className="w-3.5 h-3.5" /> هەڵوەشاندنەوە
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
