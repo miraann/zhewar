@@ -1,9 +1,10 @@
 import AboutSection from '@/components/home/AboutSection';
 import GallerySection from '@/components/home/GallerySection';
 import HeroSection from '@/components/home/HeroSection';
+import LinksSection from '@/components/home/LinksSection';
 import ScrollNav from '@/components/home/ScrollNav';
 import SocialSection from '@/components/home/SocialSection';
-import type { BarberProfile, GalleryPhoto } from '@/lib/types';
+import type { BarberProfile, GalleryPhoto, SocialLink } from '@/lib/types';
 import { createClient } from '@supabase/supabase-js';
 
 export const revalidate = 30;
@@ -28,19 +29,21 @@ async function getData() {
     { global: { fetch: (url, opts) => fetch(url, { ...opts, next: { revalidate: 30 } }) } }
   );
 
-  const [{ data: profileData }, { data: galleryData }] = await Promise.all([
+  const [{ data: profileData }, { data: galleryData }, { data: socialData }] = await Promise.all([
     supabase.from('barber_profile').select('*').single(),
     supabase.from('gallery_photos').select('*').order('sort_order'),
+    supabase.from('social_links').select('*').order('sort_order'),
   ]);
 
   return {
-    profile: (profileData as BarberProfile | null) ?? DEFAULT_PROFILE,
-    gallery: (galleryData as GalleryPhoto[] | null) ?? [],
+    profile:     (profileData as BarberProfile | null) ?? DEFAULT_PROFILE,
+    gallery:     (galleryData as GalleryPhoto[] | null) ?? [],
+    socialLinks: (socialData as SocialLink[] | null) ?? [],
   };
 }
 
 export default async function HomePage() {
-  const { profile, gallery } = await getData();
+  const { profile, gallery, socialLinks } = await getData();
 
   return (
     <>
@@ -54,6 +57,9 @@ export default async function HomePage() {
         </section>
         <section id="gallery">
           <GallerySection photos={gallery} />
+        </section>
+        <section id="links">
+          <LinksSection links={socialLinks} />
         </section>
         <section id="connect">
           <SocialSection profile={profile} />

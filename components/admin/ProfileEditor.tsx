@@ -61,8 +61,8 @@ export default function ProfileEditor() {
   return (
     <div className="px-4 py-6 space-y-6">
       <div>
-        <h2 className="text-white font-semibold text-lg">پرۆفایلی دوکان</h2>
-        <p className="text-neutral-500 text-sm mt-0.5">زانیاری خۆت نوێ بکەرەوە</p>
+        <h2 className="text-neutral-900 font-semibold text-lg">پرۆفایلی دوکان</h2>
+        <p className="text-neutral-400 text-sm mt-0.5">زانیاری خۆت نوێ بکەرەوە</p>
       </div>
 
       {/* Identity */}
@@ -72,7 +72,6 @@ export default function ProfileEditor() {
         <Field icon={User}   label="ووردەپیت"  value={form.tagline ?? ''} onChange={(v) => set('tagline', v)} placeholder="چاکسازی بەرز..." />
         <Field icon={MapPin} label="ناونیشان"  value={form.address ?? ''} onChange={(v) => set('address', v)} placeholder="کوڕە سەرەکی، شار" />
 
-        {/* Logo upload */}
         <LogoUpload
           value={form.logo_url ?? ''}
           onChange={(v) => set('logo_url', v)}
@@ -94,8 +93,8 @@ export default function ProfileEditor() {
         className={[
           'w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-semibold text-sm tracking-wide transition-all touch-manipulation',
           saved
-            ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-400'
-            : 'bg-amber-500 text-neutral-950 shadow-[0_0_25px_rgba(245,158,11,0.3)] active:scale-[0.98]',
+            ? 'bg-emerald-50 border border-emerald-300 text-emerald-700'
+            : 'bg-amber-500 text-neutral-950 shadow-[0_4px_20px_rgba(245,158,11,0.3)] active:scale-[0.98]',
         ].join(' ')}
       >
         {saving
@@ -138,20 +137,20 @@ function LogoUpload({ value, onChange }: { value: string; onChange: (url: string
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
 
       {value ? (
-        <div className="flex items-center gap-3 p-3 rounded-xl border border-white/10 bg-white/[0.04]">
-          <img src={value} alt="لۆگۆ" className="w-14 h-14 rounded-full object-cover border border-amber-500/40 flex-shrink-0" />
+        <div className="flex items-center gap-3 p-3 rounded-xl border border-neutral-200 bg-neutral-50">
+          <img src={value} alt="لۆگۆ" className="w-14 h-14 rounded-full object-cover border border-amber-300 flex-shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-white text-xs truncate">{value.split('/').pop()}</p>
+            <p className="text-neutral-700 text-xs truncate">{value.split('/').pop()}</p>
             <button
               onClick={() => fileRef.current?.click()}
               disabled={uploading}
-              className="mt-1.5 flex items-center gap-1.5 text-amber-400 text-xs font-medium touch-manipulation"
+              className="mt-1.5 flex items-center gap-1.5 text-amber-600 text-xs font-medium touch-manipulation"
             >
               {uploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
               {uploading ? 'بارکردن...' : 'گۆڕینی وێنە'}
             </button>
           </div>
-          <button onClick={() => onChange('')} className="text-neutral-600 active:text-red-400 transition-colors touch-manipulation">
+          <button onClick={() => onChange('')} className="text-neutral-400 active:text-red-500 transition-colors touch-manipulation">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -159,25 +158,25 @@ function LogoUpload({ value, onChange }: { value: string; onChange: (url: string
         <button
           onClick={() => fileRef.current?.click()}
           disabled={uploading}
-          className="w-full flex flex-col items-center justify-center gap-2 py-6 rounded-xl border border-dashed border-white/20 bg-white/[0.03] active:bg-white/[0.06] transition-colors touch-manipulation"
+          className="w-full flex flex-col items-center justify-center gap-2 py-6 rounded-xl border border-dashed border-neutral-300 bg-neutral-50 active:bg-neutral-100 transition-colors touch-manipulation"
         >
           {uploading
             ? <Loader2 className="w-6 h-6 text-amber-500 animate-spin" />
-            : <Upload className="w-6 h-6 text-neutral-500" />
+            : <Upload className="w-6 h-6 text-neutral-400" />
           }
-          <span className="text-neutral-500 text-xs">
+          <span className="text-neutral-400 text-xs">
             {uploading ? 'بارکردن...' : 'کرتە بکە بۆ بارکردنی لۆگۆ'}
           </span>
         </button>
       )}
 
-      {error && <p className="text-red-400 text-xs mt-1.5">{error}</p>}
+      {error && <p className="text-red-500 text-xs mt-1.5">{error}</p>}
     </div>
   );
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return <p className="text-amber-500/70 text-[0.65rem] tracking-wider font-medium">{children}</p>;
+  return <p className="text-amber-600/80 text-[0.65rem] tracking-wider font-medium">{children}</p>;
 }
 
 function Field({
@@ -190,13 +189,13 @@ function Field({
     <div>
       <p className="text-neutral-500 text-xs mb-1.5">{label}</p>
       <div className="relative">
-        <Icon className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-600 pointer-events-none" />
+        <Icon className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full bg-white/[0.05] border border-white/10 rounded-xl pr-10 pl-4 py-3 text-white text-sm placeholder-neutral-700 outline-none focus:border-amber-500/40 transition-colors"
+          className="w-full bg-white border border-neutral-200 rounded-xl pr-10 pl-4 py-3 text-neutral-900 text-sm placeholder-neutral-400 outline-none focus:border-amber-400 transition-colors"
         />
       </div>
     </div>
@@ -207,7 +206,7 @@ function Skeleton() {
   return (
     <div className="px-4 py-6 space-y-3">
       {[...Array(6)].map((_, i) => (
-        <div key={i} className="h-12 rounded-xl bg-white/[0.04] border border-white/[0.06] animate-pulse" />
+        <div key={i} className="h-12 rounded-xl bg-neutral-100 border border-neutral-200 animate-pulse" />
       ))}
     </div>
   );

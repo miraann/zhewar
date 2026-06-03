@@ -26,9 +26,7 @@ export default function ScheduleEditor() {
   }, []);
 
   function update(day: number, patch: Partial<WorkingSchedule>) {
-    setSchedule((prev) =>
-      prev.map((d) => (d.day_of_week === day ? { ...d, ...patch } : d))
-    );
+    setSchedule((prev) => prev.map((d) => (d.day_of_week === day ? { ...d, ...patch } : d)));
   }
 
   async function handleSave() {
@@ -36,12 +34,7 @@ export default function ScheduleEditor() {
     for (const day of schedule) {
       await supabase
         .from('working_schedule')
-        .update({
-          is_active:    day.is_active,
-          start_time:   day.start_time,
-          end_time:     day.end_time,
-          slot_interval: day.slot_interval,
-        })
+        .update({ is_active: day.is_active, start_time: day.start_time, end_time: day.end_time, slot_interval: day.slot_interval })
         .eq('day_of_week', day.day_of_week);
     }
     setSaving(false);
@@ -53,24 +46,21 @@ export default function ScheduleEditor() {
 
   return (
     <div className="px-4 py-6 space-y-4">
-      <SectionHeader
-        title="خشتەی کاری"
-        subtitle="رووژەکان دەگوێزەرەوە و کاتی بەردەستەکانت دیاری بکە"
-      />
+      <div className="mb-6">
+        <h2 className="text-neutral-900 font-semibold text-lg">خشتەی کاری</h2>
+        <p className="text-neutral-400 text-sm mt-0.5">رووژەکان دەگوێزەرەوە و کاتی بەردەستەکانت دیاری بکە</p>
+      </div>
 
       {schedule.map((day) => (
         <div
           key={day.day_of_week}
           className={[
             'rounded-2xl border p-4 transition-all duration-200',
-            day.is_active
-              ? 'border-amber-500/30 bg-white/[0.04]'
-              : 'border-white/[0.06] bg-white/[0.02] opacity-60',
+            day.is_active ? 'bg-white border-amber-400 shadow-sm' : 'bg-neutral-50 border-neutral-100 opacity-55',
           ].join(' ')}
         >
-          {/* Day header */}
           <div className="flex items-center justify-between mb-3">
-            <span className={`font-medium text-sm ${day.is_active ? 'text-white' : 'text-neutral-500'}`}>
+            <span className={`font-medium text-sm ${day.is_active ? 'text-neutral-900' : 'text-neutral-400'}`}>
               {DAY_NAMES[day.day_of_week]}
             </span>
             <Toggle
@@ -79,33 +69,31 @@ export default function ScheduleEditor() {
             />
           </div>
 
-          {/* Time inputs */}
           {day.is_active && (
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-neutral-500 text-[0.65rem] tracking-wider">دەکرێتەوە</label>
+                  <label className="text-neutral-400 text-[0.65rem] tracking-wider">دەکرێتەوە</label>
                   <input
                     type="time"
                     value={day.start_time}
                     onChange={(e) => update(day.day_of_week, { start_time: e.target.value })}
-                    className="mt-1 w-full bg-white/[0.05] border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm outline-none focus:border-amber-500/50"
+                    className="mt-1 w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2.5 text-neutral-900 text-sm outline-none focus:border-amber-400 [color-scheme:light] transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="text-neutral-500 text-[0.65rem] tracking-wider">دادەخرێت</label>
+                  <label className="text-neutral-400 text-[0.65rem] tracking-wider">دادەخرێت</label>
                   <input
                     type="time"
                     value={day.end_time}
                     onChange={(e) => update(day.day_of_week, { end_time: e.target.value })}
-                    className="mt-1 w-full bg-white/[0.05] border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm outline-none focus:border-amber-500/50"
+                    className="mt-1 w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2.5 text-neutral-900 text-sm outline-none focus:border-amber-400 [color-scheme:light] transition-colors"
                   />
                 </div>
               </div>
 
-              {/* Slot interval */}
               <div>
-                <label className="text-neutral-500 text-[0.65rem] tracking-wider">ماوەی هەر کاتی سەردانیکردنێک</label>
+                <label className="text-neutral-400 text-[0.65rem] tracking-wider">ماوەی هەر کاتی سەردانیکردنێک</label>
                 <div className="flex gap-2 mt-1">
                   {INTERVALS.map((min) => (
                     <button
@@ -114,8 +102,8 @@ export default function ScheduleEditor() {
                       className={[
                         'flex-1 py-2 rounded-xl text-xs font-medium border transition-all touch-manipulation',
                         day.slot_interval === min
-                          ? 'border-amber-500 bg-amber-500/20 text-amber-400'
-                          : 'border-white/10 bg-white/[0.04] text-neutral-400',
+                          ? 'border-amber-400 bg-amber-50 text-amber-700'
+                          : 'border-neutral-200 bg-white text-neutral-500 active:bg-neutral-50',
                       ].join(' ')}
                     >
                       {min} خ
@@ -128,15 +116,14 @@ export default function ScheduleEditor() {
         </div>
       ))}
 
-      {/* Save */}
       <button
         onClick={handleSave}
         disabled={saving}
         className={[
           'w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-semibold text-sm tracking-wide transition-all touch-manipulation',
           saved
-            ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-400'
-            : 'bg-amber-500 text-neutral-950 shadow-[0_0_25px_rgba(245,158,11,0.3)] active:scale-[0.98]',
+            ? 'bg-emerald-50 border border-emerald-300 text-emerald-700'
+            : 'bg-amber-500 text-neutral-950 shadow-[0_4px_20px_rgba(245,158,11,0.3)] active:scale-[0.98]',
         ].join(' ')}
       >
         {saving
@@ -156,7 +143,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
       onClick={onChange}
       className={[
         'relative w-11 h-6 rounded-full transition-colors duration-200 touch-manipulation flex-shrink-0',
-        checked ? 'bg-amber-500' : 'bg-white/10',
+        checked ? 'bg-amber-500' : 'bg-neutral-200',
       ].join(' ')}
     >
       <span
@@ -169,20 +156,11 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
   );
 }
 
-function SectionHeader({ title, subtitle }: { title: string; subtitle: string }) {
-  return (
-    <div className="mb-6">
-      <h2 className="text-white font-semibold text-lg">{title}</h2>
-      <p className="text-neutral-500 text-sm mt-0.5">{subtitle}</p>
-    </div>
-  );
-}
-
 function Skeleton() {
   return (
     <div className="px-4 py-6 space-y-3">
       {[...Array(7)].map((_, i) => (
-        <div key={i} className="h-16 rounded-2xl bg-white/[0.04] border border-white/[0.06] animate-pulse" />
+        <div key={i} className="h-16 rounded-2xl bg-neutral-100 border border-neutral-200 animate-pulse" />
       ))}
     </div>
   );

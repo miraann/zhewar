@@ -131,7 +131,7 @@ export default function SocialSection({ profile }: { profile: BarberProfile }) {
           >
             <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
             <CalendarPlus className="relative w-5 h-5" />
-            <span className="relative">دیاریکردنی کاتی سەردانیکردن</span>
+            <span className="relative">ناو تۆمار کردن</span>
           </Link>
         </div>
       </div>

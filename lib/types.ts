@@ -24,7 +24,7 @@ export interface Appointment {
 }
 
 export interface AppointmentFull extends Appointment {
-  customers: { full_name: string; phone_number: string; photo_url: string | null };
+  customers: { full_name: string; phone_number: string; photo_url: string | null; facebook_id: string | null };
   services: { name: string; duration: number; price: number };
 }
 
@@ -56,6 +56,15 @@ export interface BarberProfile {
   maps_url: string | null;
   address: string | null;
   updated_at: string;
+}
+
+export interface SocialLink {
+  id: string;
+  title: string;
+  image_url: string | null;
+  url: string;
+  sort_order: number;
+  created_at: string;
 }
 
 export interface GalleryPhoto {

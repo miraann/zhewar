@@ -57,7 +57,7 @@ export default function HeroSection({ profile }: { profile: BarberProfile }) {
         >
           <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-shimmer" />
           <CalendarPlus className="relative w-5 h-5" />
-          <span className="relative">دیاریکردنی کاتی سەردانیکردن</span>
+          <span className="relative">ناو تۆمار کردن</span>
         </Link>
 
         {/* Address */}

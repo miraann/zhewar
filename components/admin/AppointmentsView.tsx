@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { AppointmentFull } from '@/lib/types';
-import { Phone, Clock, CheckCircle2, XCircle, RefreshCw, Calendar } from 'lucide-react';
+import { Phone, Clock, CheckCircle2, XCircle, RefreshCw, Calendar, MessageCircle } from 'lucide-react';
 
 const MONTH_SHORT = ['ک٢','شوب','ئاز','نیس','ئای','حوز','تەم','ئاب','ئەی','تش١','تش٢','ک١'];
 
@@ -27,9 +27,9 @@ function formatDT(iso: string) {
 }
 
 const STATUS_STYLE: Record<string, string> = {
-  confirmed:  'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
-  pending:    'bg-amber-500/15   text-amber-400   border-amber-500/30',
-  cancelled:  'bg-red-500/15     text-red-400     border-red-500/30',
+  confirmed: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  pending:   'bg-amber-50   text-amber-700   border-amber-200',
+  cancelled: 'bg-red-50     text-red-600     border-red-200',
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -56,7 +56,7 @@ export default function AppointmentsView() {
     const { data } = await supabase
       .from('appointments')
       .select(`id, appointment_time, status, created_at,
-               customers(full_name, phone_number, photo_url),
+               customers(full_name, phone_number, photo_url, facebook_id),
                services(name, duration, price)`)
       .order('appointment_time', { ascending: true });
 
@@ -68,9 +68,7 @@ export default function AppointmentsView() {
 
   async function updateStatus(id: string, status: 'confirmed' | 'cancelled') {
     await supabase.from('appointments').update({ status }).eq('id', id);
-    setAppointments((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, status } : a))
-    );
+    setAppointments((prev) => prev.map((a) => (a.id === id ? { ...a, status } : a)));
   }
 
   const now   = new Date();
@@ -87,10 +85,10 @@ export default function AppointmentsView() {
     <div className="px-4 py-6 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-white font-semibold text-lg">کاتەکانی سەردانیکردن</h2>
-          <p className="text-neutral-500 text-sm">{filtered.length} دیارە</p>
+          <h2 className="text-neutral-900 font-semibold text-lg">کاتەکانی سەردانیکردن</h2>
+          <p className="text-neutral-400 text-sm">{filtered.length} دیارە</p>
         </div>
-        <button onClick={load} className="p-2 text-neutral-500 active:text-white touch-manipulation">
+        <button onClick={load} className="p-2 text-neutral-400 active:text-neutral-700 touch-manipulation transition-colors">
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
@@ -104,8 +102,8 @@ export default function AppointmentsView() {
             className={[
               'px-4 py-2 rounded-full text-xs font-medium border transition-all touch-manipulation',
               filter === f
-                ? 'border-amber-500 bg-amber-500/15 text-amber-400'
-                : 'border-white/10 bg-white/[0.04] text-neutral-400',
+                ? 'border-amber-400 bg-amber-50 text-amber-700'
+                : 'border-neutral-200 bg-white text-neutral-500 active:bg-neutral-50',
             ].join(' ')}
           >
             {FILTER_LABELS[f]}
@@ -116,15 +114,15 @@ export default function AppointmentsView() {
       {loading && (
         <div className="space-y-3">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-24 rounded-2xl bg-white/[0.04] border border-white/[0.06] animate-pulse" />
+            <div key={i} className="h-24 rounded-2xl bg-neutral-100 border border-neutral-200 animate-pulse" />
           ))}
         </div>
       )}
 
       {!loading && filtered.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 gap-3">
-          <Calendar className="w-10 h-10 text-neutral-700" />
-          <p className="text-neutral-600 text-sm">هیچ کاتی سەردانیکردنێک نەدۆزرایەوە</p>
+          <Calendar className="w-10 h-10 text-neutral-300" />
+          <p className="text-neutral-400 text-sm">هیچ کاتی سەردانیکردنێک نەدۆزرایەوە</p>
         </div>
       )}
 
@@ -134,25 +132,24 @@ export default function AppointmentsView() {
           <div
             key={appt.id}
             className={[
-              'rounded-2xl border p-4 space-y-3',
-              isPast ? 'border-white/[0.05] bg-white/[0.02] opacity-60' : 'border-white/[0.09] bg-white/[0.04]',
+              'rounded-2xl border p-4 space-y-3 bg-white',
+              isPast ? 'border-neutral-100 opacity-55' : 'border-neutral-200 shadow-sm',
             ].join(' ')}
           >
             {/* Header row */}
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
-                {/* Customer photo */}
-                <div className="w-10 h-10 rounded-full flex-shrink-0 overflow-hidden border border-white/20 bg-white/[0.08]">
+                <div className="w-10 h-10 rounded-full flex-shrink-0 overflow-hidden border border-neutral-200 bg-neutral-100">
                   {appt.customers.photo_url
                     ? <img src={appt.customers.photo_url} alt={appt.customers.full_name} className="w-full h-full object-cover" />
-                    : <div className="w-full h-full flex items-center justify-center text-neutral-400 text-sm font-bold">
+                    : <div className="w-full h-full flex items-center justify-center text-neutral-500 text-sm font-bold">
                         {appt.customers.full_name.charAt(0)}
                       </div>
                   }
                 </div>
                 <div className="min-w-0">
-                  <p className="text-white font-semibold text-sm truncate">{appt.customers.full_name}</p>
-                  <p className="text-neutral-500 text-xs mt-0.5">{appt.services.name}</p>
+                  <p className="text-neutral-900 font-semibold text-sm truncate">{appt.customers.full_name}</p>
+                  <p className="text-neutral-400 text-xs mt-0.5">{appt.services.name}</p>
                 </div>
               </div>
               <span className={`flex-shrink-0 text-[0.6rem] font-semibold tracking-wider px-2.5 py-1 rounded-full border ${STATUS_STYLE[appt.status]}`}>
@@ -161,19 +158,30 @@ export default function AppointmentsView() {
             </div>
 
             {/* Details */}
-            <div className="flex items-center gap-4 text-xs text-neutral-500">
+            <div className="flex items-center gap-4 text-xs text-neutral-400">
               <span className="flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-amber-500/50" />
+                <Calendar className="w-3.5 h-3.5 text-amber-500" />
                 {date}
               </span>
               <span className="flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-amber-500/50" />
+                <Clock className="w-3.5 h-3.5 text-amber-500" />
                 {time}
               </span>
-              <a href={`tel:${appt.customers.phone_number}`} className="flex items-center gap-1.5 active:text-white mr-auto">
+              <a href={`tel:${appt.customers.phone_number}`} className="flex items-center gap-1.5 active:text-neutral-700 mr-auto">
                 <Phone className="w-3.5 h-3.5" />
                 {appt.customers.phone_number}
               </a>
+              {appt.customers.facebook_id && (
+                <a
+                  href={`https://m.me/${appt.customers.facebook_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-600 text-[0.65rem] font-semibold active:bg-blue-100 touch-manipulation transition-colors"
+                >
+                  <MessageCircle className="w-3 h-3" />
+                  Messenger
+                </a>
+              )}
             </div>
 
             {/* Actions */}
@@ -181,13 +189,13 @@ export default function AppointmentsView() {
               <div className="flex gap-2 pt-1">
                 <button
                   onClick={() => updateStatus(appt.id, 'confirmed')}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold touch-manipulation active:bg-emerald-500/25"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold touch-manipulation active:bg-emerald-100"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5" /> دڵنیاکردنەوە
                 </button>
                 <button
                   onClick={() => updateStatus(appt.id, 'cancelled')}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/25 text-red-400 text-xs font-semibold touch-manipulation active:bg-red-500/20"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-red-50 border border-red-200 text-red-600 text-xs font-semibold touch-manipulation active:bg-red-100"
                 >
                   <XCircle className="w-3.5 h-3.5" /> هەڵوەشاندنەوە
                 </button>
