@@ -5,13 +5,6 @@ import { Camera, User, Phone, Loader2, Scissors } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import type { Customer } from '@/lib/types';
 
-declare global {
-  interface Window {
-    FB: any;
-    fbAsyncInit: () => void;
-  }
-}
-
 function FacebookIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -32,55 +25,22 @@ export default function CustomerRegistration({ onComplete }: Props) {
   const [photoUrl, setPhotoUrl]   = useState('');
   const [fbId, setFbId]           = useState('');
   const [uploading, setUploading] = useState(false);
-  const [fbLoading, setFbLoading] = useState(false);
-  const [fbReady, setFbReady]     = useState(false);
   const [saving, setSaving]       = useState(false);
   const [error, setError]         = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // Load Facebook SDK
+  // Read Facebook profile from OAuth redirect cookie
   useEffect(() => {
-    if (!FB_APP_ID) return;
-
-    window.fbAsyncInit = function () {
-      window.FB.init({ appId: FB_APP_ID, cookie: true, xfbml: false, version: 'v19.0' });
-      setFbReady(true);
-    };
-
-    if (!document.getElementById('facebook-jssdk')) {
-      const s = document.createElement('script');
-      s.id = 'facebook-jssdk';
-      s.src = 'https://connect.facebook.net/en_US/sdk.js';
-      s.async = true;
-      s.defer = true;
-      document.body.appendChild(s);
-    } else if (window.FB) {
-      setFbReady(true);
-    }
+    const match = document.cookie.split('; ').find((r) => r.startsWith('fb_auth='));
+    if (!match) return;
+    try {
+      const data = JSON.parse(atob(match.split('=')[1]));
+      if (data.name)  setName(data.name);
+      if (data.photo) setPhotoUrl(data.photo);
+      if (data.id)    setFbId(data.id);
+    } catch {}
+    document.cookie = 'fb_auth=; max-age=0; path=/';
   }, []);
-
-  function handleFacebookLogin() {
-    if (!window.FB) return;
-    setFbLoading(true);
-    setError('');
-    window.FB.login(
-      (res: any) => {
-        if (res.authResponse) {
-          window.FB.api('/me', { fields: 'id,name,picture.width(400)' }, (profile: any) => {
-            if (profile && !profile.error) {
-              setName(profile.name ?? '');
-              setPhotoUrl(profile.picture?.data?.url ?? '');
-              setFbId(profile.id ?? '');
-            }
-            setFbLoading(false);
-          });
-        } else {
-          setFbLoading(false);
-        }
-      },
-      { scope: 'public_profile' },
-    );
-  }
 
   async function handlePhoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -141,17 +101,13 @@ export default function CustomerRegistration({ onComplete }: Props) {
       {/* Facebook button */}
       {FB_APP_ID && (
         <>
-          <button
-            onClick={handleFacebookLogin}
-            disabled={fbLoading || !fbReady}
-            className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-[#1877F2] text-white font-bold text-base touch-manipulation select-none transition-all active:scale-[0.98] disabled:opacity-50 shadow-[0_4px_20px_rgba(24,119,242,0.35)]"
+          <a
+            href="/api/auth/facebook"
+            className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-[#1877F2] text-white font-bold text-base touch-manipulation select-none transition-all active:scale-[0.98] shadow-[0_4px_20px_rgba(24,119,242,0.35)]"
           >
-            {fbLoading
-              ? <Loader2 className="w-5 h-5 animate-spin" />
-              : <FacebookIcon className="w-5 h-5" />
-            }
-            {fbLoading ? 'چاوەڕوانبە...' : 'بەفەیسبووک داخڵ بە'}
-          </button>
+            <FacebookIcon className="w-5 h-5" />
+            بەفەیسبووک داخڵ بە
+          </a>
 
           {/* Divider */}
           <div className="flex items-center gap-3 my-5">
