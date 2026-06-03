@@ -30,6 +30,7 @@ export default function CustomerRegistration({ onComplete }: Props) {
   const [name, setName]           = useState('');
   const [phone, setPhone]         = useState('');
   const [photoUrl, setPhotoUrl]   = useState('');
+  const [fbId, setFbId]           = useState('');
   const [uploading, setUploading] = useState(false);
   const [fbLoading, setFbLoading] = useState(false);
   const [fbReady, setFbReady]     = useState(false);
@@ -65,10 +66,11 @@ export default function CustomerRegistration({ onComplete }: Props) {
     window.FB.login(
       (res: any) => {
         if (res.authResponse) {
-          window.FB.api('/me', { fields: 'name,picture.width(400)' }, (profile: any) => {
+          window.FB.api('/me', { fields: 'id,name,picture.width(400)' }, (profile: any) => {
             if (profile && !profile.error) {
               setName(profile.name ?? '');
               setPhotoUrl(profile.picture?.data?.url ?? '');
+              setFbId(profile.id ?? '');
             }
             setFbLoading(false);
           });
@@ -103,7 +105,7 @@ export default function CustomerRegistration({ onComplete }: Props) {
     const { data, error: dbErr } = await supabase
       .from('customers')
       .upsert(
-        { full_name: name.trim(), phone_number: phone.trim(), photo_url: photoUrl || null },
+        { full_name: name.trim(), phone_number: phone.trim(), photo_url: photoUrl || null, facebook_id: fbId || null },
         { onConflict: 'phone_number' },
       )
       .select()
