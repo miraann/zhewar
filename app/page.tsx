@@ -18,6 +18,7 @@ const DEFAULT_PROFILE: BarberProfile = {
   facebook_url: null,
   whatsapp_number: null,
   tiktok_url: null,
+  maps_url: null,
   address: null,
   updated_at: '',
 };
