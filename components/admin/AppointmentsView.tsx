@@ -174,9 +174,7 @@ export default function AppointmentsView() {
               {appt.customers.facebook_id && (
                 <>
                   <a
-                    href={`https://www.facebook.com/${appt.customers.facebook_id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={`fb://profile/${appt.customers.facebook_id}`}
                     className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-600 text-[0.65rem] font-semibold active:bg-blue-100 touch-manipulation transition-colors"
                   >
                     <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
@@ -185,9 +183,7 @@ export default function AppointmentsView() {
                     Facebook
                   </a>
                   <a
-                    href={`https://m.me/${appt.customers.facebook_id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={`fb-messenger://user-thread/${appt.customers.facebook_id}`}
                     className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-600 text-[0.65rem] font-semibold active:bg-blue-100 touch-manipulation transition-colors"
                   >
                     <MessageCircle className="w-3 h-3" />
