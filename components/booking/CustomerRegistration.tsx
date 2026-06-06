@@ -25,6 +25,8 @@ export default function CustomerRegistration({ onComplete }: Props) {
   const [photoUrl, setPhotoUrl]   = useState('');
   const [fbId, setFbId]           = useState('');
   const [messengerUrl, setMessengerUrl] = useState('');
+  const [showHelp, setShowHelp]         = useState(false);
+  const [pasted, setPasted]             = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving]       = useState(false);
   const [error, setError]         = useState('');
@@ -184,55 +186,103 @@ export default function CustomerRegistration({ onComplete }: Props) {
         </div>
 
         {/* Facebook / Messenger URL */}
-        <div>
+        <div className="relative">
           <div className="flex items-center justify-between mb-1.5">
             <button
               type="button"
-              onClick={() => alert(
-                'چۆن لینکی فەیسبووک / مێسینجەرت بدۆزیتەوە:\n\n' +
-                '١. ئەپی فەیسبووک یان مێسینجەر بکەرەوە\n' +
-                '٢. بچۆ بۆ پرۆفایلەکەت\n' +
-                '٣. لینکەکە کۆپی بکە\n' +
-                '٤. ئێرە پەیستی بکە'
-              )}
-              className="flex items-center gap-1 text-blue-500 text-xs"
+              onClick={() => setShowHelp(true)}
+              className="flex items-center gap-1 text-[#1877F2] text-xs font-medium"
             >
               <HelpCircle className="w-3.5 h-3.5" />
               چۆن بدۆزمەوە؟
             </button>
             <label className="text-neutral-500 text-xs text-right">
-              فەیسبووک / مێسینجەر
+              فەیسبووک / مێسینجەر <span className="text-neutral-400">(ئارەزوومەند)</span>
             </label>
           </div>
-          <div className="flex gap-2">
-            <input
-              type="url"
-              value={messengerUrl}
-              onChange={(e) => setMessengerUrl(e.target.value)}
-              placeholder="https://facebook.com/..."
-              dir="ltr"
-              className="flex-1 bg-neutral-50 border-2 border-neutral-200 rounded-2xl px-4 py-4 text-neutral-900 text-sm placeholder-neutral-400 outline-none focus:border-blue-400 transition-colors"
-            />
+
+          {/* Input row */}
+          <div className="flex gap-2 items-stretch">
+            <div className="relative flex-1">
+              <svg viewBox="0 0 24 24" fill="currentColor" className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1877F2] pointer-events-none">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+              </svg>
+              <input
+                type="url"
+                value={messengerUrl}
+                onChange={(e) => { setMessengerUrl(e.target.value); setPasted(false); }}
+                placeholder="https://facebook.com/username"
+                dir="ltr"
+                className={[
+                  'w-full bg-neutral-50 border-2 rounded-2xl pr-10 pl-4 py-4 text-neutral-900 text-sm placeholder-neutral-400 outline-none transition-colors',
+                  pasted ? 'border-green-400 bg-green-50' : 'border-neutral-200 focus:border-[#1877F2]',
+                ].join(' ')}
+              />
+              {pasted && (
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-green-600 text-[0.6rem] font-semibold">✓ کۆپیکرا</span>
+              )}
+            </div>
             <button
               type="button"
               onClick={async () => {
                 try {
                   const text = await navigator.clipboard.readText();
-                  if (text.includes('facebook') || text.includes('fb.com') || text.includes('m.me') || text.includes('messenger')) {
-                    setMessengerUrl(text.trim());
-                  } else {
-                    setMessengerUrl(text.trim());
-                  }
+                  setMessengerUrl(text.trim());
+                  setPasted(true);
                 } catch {
-                  alert('تکایە لینکەکە دەستی کۆپی بکە، پاشان دووبارە هەوڵبدەرەوە');
+                  setShowHelp(true);
                 }
               }}
-              className="px-4 py-4 rounded-2xl bg-[#1877F2] text-white text-xs font-bold touch-manipulation active:scale-[0.97] transition-transform whitespace-nowrap"
+              className="px-5 rounded-2xl bg-[#1877F2] text-white text-sm font-bold touch-manipulation active:scale-[0.97] transition-transform shadow-[0_4px_14px_rgba(24,119,242,0.35)] whitespace-nowrap"
             >
               پەیست
             </button>
           </div>
         </div>
+
+        {/* Help modal */}
+        {showHelp && (
+          <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowHelp(false)}>
+            <div
+              className="w-full max-w-sm bg-white rounded-t-3xl px-6 pt-6 pb-10 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Handle */}
+              <div className="w-10 h-1 bg-neutral-200 rounded-full mx-auto mb-5" />
+
+              {/* Icon */}
+              <div className="w-14 h-14 rounded-2xl bg-[#1877F2]/10 flex items-center justify-center mx-auto mb-4">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-[#1877F2]">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                </svg>
+              </div>
+
+              <h3 className="text-neutral-900 font-bold text-lg text-center mb-1">چۆن لینکەکە بدۆزیتەوە؟</h3>
+              <p className="text-neutral-500 text-xs text-center mb-6">پەیوەندیت پێوە بکەین بە ئاسانی</p>
+
+              <div className="space-y-3 text-right" dir="rtl">
+                {[
+                  { n: '١', text: 'ئەپی فەیسبووک یان مێسینجەر بکەرەوە' },
+                  { n: '٢', text: 'بچۆ بۆ پرۆفایلەکەت' },
+                  { n: '٣', text: 'لینکەکە لە بارێکی ناونیشان کۆپی بکە' },
+                  { n: '٤', text: 'گەڕەوە ئێرە و دوگمەی "پەیست" بپەڕێنە' },
+                ].map(({ n, text }) => (
+                  <div key={n} className="flex items-center gap-3">
+                    <span className="w-7 h-7 rounded-full bg-[#1877F2] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">{n}</span>
+                    <span className="text-neutral-700 text-sm">{text}</span>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => setShowHelp(false)}
+                className="w-full mt-7 py-4 rounded-2xl bg-[#1877F2] text-white font-bold text-sm touch-manipulation active:scale-[0.98] transition-transform"
+              >
+                تێگەیشتم
+              </button>
+            </div>
+          </div>
+        )}
 
         {error && <p className="text-red-500 text-xs text-right px-1">{error}</p>}
       </div>
