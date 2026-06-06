@@ -1,9 +1,12 @@
+import dynamic from 'next/dynamic';
 import AboutSection from '@/components/home/AboutSection';
-import GallerySection from '@/components/home/GallerySection';
 import HeroSection from '@/components/home/HeroSection';
-import LinksSection from '@/components/home/LinksSection';
-import ScrollNav from '@/components/home/ScrollNav';
 import SocialSection from '@/components/home/SocialSection';
+
+// Client-only: never SSR these to prevent any server/client HTML mismatch
+const ScrollNav    = dynamic(() => import('@/components/home/ScrollNav'),    { ssr: false });
+const GallerySection = dynamic(() => import('@/components/home/GallerySection'), { ssr: false });
+const LinksSection = dynamic(() => import('@/components/home/LinksSection'), { ssr: false });
 import type { BarberProfile, GalleryPhoto, SocialLink } from '@/lib/types';
 import { createClient } from '@supabase/supabase-js';
 
