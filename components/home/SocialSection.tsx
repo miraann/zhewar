@@ -70,13 +70,15 @@ export default function SocialSection({ profile }: { profile: BarberProfile }) {
   return (
     <div className="relative min-h-screen flex flex-col justify-center px-5 py-24 overflow-hidden text-neutral-900">
       <div className="absolute inset-0 bg-white" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_50%,rgba(245,158,11,0.18)_0%,transparent_68%)] pointer-events-none" />
+      {/* Barber stripe divider */}
+      <div className="absolute top-0 inset-x-0 h-1" style={{ background: 'repeating-linear-gradient(-45deg,#DC2626 0px,#DC2626 4px,#FFFFFF 4px,#FFFFFF 8px,#2563EB 8px,#2563EB 12px,#FFFFFF 12px,#FFFFFF 16px)' }} />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_50%,rgba(220,38,38,0.06)_0%,transparent_68%)] pointer-events-none" />
 
       <div className="relative z-10 w-full max-w-sm mx-auto space-y-8">
         {/* Header */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-[2px] bg-gradient-to-l from-amber-500 to-transparent rounded-full" />
-          <span className="text-amber-600 text-[0.65rem] tracking-[0.4em] font-medium">تۆڕی کۆمەڵایەتی</span>
+          <div className="w-10 h-[2px] bg-gradient-to-l from-red-600 to-transparent rounded-full" />
+          <span className="text-red-600 text-[0.65rem] tracking-[0.4em] font-medium">تۆڕی کۆمەڵایەتی</span>
         </div>
 
         {/* Social cards */}
@@ -124,12 +126,12 @@ export default function SocialSection({ profile }: { profile: BarberProfile }) {
 
         {/* Final CTA */}
         <div className="pt-4">
-          <div className="h-[2px] bg-gradient-to-r from-transparent via-amber-400/60 to-transparent mb-8 rounded-full" />
+          <div className="h-[2px] bg-gradient-to-r from-transparent via-red-600/40 to-transparent mb-8 rounded-full" />
           <Link
             href="/book"
-            className="relative flex items-center justify-center gap-2.5 w-full py-5 rounded-2xl bg-amber-500 text-neutral-950 font-bold text-base tracking-wide shadow-[0_0_50px_rgba(245,158,11,0.55),0_4px_20px_rgba(245,158,11,0.4)] overflow-hidden touch-manipulation active:scale-[0.98] transition-transform"
+            className="relative flex items-center justify-center gap-2.5 w-full py-5 rounded-2xl bg-gradient-to-b from-red-500 to-red-700 text-white font-bold text-base tracking-wide shadow-[0_0_50px_rgba(220,38,38,0.45),0_4px_20px_rgba(220,38,38,0.35)] overflow-hidden touch-manipulation active:scale-[0.98] transition-transform"
           >
-            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
+            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
             <CalendarPlus className="relative w-5 h-5" />
             <span className="relative">ناو تۆمار کردن</span>
           </Link>
