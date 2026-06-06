@@ -30,8 +30,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="bg-neutral-950 text-white antialiased min-h-screen">
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
+      <body className="bg-neutral-950 text-white antialiased min-h-screen" suppressHydrationWarning>
         {children}
       </body>
     </html>

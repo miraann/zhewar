@@ -46,19 +46,21 @@ interface Props {
 }
 
 export default function AppointmentReceiptPage({ appointment, shopName, logoUrl }: Props) {
-  const [mounted, setMounted] = useState(false);
-  const [origin, setOrigin]   = useState('');
+  const [mounted, setMounted]             = useState(false);
+  const [origin, setOrigin]               = useState('');
+  const [formattedDate, setFormattedDate] = useState('');
+  const [formattedTime, setFormattedTime] = useState('');
   const qrRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const t = setTimeout(() => setMounted(true), 60);
+    setFormattedDate(formatDate(appointment.appointment_time));
+    setFormattedTime(formatTime(appointment.appointment_time));
     setOrigin(window.location.origin);
+    const t = setTimeout(() => setMounted(true), 60);
     return () => clearTimeout(t);
-  }, []);
+  }, [appointment.appointment_time]);
 
-  const apptUrl       = `${origin}/appointment/${appointment.id}`;
-  const formattedDate = formatDate(appointment.appointment_time);
-  const formattedTime = formatTime(appointment.appointment_time);
+  const apptUrl = `${origin}/appointment/${appointment.id}`;
   const firstName     = appointment.customers.full_name.split(' ')[0];
   const sid           = shortId(appointment.id);
 
