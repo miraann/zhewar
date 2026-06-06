@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Camera, User, Phone, Loader2, Scissors } from 'lucide-react';
+import { Camera, User, Phone, Loader2, Scissors, HelpCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import type { Customer } from '@/lib/types';
 
@@ -24,6 +24,7 @@ export default function CustomerRegistration({ onComplete }: Props) {
   const [phone, setPhone]         = useState('');
   const [photoUrl, setPhotoUrl]   = useState('');
   const [fbId, setFbId]           = useState('');
+  const [messengerUrl, setMessengerUrl] = useState('');
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving]       = useState(false);
   const [error, setError]         = useState('');
@@ -65,7 +66,7 @@ export default function CustomerRegistration({ onComplete }: Props) {
     const { data, error: dbErr } = await supabase
       .from('customers')
       .upsert(
-        { full_name: name.trim(), phone_number: phone.trim(), photo_url: photoUrl || null, facebook_id: fbId || null },
+        { full_name: name.trim(), phone_number: phone.trim(), photo_url: photoUrl || null, facebook_id: fbId || messengerUrl.trim() || null },
         { onConflict: 'phone_number' },
       )
       .select()
@@ -179,6 +180,57 @@ export default function CustomerRegistration({ onComplete }: Props) {
               dir="ltr"
               className="w-full bg-neutral-50 border-2 border-neutral-200 rounded-2xl pr-10 pl-4 py-4 text-neutral-900 text-sm placeholder-neutral-400 outline-none focus:border-amber-400 transition-colors text-right"
             />
+          </div>
+        </div>
+
+        {/* Facebook / Messenger URL */}
+        <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <button
+              type="button"
+              onClick={() => alert(
+                'چۆن لینکی فەیسبووک / مێسینجەرت بدۆزیتەوە:\n\n' +
+                '١. ئەپی فەیسبووک یان مێسینجەر بکەرەوە\n' +
+                '٢. بچۆ بۆ پرۆفایلەکەت\n' +
+                '٣. لینکەکە کۆپی بکە\n' +
+                '٤. ئێرە پەیستی بکە'
+              )}
+              className="flex items-center gap-1 text-blue-500 text-xs"
+            >
+              <HelpCircle className="w-3.5 h-3.5" />
+              چۆن بدۆزمەوە؟
+            </button>
+            <label className="text-neutral-500 text-xs text-right">
+              فەیسبووک / مێسینجەر
+            </label>
+          </div>
+          <div className="flex gap-2">
+            <input
+              type="url"
+              value={messengerUrl}
+              onChange={(e) => setMessengerUrl(e.target.value)}
+              placeholder="https://facebook.com/..."
+              dir="ltr"
+              className="flex-1 bg-neutral-50 border-2 border-neutral-200 rounded-2xl px-4 py-4 text-neutral-900 text-sm placeholder-neutral-400 outline-none focus:border-blue-400 transition-colors"
+            />
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const text = await navigator.clipboard.readText();
+                  if (text.includes('facebook') || text.includes('fb.com') || text.includes('m.me') || text.includes('messenger')) {
+                    setMessengerUrl(text.trim());
+                  } else {
+                    setMessengerUrl(text.trim());
+                  }
+                } catch {
+                  alert('تکایە لینکەکە دەستی کۆپی بکە، پاشان دووبارە هەوڵبدەرەوە');
+                }
+              }}
+              className="px-4 py-4 rounded-2xl bg-[#1877F2] text-white text-xs font-bold touch-manipulation active:scale-[0.97] transition-transform whitespace-nowrap"
+            >
+              پەیست
+            </button>
           </div>
         </div>
 
