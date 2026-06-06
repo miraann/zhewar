@@ -18,9 +18,9 @@ export default function HeroSection({ profile }: { profile: BarberProfile }) {
       <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-gray-300/40 to-transparent" />
 
       {/* Decorative rings */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[540px] h-[540px] rounded-full border-2 border-red-600/20 pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[360px] h-[360px] rounded-full border-2 border-blue-600/20 pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] rounded-full border-2 border-red-500/20 pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[540px] h-[540px] rounded-full border-[3px] border-red-600/30 pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[360px] h-[360px] rounded-full border-[3px] border-blue-600/30 pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] rounded-full border-[3px] border-red-500/30 pointer-events-none" />
 
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center text-center gap-7 max-w-sm mx-auto">
