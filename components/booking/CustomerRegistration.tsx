@@ -66,8 +66,9 @@ export default function CustomerRegistration({ onComplete }: Props) {
   }
 
   async function handleSubmit() {
-    if (!name.trim())  { setError('تکایە ناوی خۆت بنووسە');       return; }
-    if (!phone.trim()) { setError('تکایە ژمارەی مۆبایلت بنووسە'); return; }
+    if (!name.trim())         { setError('تکایە ناوی خۆت بنووسە');                    return; }
+    if (!phone.trim())        { setError('تکایە ژمارەی مۆبایلت بنووسە');              return; }
+    if (!messengerUrl.trim()) { setError('تکایە لینکی فەیسبووک یان مێسینجەرت بنووسە'); return; }
     setError('');
     setSaving(true);
     const { data, error: dbErr } = await supabase
@@ -183,7 +184,7 @@ export default function CustomerRegistration({ onComplete }: Props) {
               چۆن بدۆزمەوە؟
             </button>
             <label className="text-neutral-500 text-xs text-right">
-              فەیسبووک / مێسینجەر <span className="text-neutral-400">(ئارەزوومەند)</span>
+              فەیسبووک / مێسینجەر <span className="text-red-400">*</span>
             </label>
           </div>
 
