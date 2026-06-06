@@ -25,10 +25,14 @@ export default function HeroSection({ profile }: { profile: BarberProfile }) {
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center text-center gap-7 max-w-sm mx-auto">
 
-        {/* Icon — chrome ring with red scissors */}
+        {/* Logo / icon */}
         <div className="relative">
-          <div className="w-24 h-24 rounded-full border-2 border-gray-300 bg-gradient-to-b from-gray-100 to-white flex items-center justify-center shadow-[0_0_0_4px_rgba(156,163,175,0.2),0_8px_32px_rgba(0,0,0,0.12),0_0_60px_rgba(220,38,38,0.15)]">
-            <Scissors className="w-10 h-10 text-red-600" />
+          <div className="w-32 h-32 rounded-full border-2 border-gray-300 bg-gradient-to-b from-gray-100 to-white flex items-center justify-center shadow-[0_0_0_6px_rgba(156,163,175,0.15),0_8px_40px_rgba(0,0,0,0.14),0_0_60px_rgba(220,38,38,0.15)] overflow-hidden">
+            {profile.logo_url ? (
+              <img src={profile.logo_url} alt={profile.name} className="w-full h-full object-cover" />
+            ) : (
+              <Scissors className="w-12 h-12 text-red-600" />
+            )}
           </div>
           <div className="absolute inset-0 rounded-full border-2 border-red-500/25 animate-ping" style={{ animationDuration: '2.5s' }} />
           <div className="absolute -inset-3 rounded-full border border-blue-600/10 animate-pulse" />
