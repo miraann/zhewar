@@ -27,7 +27,7 @@ export default function HeroSection({ profile }: { profile: BarberProfile }) {
 
         {/* Logo / icon */}
         <div className="relative">
-          <div className="w-32 h-32 rounded-full border-[3px] border-blue-500 bg-neutral-900 flex items-center justify-center shadow-[0_0_0_4px_rgba(37,99,235,0.25),0_0_30px_rgba(37,99,235,0.75),0_0_70px_rgba(37,99,235,0.40)] overflow-hidden">
+          <div className="w-32 h-32 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.18)] overflow-hidden">
             {profile.logo_url ? (
               <img src={profile.logo_url} alt={profile.name} className="w-full h-full object-cover" />
             ) : (
