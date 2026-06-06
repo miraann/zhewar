@@ -274,11 +274,41 @@ export default function CustomerRegistration({ onComplete }: Props) {
                 ))}
               </div>
 
+              {/* Redirect buttons */}
+              <div className="grid grid-cols-2 gap-3 mt-6">
+                <a
+                  href="https://www.facebook.com/me"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex flex-col items-center gap-2 py-4 rounded-2xl bg-[#1877F2] text-white touch-manipulation active:scale-[0.97] transition-transform"
+                >
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                  </svg>
+                  <span className="text-xs font-bold">فەیسبووک</span>
+                </a>
+                <a
+                  href="https://www.messenger.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex flex-col items-center gap-2 py-4 rounded-2xl text-white touch-manipulation active:scale-[0.97] transition-transform"
+                  style={{ background: 'linear-gradient(135deg,#00B2FF,#7B5FF2)' }}
+                >
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                    <path d="M12 0C5.373 0 0 4.975 0 11.111c0 3.497 1.745 6.616 4.472 8.652V24l4.086-2.242c1.09.301 2.246.464 3.442.464 6.627 0 12-4.975 12-11.111C24 4.975 18.627 0 12 0zm1.193 14.963l-3.056-3.259-5.963 3.259 6.559-6.963 3.13 3.259 5.889-3.259-6.559 6.963z" />
+                  </svg>
+                  <span className="text-xs font-bold">مێسینجەر</span>
+                </a>
+              </div>
+              <p className="text-neutral-400 text-[0.65rem] text-center mt-3" dir="rtl">
+                کرتە بکە بچۆ، لینکەکە کۆپی بکە، گەڕەوە پەیست بکە
+              </p>
+
               <button
                 onClick={() => setShowHelp(false)}
-                className="w-full mt-7 py-4 rounded-2xl bg-[#1877F2] text-white font-bold text-sm touch-manipulation active:scale-[0.98] transition-transform"
+                className="w-full mt-4 py-3.5 rounded-2xl border-2 border-neutral-200 text-neutral-600 font-semibold text-sm touch-manipulation active:scale-[0.98] transition-transform"
               >
-                تێگەیشتم
+                داخستن
               </button>
             </div>
           </div>
