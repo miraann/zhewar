@@ -1,5 +1,4 @@
 import dynamic from 'next/dynamic';
-import AboutSection from '@/components/home/AboutSection';
 import HeroSection from '@/components/home/HeroSection';
 import SocialSection from '@/components/home/SocialSection';
 
@@ -56,10 +55,7 @@ export default async function HomePage() {
         <section id="home">
           <HeroSection profile={profile} />
         </section>
-        <section id="about">
-          <AboutSection profile={profile} />
-        </section>
-        <section id="gallery">
+<section id="gallery">
           <GallerySection photos={gallery} />
         </section>
         <section id="links">
