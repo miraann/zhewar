@@ -1,11 +1,9 @@
-import dynamic from 'next/dynamic';
 import HeroSection from '@/components/home/HeroSection';
 import SocialSection from '@/components/home/SocialSection';
-
-// Client-only: never SSR these to prevent any server/client HTML mismatch
-const ScrollNav    = dynamic(() => import('@/components/home/ScrollNav'),    { ssr: false });
-const GallerySection = dynamic(() => import('@/components/home/GallerySection'), { ssr: false });
-const LinksSection = dynamic(() => import('@/components/home/LinksSection'), { ssr: false });
+import ScrollNav from '@/components/home/ScrollNav';
+import GallerySection from '@/components/home/GallerySection';
+import LinksSection from '@/components/home/LinksSection';
+import ClientOnly from '@/components/ClientOnly';
 import type { BarberProfile, GalleryPhoto, SocialLink } from '@/lib/types';
 import { createClient } from '@supabase/supabase-js';
 
@@ -50,16 +48,16 @@ export default async function HomePage() {
 
   return (
     <>
-      <ScrollNav profile={profile} />
+      <ClientOnly><ScrollNav profile={profile} /></ClientOnly>
       <main>
         <section id="home">
           <HeroSection profile={profile} />
         </section>
-<section id="gallery">
-          <GallerySection photos={gallery} />
+        <section id="gallery">
+          <ClientOnly><GallerySection photos={gallery} /></ClientOnly>
         </section>
         <section id="links">
-          <LinksSection links={socialLinks} />
+          <ClientOnly><LinksSection links={socialLinks} /></ClientOnly>
         </section>
         <section id="connect">
           <SocialSection profile={profile} />
