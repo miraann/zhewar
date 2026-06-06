@@ -17,6 +17,8 @@ export default function CustomerRegistration({ onComplete }: Props) {
   const [messengerUrl, setMessengerUrl] = useState('');
   const [showHelp, setShowHelp]         = useState(false);
   const [pasted, setPasted]             = useState(false);
+  const [fetchingFb, setFetchingFb]     = useState(false);
+  const [fbFetched, setFbFetched]       = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving]       = useState(false);
   const [error, setError]         = useState('');
@@ -34,6 +36,19 @@ export default function CustomerRegistration({ onComplete }: Props) {
     } catch {}
     document.cookie = 'fb_auth=; max-age=0; path=/';
   }, []);
+
+  async function fetchFromFb(url: string) {
+    if (!url.includes('facebook') && !url.includes('fb.com') && !url.includes('m.me')) return;
+    setFetchingFb(true);
+    try {
+      const res  = await fetch(`/api/fb-preview?url=${encodeURIComponent(url)}`);
+      const data = await res.json();
+      if (data.name  && !name)     setName(data.name);
+      if (data.photo && !photoUrl) setPhotoUrl(data.photo);
+      if (data.name || data.photo) setFbFetched(true);
+    } catch {}
+    setFetchingFb(false);
+  }
 
   async function handlePhoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -181,16 +196,22 @@ export default function CustomerRegistration({ onComplete }: Props) {
               <input
                 type="url"
                 value={messengerUrl}
-                onChange={(e) => { setMessengerUrl(e.target.value); setPasted(false); }}
+                onChange={(e) => { setMessengerUrl(e.target.value); setPasted(false); setFbFetched(false); }}
+                onBlur={(e) => fetchFromFb(e.target.value)}
                 placeholder="https://facebook.com/username"
                 dir="ltr"
                 className={[
                   'w-full bg-neutral-50 border-2 rounded-2xl pr-10 pl-4 py-4 text-neutral-900 text-sm placeholder-neutral-400 outline-none transition-colors',
-                  pasted ? 'border-green-400 bg-green-50' : 'border-neutral-200 focus:border-[#1877F2]',
+                  fbFetched ? 'border-green-400 bg-green-50' : pasted ? 'border-blue-300' : 'border-neutral-200 focus:border-[#1877F2]',
                 ].join(' ')}
               />
-              {pasted && (
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-green-600 text-[0.6rem] font-semibold">✓ کۆپیکرا</span>
+              {fetchingFb && (
+                <span className="absolute left-3 top-1/2 -translate-y-1/2">
+                  <Loader2 className="w-3.5 h-3.5 text-blue-400 animate-spin" />
+                </span>
+              )}
+              {fbFetched && !fetchingFb && (
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-green-600 text-[0.6rem] font-semibold">✓ تۆمارکرا</span>
               )}
             </div>
             <button
@@ -198,8 +219,10 @@ export default function CustomerRegistration({ onComplete }: Props) {
               onClick={async () => {
                 try {
                   const text = await navigator.clipboard.readText();
-                  setMessengerUrl(text.trim());
+                  const url  = text.trim();
+                  setMessengerUrl(url);
                   setPasted(true);
+                  await fetchFromFb(url);
                 } catch {
                   setShowHelp(true);
                 }
