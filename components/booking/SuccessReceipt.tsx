@@ -1,8 +1,8 @@
 'use client';
 
+import type { Appointment, Customer } from '@/lib/types';
+import { Calendar, CheckCircle2, Clock, MessageCircle, RotateCcw } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { CheckCircle2, Calendar, Clock, MessageCircle, RotateCcw } from 'lucide-react';
-import type { Customer, Appointment } from '@/lib/types';
 import { formatTimeFull } from './DateTimePicker';
 
 const MONTH_LONG = ['کانونی دووەم','شوبات','ئازار','نیسان','ئایار','حوزەیران',
@@ -55,11 +55,13 @@ export default function SuccessReceipt({ customer, date, time, appointment, onBo
           </div>
           <div className="absolute -inset-1.5 rounded-full border-2 border-emerald-300/30 animate-ping" />
         </div>
-        <div className="text-center space-y-1.5">
+        <div className="text-center space-y-2">
           <h2 className="text-2xl font-bold text-neutral-900">
-            {firstName ? `بەزووی دیاری دەبین، ${firstName}!` : 'کاتی سەردانیکردنەکەت دڵنیاکراوە!'}
+            داواکارییەکەت بەسەرکەوتووی تۆمار کرا
           </h2>
-          <p className="text-neutral-500 text-sm">کاتی سەردانیکردنەکەت بەسەرکەوتویی تۆمارکرا.</p>
+          <p className="text-amber-600 text-sm font-medium px-4 leading-relaxed">
+            تکایە چاوەڕوان بە تا بەربەر داواکارییەکەت پەسەند بکات
+          </p>
         </div>
       </div>
 
@@ -90,7 +92,7 @@ export default function SuccessReceipt({ customer, date, time, appointment, onBo
 
           <div className="mx-4 my-4 rounded-2xl bg-amber-50 border border-amber-200 px-4 py-3">
             <p className="text-amber-700 text-xs text-center leading-relaxed">
-              دراو لە بەربەرخانە وەردەگیرێت.<br />تکایە ٥ خولەک زووتر بگەیتە.
+              تکایە ٥ خولەک زووتر ئامادەبە
             </p>
           </div>
         </div>

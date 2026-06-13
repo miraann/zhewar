@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState } from 'react';
 import { Clock, BanIcon } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import type { WorkingSchedule } from '@/lib/types';
+import type { WorkingSchedule, Customer } from '@/lib/types';
 
 const DAY_SHORT   = ['یەکشەممە', 'دووشەممە', 'سێشەممە', 'چوارشەممە', 'پێنجشەممە', 'هەینی', 'شەممە'];
 const MONTH_SHORT = ['ک٢', 'شوب', 'ئاز', 'نیس', 'ئای', 'حوز', 'تەم', 'ئاب', 'ئەی', 'تش١', 'تش٢', 'ک١'];
@@ -11,11 +11,11 @@ const MONTH_SHORT = ['ک٢', 'شوب', 'ئاز', 'نیس', 'ئای', 'حوز', '
 export function formatTimeFull(slot: string): string {
   const [h, m] = slot.split(':').map(Number);
   let period: string;
-  if (h < 12)       period = 'بەیانی';   // 12 AM – 11:59 AM
-  else if (h === 12) period = 'نیوەڕۆ';  // 12:00 PM
-  else if (h <= 16) period = 'دوا نیوەڕۆ'; // 1 PM – 4 PM
-  else if (h <= 18) period = 'ئێوارە';   // 5 PM – 6 PM
-  else              period = 'شەو';      // 7 PM – 11 PM
+  if (h < 12)        period = 'بەیانی';
+  else if (h === 12) period = 'نیوەڕۆ';
+  else if (h <= 16)  period = 'دوا نیوەڕۆ';
+  else if (h <= 18)  period = 'ئێوارە';
+  else               period = 'شەو';
   const display = h > 12 ? h - 12 : h === 0 ? 12 : h;
   return `${display}${m ? `:${String(m).padStart(2, '0')}` : ''} ${period}`;
 }
@@ -44,6 +44,7 @@ interface Props {
   selectedTime: string | null;
   workingSchedule: WorkingSchedule[];
   blockedDates: string[];
+  customer: Customer | null;
   onDateSelect: (date: Date) => void;
   onTimeSelect: (time: string | null) => void;
   onNext: () => void;
@@ -52,11 +53,13 @@ interface Props {
 export default function DateTimePicker({
   selectedDate, selectedTime,
   workingSchedule, blockedDates,
+  customer,
   onDateSelect, onTimeSelect, onNext,
 }: Props) {
   const dates = buildDates();
-  const [bookedSlots, setBookedSlots]   = useState<string[]>([]);
-  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [pendingSlots,   setPendingSlots]   = useState<Set<string>>(new Set());
+  const [confirmedSlots, setConfirmedSlots] = useState<Set<string>>(new Set());
+  const [loadingSlots,   setLoadingSlots]   = useState(false);
 
   useEffect(() => {
     if (!selectedDate) return;
@@ -66,15 +69,22 @@ export default function DateTimePicker({
       const start = new Date(selectedDate!); start.setHours(0,0,0,0);
       const end   = new Date(selectedDate!); end.setHours(23,59,59,999);
       const { data } = await supabase
-        .from('appointments').select('appointment_time')
+        .from('appointments').select('appointment_time, status')
         .gte('appointment_time', start.toISOString())
         .lte('appointment_time', end.toISOString())
         .neq('status', 'cancelled');
-      if (!dead && data)
-        setBookedSlots(data.map((r) => {
+      if (!dead && data) {
+        const p = new Set<string>();
+        const c = new Set<string>();
+        data.forEach((r) => {
           const d = new Date(r.appointment_time);
-          return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-        }));
+          const key = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+          if (r.status === 'confirmed') c.add(key);
+          else p.add(key);
+        });
+        setPendingSlots(p);
+        setConfirmedSlots(c);
+      }
       if (!dead) setLoadingSlots(false);
     }
     fetchSlots();
@@ -94,18 +104,44 @@ export default function DateTimePicker({
   const canProceed = Boolean(selectedDate && selectedTime);
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-1px)] bg-white">
+    <div className="flex flex-col min-h-[calc(100vh-2px)] bg-neutral-950 relative overflow-hidden">
+      {/* Ambient glow */}
+      <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-80 h-64 bg-amber-500/8 rounded-full blur-3xl pointer-events-none" />
+
       {/* Header */}
-      <div className="px-5 pt-10 pb-5">
-        <p className="text-amber-500 text-xs tracking-[0.35em] mb-1 text-right">هەنگاوی ١ لە ٢</p>
-        <h2 className="text-[1.75rem] font-bold text-neutral-900 leading-tight text-right">
-          <span className="text-amber-500">رووژ</span> و کات هەڵبژێرە
+      <div className="px-5 pt-10 pb-5 relative z-10">
+        <p className="text-amber-500/60 text-xs tracking-[0.35em] mb-1 text-right">هەنگاوی ١ لە ٢</p>
+        <h2 className="text-[1.75rem] font-bold text-white leading-tight text-right">
+          ڕۆژ و کات هەڵبژێرە
         </h2>
+
+        {/* Customer chip */}
+        {customer && (
+          <div className="flex items-center justify-between mt-5 p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+            <div className="flex items-center gap-2.5">
+              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-amber-500/40 shadow-sm flex-shrink-0 bg-amber-500/10">
+                {customer.photo_url
+                  ? <img src={customer.photo_url} alt={customer.full_name} className="w-full h-full object-cover" />
+                  : <div className="w-full h-full flex items-center justify-center text-amber-400 font-bold text-base">
+                      {customer.full_name.charAt(0)}
+                    </div>
+                }
+              </div>
+              <div>
+                <p className="text-white font-bold text-sm leading-tight">{customer.full_name}</p>
+                <p className="text-white/35 text-[0.65rem] mt-0.5">{customer.phone_number}</p>
+              </div>
+            </div>
+            <span className="text-[0.6rem] font-semibold tracking-wider px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-400">
+              کاتی سەردانیکردن
+            </span>
+          </div>
+        )}
       </div>
 
       {/* 7-day strip */}
-      <section className="px-4 mb-5">
-        <p className="text-neutral-400 text-[0.6rem] tracking-widest mb-2.5 text-right">رووژ هەڵبژێرە</p>
+      <section className="px-4 mb-5 relative z-10">
+        <p className="text-white/25 text-[0.6rem] tracking-widest mb-2.5 text-right">ڕۆژ هەڵبژێرە</p>
         <div dir="ltr" className="grid grid-cols-7 gap-1.5">
           {dates.map((date) => {
             const isSelected = selectedDate ? sameDay(date, selectedDate) : false;
@@ -117,23 +153,23 @@ export default function DateTimePicker({
                 onClick={() => { if (!disabled) onDateSelect(date); }}
                 disabled={disabled}
                 className={[
-                  'flex flex-col items-center justify-center gap-[2px] py-3 rounded-2xl border-2 transition-all duration-150 touch-manipulation select-none',
+                  'flex flex-col items-center justify-center gap-[2px] py-3 rounded-2xl border transition-all duration-150 touch-manipulation select-none',
                   disabled
-                    ? 'border-neutral-100 bg-neutral-50 opacity-35 cursor-not-allowed'
+                    ? 'border-white/5 bg-white/3 opacity-25 cursor-not-allowed'
                     : isSelected
-                      ? 'bg-amber-500 border-amber-500 shadow-[0_4px_18px_rgba(245,158,11,0.40)]'
+                      ? 'bg-amber-500 border-amber-400 shadow-[0_4px_20px_rgba(245,158,11,0.35)]'
                       : isToday
-                        ? 'bg-amber-50 border-amber-300 active:scale-[0.95]'
-                        : 'bg-white border-neutral-200 shadow-sm active:border-amber-400 active:scale-[0.95]',
+                        ? 'bg-amber-500/10 border-amber-500/30 active:scale-[0.95]'
+                        : 'bg-white/5 border-white/10 active:border-amber-500/40 active:scale-[0.95]',
                 ].join(' ')}
               >
                 <span className={`text-[0.5rem] font-semibold leading-tight text-center w-full px-0.5 break-words ${
-                  isSelected ? 'text-white/80' : isToday ? 'text-amber-600' : disabled ? 'text-neutral-300' : 'text-neutral-400'
+                  isSelected ? 'text-neutral-900/70' : isToday ? 'text-amber-400' : disabled ? 'text-white/20' : 'text-white/40'
                 }`}>
                   {DAY_SHORT[date.getDay()]}
                 </span>
                 <span className={`text-[1.05rem] font-bold leading-none ${
-                  isSelected ? 'text-white' : isToday ? 'text-amber-700' : disabled ? 'text-neutral-300' : 'text-neutral-800'
+                  isSelected ? 'text-neutral-900' : isToday ? 'text-amber-400' : disabled ? 'text-white/20' : 'text-white/80'
                 }`}>
                   {date.getDate()}
                 </span>
@@ -141,9 +177,9 @@ export default function DateTimePicker({
                   <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-0.5" />
                 )}
                 {isSelected && (
-                  <div className="w-1.5 h-1.5 rounded-full bg-white/60 mt-0.5" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-neutral-900/40 mt-0.5" />
                 )}
-                {isBlocked(date) && <BanIcon className="w-2.5 h-2.5 text-red-400 mt-0.5" />}
+                {isBlocked(date) && <BanIcon className="w-2.5 h-2.5 text-red-400/60 mt-0.5" />}
               </button>
             );
           })}
@@ -151,26 +187,44 @@ export default function DateTimePicker({
       </section>
 
       {/* Time grid */}
-      <section className="flex-1 px-4 pb-36">
-        <p className="text-neutral-400 text-[0.6rem] tracking-widest mb-3 text-right">
-          {!selectedDate
-            ? 'پێشتر رووژێک هەڵبژێرە'
-            : !daySchedule?.is_active
-              ? 'ئەم رووژە داخراوە'
-              : 'کاتە بەردەستەکان'}
-        </p>
+      <section className="flex-1 px-4 pb-36 relative z-10">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3 text-[0.6rem] font-medium">
+            <span className="flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />
+              <span className="text-white/35">چاوەڕوان</span>
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-red-400/70 inline-block" />
+              <span className="text-white/35">پەسەندکراوە</span>
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-emerald-400/70 inline-block" />
+              <span className="text-white/35">بەردەستە</span>
+            </span>
+          </div>
+          <p className="text-white/25 text-[0.6rem] tracking-widest text-right">
+            {!selectedDate
+              ? 'پێشتر ڕۆژێک هەڵبژێرە'
+              : !daySchedule?.is_active
+                ? 'ئەم ڕۆژە داخراوە'
+                : 'کاتە بەردەستەکان'}
+          </p>
+        </div>
 
         {selectedDate && daySchedule?.is_active && (
           loadingSlots ? (
             <div className="grid grid-cols-2 gap-3">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-[58px] rounded-2xl bg-neutral-100 animate-pulse" />
+                <div key={i} className="h-[58px] rounded-2xl bg-white/5 animate-pulse" />
               ))}
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3">
               {timeSlots.map((slot) => {
-                const taken  = bookedSlots.includes(slot);
+                const isPending   = pendingSlots.has(slot);
+                const isConfirmed = confirmedSlots.has(slot);
+                const taken  = isPending || isConfirmed;
                 const chosen = selectedTime === slot;
                 return (
                   <button
@@ -178,15 +232,27 @@ export default function DateTimePicker({
                     disabled={taken}
                     onClick={() => onTimeSelect(chosen ? null : slot)}
                     className={[
-                      'h-[58px] rounded-2xl border-2 text-sm font-semibold transition-all duration-150 touch-manipulation select-none',
-                      taken
-                        ? 'border-neutral-100 bg-neutral-50 text-neutral-300 line-through cursor-not-allowed'
-                        : chosen
-                          ? 'border-amber-500 bg-amber-500 text-white shadow-[0_4px_18px_rgba(245,158,11,0.35)] active:scale-[0.97]'
-                          : 'border-neutral-200 bg-white text-neutral-800 shadow-sm active:border-amber-400 active:bg-amber-50 active:scale-[0.97]',
+                      'h-[58px] rounded-2xl border text-sm font-semibold transition-all duration-150 touch-manipulation select-none relative overflow-hidden',
+                      isConfirmed
+                        ? 'border-red-500/20 bg-red-500/8 text-red-400/60 cursor-not-allowed'
+                        : isPending
+                          ? 'border-amber-500/25 bg-amber-500/8 text-amber-400/70 cursor-not-allowed'
+                          : chosen
+                            ? 'border-amber-400 bg-amber-500 text-neutral-950 shadow-[0_4px_20px_rgba(245,158,11,0.3)] active:scale-[0.97]'
+                            : 'border-emerald-500/20 bg-emerald-500/8 text-emerald-400 active:border-emerald-400/40 active:scale-[0.97]',
                     ].join(' ')}
                   >
                     {formatTimeFull(slot)}
+                    {isPending && (
+                      <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-0.5">
+                        <span className="w-1 h-1 rounded-full bg-amber-400/60" />
+                        <span className="w-1 h-1 rounded-full bg-amber-400/60" />
+                        <span className="w-1 h-1 rounded-full bg-amber-400/60" />
+                      </span>
+                    )}
+                    {isConfirmed && (
+                      <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full bg-red-400/40" />
+                    )}
                   </button>
                 );
               })}
@@ -196,31 +262,32 @@ export default function DateTimePicker({
 
         {(!selectedDate || !daySchedule?.is_active) && (
           <div className="flex flex-col items-center justify-center py-16 gap-4">
-            <div className="w-16 h-16 rounded-full bg-amber-50 border-2 border-amber-200 flex items-center justify-center shadow-sm">
-              <Clock className="w-7 h-7 text-amber-400" />
+            <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+              <Clock className="w-7 h-7 text-amber-400/60" />
             </div>
-            <p className="text-neutral-500 text-sm text-center leading-relaxed px-6">
+            <p className="text-white/35 text-sm text-center leading-relaxed px-6">
               {!selectedDate
-                ? 'رووژێک هەڵبژێرە بۆ بینینی کاتە بەردەستەکان'
-                : 'بەربەرخانەکە ئەم رووژە داخراوە'}
+                ? 'ڕۆژێک هەڵبژێرە بۆ بینینی کاتە بەردەستەکان'
+                : 'بەربەرخانەکە ئەم ڕۆژە داخراوە'}
             </p>
           </div>
         )}
       </section>
 
       {/* Sticky CTA */}
-      <div className="fixed bottom-0 inset-x-0 px-4 pt-10 pb-6 bg-gradient-to-t from-white via-white/95 to-transparent pointer-events-none">
+      <div className="fixed bottom-0 inset-x-0 px-4 pt-14 pb-6 bg-gradient-to-t from-neutral-950 via-neutral-950/95 to-transparent pointer-events-none z-20">
         <button
           disabled={!canProceed}
           onClick={onNext}
           className={[
-            'w-full py-[18px] rounded-2xl font-bold text-base tracking-wide transition-all duration-200 pointer-events-auto touch-manipulation select-none',
+            'relative w-full py-[18px] rounded-2xl font-bold text-base tracking-wide transition-all duration-200 pointer-events-auto touch-manipulation select-none overflow-hidden',
             canProceed
-              ? 'bg-amber-500 text-white shadow-[0_0_32px_rgba(245,158,11,0.4),0_4px_16px_rgba(245,158,11,0.25)] active:scale-[0.98]'
-              : 'bg-neutral-100 text-neutral-400 border border-neutral-200 cursor-not-allowed',
+              ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-neutral-950 shadow-[0_0_40px_rgba(245,158,11,0.3),0_4px_20px_rgba(245,158,11,0.2)] active:scale-[0.98]'
+              : 'bg-white/5 border border-white/10 text-white/25 cursor-not-allowed',
           ].join(' ')}
         >
-          {canProceed ? '← پشکنینی کاتی سەردانیکردن' : 'رووژ و کات هەڵبژێرە'}
+          {canProceed && <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />}
+          <span className="relative">{canProceed ? '← تۆمار کردن' : 'ڕۆژ و کات هەڵبژێرە'}</span>
         </button>
       </div>
     </div>

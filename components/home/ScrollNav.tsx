@@ -2,15 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Scissors, CalendarPlus } from 'lucide-react';
+import { CalendarPlus } from 'lucide-react';
 import type { BarberProfile } from '@/lib/types';
 
 const SECTIONS = [
-  { id: 'home',    label: 'سەرەتا'   },
-  { id: 'about',   label: 'دەربارە'  },
-  { id: 'gallery', label: 'گالری'    },
+  { id: 'home',    label: 'سەرەتا'    },
+  { id: 'gallery', label: 'گالری'     },
   { id: 'links',   label: 'بەستەرەکان' },
-  { id: 'connect', label: 'پەیوەندی' },
+  { id: 'connect', label: 'پەیوەندی'  },
 ];
 
 export default function ScrollNav({ profile }: { profile: BarberProfile }) {
@@ -41,23 +40,23 @@ export default function ScrollNav({ profile }: { profile: BarberProfile }) {
       className={[
         'fixed top-0 inset-x-0 z-50 transition-all duration-300',
         scrolled
-          ? 'bg-white/95 backdrop-blur-md border-b border-gray-200/80 shadow-sm'
+          ? 'bg-neutral-950/90 backdrop-blur-md border-b border-white/8 shadow-[0_1px_20px_rgba(0,0,0,0.4)]'
           : 'bg-transparent',
       ].join(' ')}
     >
       <div className="flex items-center justify-between px-5 h-14 max-w-lg mx-auto">
 
-        {/* Logo — chrome circle */}
+        {/* Logo */}
         <button onClick={() => scrollTo('home')} className="flex items-center gap-2.5 touch-manipulation">
-          <div className="w-8 h-8 rounded-full border border-gray-300 bg-gradient-to-b from-gray-100 to-white flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.10)]">
-            <Scissors className="w-3.5 h-3.5 text-red-600" />
+          <div className="w-8 h-8 rounded-full border border-amber-500/30 bg-amber-500/8 flex items-center justify-center">
+            <span className="text-amber-400 text-sm">✂</span>
           </div>
-          <span className="font-display text-base font-bold text-neutral-900 tracking-wide">
+          <span className="font-display text-base font-bold text-white tracking-wide">
             {profile.name}
           </span>
         </button>
 
-        {/* Dots — red active */}
+        {/* Dots */}
         <nav className="hidden sm:flex items-center gap-1">
           {SECTIONS.map(({ id, label }) => (
             <button
@@ -69,7 +68,9 @@ export default function ScrollNav({ profile }: { profile: BarberProfile }) {
               <span
                 className={[
                   'block rounded-full transition-all duration-300',
-                  active === id ? 'w-4 h-1.5 bg-red-600 shadow-[0_0_6px_rgba(220,38,38,0.7)]' : 'w-1.5 h-1.5 bg-neutral-400/40',
+                  active === id
+                    ? 'w-4 h-1.5 bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]'
+                    : 'w-1.5 h-1.5 bg-white/20',
                 ].join(' ')}
               />
             </button>
@@ -79,7 +80,7 @@ export default function ScrollNav({ profile }: { profile: BarberProfile }) {
         {/* Book CTA */}
         <Link
           href="/book"
-          className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-red-600/50 bg-red-50 text-red-600 text-xs font-semibold tracking-wide touch-manipulation active:bg-red-100 transition-colors"
+          className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-amber-500/30 bg-amber-500/8 text-amber-400 text-xs font-semibold tracking-wide touch-manipulation active:bg-amber-500/15 transition-colors"
         >
           <CalendarPlus className="w-3.5 h-3.5" />
           ناو تۆمار کردن

@@ -37,22 +37,20 @@ export default function GallerySection({ photos }: { photos: GalleryPhoto[] }) {
   if (photos.length === 0) return null;
 
   return (
-    <div className="relative py-20 overflow-hidden text-neutral-900">
-      <div className="absolute inset-0 bg-white" />
-      {/* Barber stripe divider */}
-      <div className="absolute top-0 inset-x-0 h-1" style={{ background: 'repeating-linear-gradient(-45deg,#DC2626 0px,#DC2626 4px,#FFFFFF 4px,#FFFFFF 8px,#2563EB 8px,#2563EB 12px,#FFFFFF 12px,#FFFFFF 16px)' }} />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_50%,rgba(220,38,38,0.05)_0%,transparent_70%)] pointer-events-none" />
+    <div className="relative py-20 overflow-hidden bg-neutral-950">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_40%_at_50%_50%,rgba(245,158,11,0.06),transparent_70%)] pointer-events-none" />
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-amber-500/15 to-transparent" />
 
       {/* Header */}
       <div className="relative z-10 px-6 mb-10 max-w-4xl mx-auto w-full text-center md:text-right">
         <div className="flex items-center gap-3 mb-3 justify-center md:justify-end">
-          <span className="text-red-600 text-[0.6rem] tracking-[0.4em]">کارەکانمان</span>
-          <div className="w-8 h-px bg-red-600/40" />
+          <span className="text-amber-500/60 text-[0.6rem] tracking-[0.4em]">کارەکانمان</span>
+          <div className="w-8 h-px bg-amber-500/30" />
         </div>
-        <h2 className="font-display text-5xl font-bold text-neutral-900 leading-none">
+        <h2 className="font-display text-5xl font-bold text-white leading-none">
           ئەمارەکانمان
         </h2>
-        <p className="text-neutral-500 text-sm mt-2 md:hidden">بکێشە بۆ گەڕان ←</p>
+        <p className="text-white/30 text-sm mt-2 md:hidden">بکێشە بۆ گەڕان ←</p>
       </div>
 
       {/* Desktop grid */}
@@ -76,7 +74,7 @@ export default function GallerySection({ photos }: { photos: GalleryPhoto[] }) {
             {photo.caption && (
               <div className="absolute bottom-4 right-4 left-4 text-right">
                 <p className="text-white text-sm font-medium">{photo.caption}</p>
-                <div className="w-8 h-px bg-red-500 mt-1.5 mr-auto" />
+                <div className="w-8 h-px bg-amber-400 mt-1.5 mr-auto" />
               </div>
             )}
           </div>
@@ -110,12 +108,12 @@ export default function GallerySection({ photos }: { photos: GalleryPhoto[] }) {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
               {i === activeIdx && (
-                <div className="absolute inset-0 rounded-3xl border-2 border-red-500/50 pointer-events-none" />
+                <div className="absolute inset-0 rounded-3xl border border-amber-400/40 pointer-events-none" />
               )}
               {photo.caption && (
                 <div className="absolute bottom-4 right-4 left-4 text-right">
                   <p className="text-white text-sm font-medium">{photo.caption}</p>
-                  <div className="w-8 h-px bg-red-500 mt-1.5 mr-auto" />
+                  <div className="w-8 h-px bg-amber-400 mt-1.5 mr-auto" />
                 </div>
               )}
               <div className="absolute top-4 left-4 bg-black/40 backdrop-blur-sm border border-white/10 rounded-full px-2.5 py-1">
@@ -141,7 +139,7 @@ export default function GallerySection({ photos }: { photos: GalleryPhoto[] }) {
               <span
                 className={[
                   'block rounded-full transition-all duration-300',
-                  i === activeIdx ? 'w-6 h-1.5 bg-red-600 shadow-[0_0_6px_rgba(220,38,38,0.7)]' : 'w-1.5 h-1.5 bg-neutral-300',
+                  i === activeIdx ? 'w-6 h-1.5 bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]' : 'w-1.5 h-1.5 bg-white/20',
                 ].join(' ')}
               />
             </button>

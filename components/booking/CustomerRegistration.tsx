@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Camera, User, Phone, Loader2, Scissors, HelpCircle } from 'lucide-react';
+import { Camera, User, Phone, Loader2, HelpCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import type { Customer } from '@/lib/types';
 
@@ -10,21 +10,20 @@ interface Props {
 }
 
 export default function CustomerRegistration({ onComplete }: Props) {
-  const [name, setName]           = useState('');
-  const [phone, setPhone]         = useState('');
-  const [photoUrl, setPhotoUrl]   = useState('');
-  const [fbId, setFbId]           = useState('');
-  const [messengerUrl, setMessengerUrl] = useState('');
-  const [showHelp, setShowHelp]         = useState(false);
-  const [pasted, setPasted]             = useState(false);
-  const [fetchingFb, setFetchingFb]     = useState(false);
-  const [fbFetched, setFbFetched]       = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [saving, setSaving]       = useState(false);
-  const [error, setError]         = useState('');
+  const [name, setName]                     = useState('');
+  const [phone, setPhone]                   = useState('');
+  const [photoUrl, setPhotoUrl]             = useState('');
+  const [fbId, setFbId]                     = useState('');
+  const [messengerUrl, setMessengerUrl]     = useState('');
+  const [showHelp, setShowHelp]             = useState(false);
+  const [pasted, setPasted]                 = useState(false);
+  const [fetchingFb, setFetchingFb]         = useState(false);
+  const [fbFetched, setFbFetched]           = useState(false);
+  const [uploading, setUploading]           = useState(false);
+  const [saving, setSaving]                 = useState(false);
+  const [error, setError]                   = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // Read Facebook profile from OAuth redirect cookie
   useEffect(() => {
     const match = document.cookie.split('; ').find((r) => r.startsWith('fb_auth='));
     if (!match) return;
@@ -66,8 +65,8 @@ export default function CustomerRegistration({ onComplete }: Props) {
   }
 
   async function handleSubmit() {
-    if (!name.trim())         { setError('تکایە ناوی خۆت بنووسە');                    return; }
-    if (!phone.trim())        { setError('تکایە ژمارەی مۆبایلت بنووسە');              return; }
+    if (!name.trim())         { setError('تکایە ناوی خۆت بنووسە');                     return; }
+    if (!phone.trim())        { setError('تکایە ژمارەی مۆبایلت بنووسە');               return; }
     if (!messengerUrl.trim()) { setError('تکایە لینکی فەیسبووک یان مێسینجەرت بنووسە'); return; }
     setError('');
     setSaving(true);
@@ -92,34 +91,36 @@ export default function CustomerRegistration({ onComplete }: Props) {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-white px-5 pt-10 pb-10">
+    <div className="flex flex-col min-h-screen bg-neutral-950 px-5 pt-10 pb-10 relative overflow-hidden">
+      {/* Ambient glows */}
+      <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[480px] h-64 bg-amber-500/8 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-64 h-64 bg-amber-600/5 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header */}
-      <div className="text-right mb-7">
+      <div className="text-right mb-8 relative z-10">
         <div className="flex items-center justify-end mb-5">
-          <div className="w-9 h-9 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center shadow-sm">
-            <Scissors className="w-4 h-4 text-amber-500" />
+          <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+            <span className="text-amber-400 text-lg">✂</span>
           </div>
         </div>
-        <h1 className="text-[1.75rem] font-bold text-neutral-900 leading-tight">بەخێربێیت</h1>
-        <p className="text-neutral-500 text-sm mt-1.5 leading-relaxed">
+        <h1 className="text-[1.85rem] font-bold text-white leading-tight">بەخێربێیت</h1>
+        <p className="text-white/40 text-sm mt-1.5 leading-relaxed">
           زانیارییەکانت داخڵ بکە بۆ تۆمارکردنی کاتی سەردانیکردن
         </p>
       </div>
 
-
       {/* Photo upload */}
-      <div className="flex flex-col items-center mb-6">
+      <div className="flex flex-col items-center mb-8 relative z-10">
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
         <button
           onClick={() => fileRef.current?.click()}
           disabled={uploading}
-          className="relative w-24 h-24 rounded-full border-2 border-dashed border-amber-300 bg-amber-50 flex items-center justify-center overflow-hidden touch-manipulation active:scale-[0.96] transition-transform shadow-sm"
+          className="relative w-24 h-24 rounded-full border-2 border-dashed border-amber-500/30 bg-amber-500/5 flex items-center justify-center overflow-hidden touch-manipulation active:scale-[0.96] transition-transform"
         >
           {photoUrl ? (
             <>
               <img src={photoUrl} alt="" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-black/25 flex items-end justify-center pb-2">
+              <div className="absolute inset-0 bg-black/40 flex items-end justify-center pb-2">
                 <Camera className="w-5 h-5 text-white drop-shadow" />
               </div>
             </>
@@ -127,73 +128,70 @@ export default function CustomerRegistration({ onComplete }: Props) {
             <Loader2 className="w-7 h-7 text-amber-400 animate-spin" />
           ) : (
             <div className="flex flex-col items-center gap-1.5">
-              <Camera className="w-6 h-6 text-amber-400" />
-              <span className="text-amber-500 text-[0.6rem] font-semibold">وێنەی خۆت</span>
+              <Camera className="w-6 h-6 text-amber-400/50" />
+              <span className="text-amber-400/50 text-[0.6rem] font-semibold">وێنەی خۆت</span>
             </div>
           )}
         </button>
-        <p className="text-neutral-400 text-xs mt-2">ئارەزوومەند</p>
+        <p className="text-white/25 text-xs mt-2">ئارەزوومەند</p>
       </div>
 
-      {/* Form inputs */}
-      <div className="space-y-4">
-        <div>
-          <label className="block text-neutral-500 text-xs mb-1.5 text-right">
-            ناوی تەواو <span className="text-red-400">*</span>
-          </label>
-          <div className="relative">
-            <User className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-              placeholder="ناوی تەواوی خۆت بنووسە"
-              className="w-full bg-neutral-50 border-2 border-neutral-200 rounded-2xl pr-10 pl-4 py-4 text-neutral-900 text-sm placeholder-neutral-400 outline-none focus:border-amber-400 transition-colors"
-            />
-          </div>
-        </div>
+      {/* Form */}
+      <div className="space-y-4 relative z-10">
 
-        <div>
-          <label className="block text-neutral-500 text-xs mb-1.5 text-right">
-            ژمارەی مۆبایل <span className="text-red-400">*</span>
-          </label>
-          <div className="relative">
-            <Phone className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-              placeholder="+964 7XX XXX XXXX"
-              dir="ltr"
-              className="w-full bg-neutral-50 border-2 border-neutral-200 rounded-2xl pr-10 pl-4 py-4 text-neutral-900 text-sm placeholder-neutral-400 outline-none focus:border-amber-400 transition-colors text-right"
-            />
-          </div>
-        </div>
-
-        {/* Facebook / Messenger URL */}
+        {/* Name */}
         <div className="relative">
-          <div className="flex items-center justify-between mb-1.5">
+          <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+            <User className="w-4 h-4 text-amber-500/40" />
+          </div>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+            placeholder="ناوی تەواو"
+            className="w-full bg-white/5 border border-white/10 rounded-2xl pr-12 pl-4 py-4 text-white text-sm placeholder-white/25 outline-none focus:border-amber-500/50 focus:bg-white/8 transition-all"
+          />
+        </div>
+
+        {/* Phone */}
+        <div className="relative">
+          <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+            <Phone className="w-4 h-4 text-amber-500/40" />
+          </div>
+          <input
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+            placeholder="+964 7XX XXX XXXX"
+            dir="ltr"
+            className="w-full bg-white/5 border border-white/10 rounded-2xl pr-12 pl-4 py-4 text-white text-sm placeholder-white/25 outline-none focus:border-amber-500/50 focus:bg-white/8 transition-all text-right"
+          />
+        </div>
+
+        {/* Facebook / Messenger */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
             <button
               type="button"
               onClick={() => setShowHelp(true)}
-              className="flex items-center gap-1 text-[#1877F2] text-xs font-medium"
+              className="flex items-center gap-1 text-[#4a9eff] text-xs font-medium"
             >
               <HelpCircle className="w-3.5 h-3.5" />
               چۆن بدۆزمەوە؟
             </button>
-            <label className="text-neutral-500 text-xs text-right">
+            <span className="text-white/35 text-xs">
               فەیسبووک / مێسینجەر <span className="text-red-400">*</span>
-            </label>
+            </span>
           </div>
-
-          {/* Input row */}
           <div className="flex gap-2 items-stretch">
             <div className="relative flex-1">
-              <svg viewBox="0 0 24 24" fill="currentColor" className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1877F2] pointer-events-none">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-              </svg>
+              <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-[#1877F2]/60">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                </svg>
+              </div>
               <input
                 type="url"
                 value={messengerUrl}
@@ -202,8 +200,10 @@ export default function CustomerRegistration({ onComplete }: Props) {
                 placeholder="https://facebook.com/username"
                 dir="ltr"
                 className={[
-                  'w-full bg-neutral-50 border-2 rounded-2xl pr-10 pl-4 py-4 text-neutral-900 text-sm placeholder-neutral-400 outline-none transition-colors',
-                  fbFetched ? 'border-green-400 bg-green-50' : pasted ? 'border-blue-300' : 'border-neutral-200 focus:border-[#1877F2]',
+                  'w-full rounded-2xl pr-12 pl-4 py-4 text-sm outline-none transition-all',
+                  fbFetched
+                    ? 'bg-emerald-500/10 border border-emerald-500/30 text-white placeholder-white/25'
+                    : 'bg-white/5 border border-white/10 text-white placeholder-white/25 focus:border-[#1877F2]/50',
                 ].join(' ')}
               />
               {fetchingFb && (
@@ -212,7 +212,7 @@ export default function CustomerRegistration({ onComplete }: Props) {
                 </span>
               )}
               {fbFetched && !fetchingFb && (
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-green-600 text-[0.6rem] font-semibold">✓ تۆمارکرا</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-400 text-[0.65rem] font-bold">✓</span>
               )}
             </div>
             <button
@@ -228,33 +228,28 @@ export default function CustomerRegistration({ onComplete }: Props) {
                   setShowHelp(true);
                 }
               }}
-              className="px-5 rounded-2xl bg-[#1877F2] text-white text-sm font-bold touch-manipulation active:scale-[0.97] transition-transform shadow-[0_4px_14px_rgba(24,119,242,0.35)] whitespace-nowrap"
+              className="px-5 rounded-2xl bg-[#1877F2] text-white text-sm font-bold touch-manipulation active:scale-[0.97] transition-transform shadow-[0_4px_14px_rgba(24,119,242,0.25)] whitespace-nowrap"
             >
               پەیست
             </button>
           </div>
         </div>
 
-        {/* Help modal */}
+        {/* Help sheet */}
         {showHelp && (
-          <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowHelp(false)}>
+          <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm" onClick={() => setShowHelp(false)}>
             <div
-              className="w-full max-w-sm bg-white rounded-t-3xl px-6 pt-6 pb-10 shadow-2xl"
+              className="w-full max-w-sm bg-neutral-900 border border-white/10 rounded-t-3xl px-6 pt-5 pb-10 shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Handle */}
-              <div className="w-10 h-1 bg-neutral-200 rounded-full mx-auto mb-5" />
-
-              {/* Icon */}
-              <div className="w-14 h-14 rounded-2xl bg-[#1877F2]/10 flex items-center justify-center mx-auto mb-4">
+              <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-5" />
+              <div className="w-14 h-14 rounded-2xl bg-[#1877F2]/10 border border-[#1877F2]/20 flex items-center justify-center mx-auto mb-4">
                 <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-[#1877F2]">
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                 </svg>
               </div>
-
-              <h3 className="text-neutral-900 font-bold text-lg text-center mb-1">چۆن لینکەکە بدۆزیتەوە؟</h3>
-              <p className="text-neutral-500 text-xs text-center mb-6">پەیوەندیت پێوە بکەین بە ئاسانی</p>
-
+              <h3 className="text-white font-bold text-lg text-center mb-1">چۆن لینکەکە بدۆزیتەوە؟</h3>
+              <p className="text-white/40 text-xs text-center mb-6">پەیوەندیت پێوە بکەین بە ئاسانی</p>
               <div className="space-y-3 text-right" dir="rtl">
                 {[
                   { n: '١', text: 'ئەپی فەیسبووک یان مێسینجەر بکەرەوە' },
@@ -264,12 +259,10 @@ export default function CustomerRegistration({ onComplete }: Props) {
                 ].map(({ n, text }) => (
                   <div key={n} className="flex items-center gap-3">
                     <span className="w-7 h-7 rounded-full bg-[#1877F2] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">{n}</span>
-                    <span className="text-neutral-700 text-sm">{text}</span>
+                    <span className="text-white/70 text-sm">{text}</span>
                   </div>
                 ))}
               </div>
-
-              {/* Redirect buttons */}
               <div className="grid grid-cols-2 gap-3 mt-6">
                 <a
                   href="https://www.facebook.com/me"
@@ -295,13 +288,12 @@ export default function CustomerRegistration({ onComplete }: Props) {
                   <span className="text-xs font-bold">مێسینجەر</span>
                 </a>
               </div>
-              <p className="text-neutral-400 text-[0.65rem] text-center mt-3" dir="rtl">
+              <p className="text-white/30 text-[0.65rem] text-center mt-3" dir="rtl">
                 کرتە بکە بچۆ، لینکەکە کۆپی بکە، گەڕەوە پەیست بکە
               </p>
-
               <button
                 onClick={() => setShowHelp(false)}
-                className="w-full mt-4 py-3.5 rounded-2xl border-2 border-neutral-200 text-neutral-600 font-semibold text-sm touch-manipulation active:scale-[0.98] transition-transform"
+                className="w-full mt-4 py-3.5 rounded-2xl border border-white/10 bg-white/5 text-white/60 font-semibold text-sm touch-manipulation active:scale-[0.98] transition-transform"
               >
                 داخستن
               </button>
@@ -309,7 +301,11 @@ export default function CustomerRegistration({ onComplete }: Props) {
           </div>
         )}
 
-        {error && <p className="text-red-500 text-xs text-right px-1">{error}</p>}
+        {error && (
+          <p className="text-red-400 text-xs text-right px-1 flex items-center justify-end gap-1.5">
+            ⚠ {error}
+          </p>
+        )}
       </div>
 
       {/* Submit */}
@@ -317,17 +313,21 @@ export default function CustomerRegistration({ onComplete }: Props) {
         onClick={handleSubmit}
         disabled={saving || uploading}
         className={[
-          'w-full py-[18px] rounded-2xl font-bold text-base mt-8 transition-all touch-manipulation select-none',
+          'relative w-full py-[18px] rounded-2xl font-bold text-base mt-8 overflow-hidden transition-all touch-manipulation select-none z-10',
           saving || uploading
-            ? 'bg-amber-400 text-white cursor-not-allowed'
-            : 'bg-amber-500 text-white shadow-[0_0_32px_rgba(245,158,11,0.4),0_4px_16px_rgba(245,158,11,0.25)] active:scale-[0.98]',
+            ? 'bg-amber-500/30 text-white/40 cursor-not-allowed'
+            : 'bg-gradient-to-r from-amber-500 to-amber-600 text-neutral-950 shadow-[0_0_40px_rgba(245,158,11,0.3),0_4px_20px_rgba(245,158,11,0.15)] active:scale-[0.98]',
         ].join(' ')}
       >
-        {saving
-          ? <span className="flex items-center justify-center gap-2">
-              <Loader2 className="w-5 h-5 animate-spin" /> چاوەڕوانبە...
-            </span>
-          : 'دەستپێبکە ←'}
+        {!saving && !uploading && (
+          <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+        )}
+        <span className="relative flex items-center justify-center gap-2">
+          {saving
+            ? <><Loader2 className="w-5 h-5 animate-spin" /> چاوەڕوانبە...</>
+            : 'دەستپێبکە ←'
+          }
+        </span>
       </button>
     </div>
   );

@@ -110,20 +110,20 @@ export default function GalleryEditor() {
   return (
     <div className="px-4 py-6 space-y-5">
       <div>
-        <h2 className="text-neutral-900 font-semibold text-lg">گەلەری</h2>
-        <p className="text-neutral-400 text-sm mt-0.5">کۆکراوەی وێنەی کارەکانت بەڕێوە ببە</p>
+        <h2 className="text-white font-semibold text-lg">گەلەری</h2>
+        <p className="text-white/35 text-sm mt-0.5">کۆکراوەی وێنەی کارەکانت بەڕێوە ببە</p>
       </div>
 
       {/* Add form */}
-      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 space-y-3">
-        <p className="text-amber-700 text-xs tracking-wider font-medium">زیادکردنی وێنە</p>
+      <div className="rounded-2xl border border-amber-500/15 bg-amber-500/8 p-4 space-y-3">
+        <p className="text-amber-400/70 text-xs tracking-wider font-medium">زیادکردنی وێنە</p>
 
         <input
           type="text"
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
           placeholder="پێناس (ئارەزوومەند)"
-          className="w-full bg-white border border-neutral-200 rounded-xl px-4 py-3 text-neutral-900 text-sm placeholder-neutral-400 outline-none focus:border-amber-400 transition-colors"
+          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-white/25 outline-none focus:border-amber-500/50 transition-colors"
         />
 
         <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleUpload} />
@@ -133,41 +133,41 @@ export default function GalleryEditor() {
           className={[
             'w-full flex flex-col items-center justify-center gap-2 py-8 rounded-xl border-2 border-dashed transition-all touch-manipulation',
             adding
-              ? 'border-amber-300 bg-amber-50/50 cursor-not-allowed'
-              : 'border-neutral-300 bg-white active:bg-neutral-50',
+              ? 'border-amber-500/30 bg-amber-500/5 cursor-not-allowed'
+              : 'border-white/10 bg-white/3 active:bg-white/5',
           ].join(' ')}
         >
           {adding
-            ? <Loader2 className="w-7 h-7 text-amber-500 animate-spin" />
-            : <Upload className="w-7 h-7 text-neutral-400" />
+            ? <Loader2 className="w-7 h-7 text-amber-400 animate-spin" />
+            : <Upload className="w-7 h-7 text-white/25" />
           }
-          <span className="text-neutral-500 text-sm">{adding ? 'بارکردن...' : 'کرتە بکە بۆ هەڵبژاردنی وێنە'}</span>
-          {!adding && <span className="text-neutral-400 text-xs">دەکرێت چەند وێنەیەک لەکاتێکدا هەڵبژێریت</span>}
+          <span className="text-white/35 text-sm">{adding ? 'بارکردن...' : 'کرتە بکە بۆ هەڵبژاردنی وێنە'}</span>
+          {!adding && <span className="text-white/20 text-xs">دەکرێت چەند وێنەیەک لەکاتێکدا هەڵبژێریت</span>}
         </button>
 
-        {addError && <p className="text-red-500 text-xs">{addError}</p>}
+        {addError && <p className="text-red-400 text-xs">{addError}</p>}
       </div>
 
       {/* Grid */}
       {loading && (
         <div className="grid grid-cols-2 gap-3">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="aspect-[3/4] rounded-2xl bg-neutral-100 border border-neutral-200 animate-pulse" />
+            <div key={i} className="aspect-[3/4] rounded-2xl bg-white/5 border border-white/8 animate-pulse" />
           ))}
         </div>
       )}
 
       {!loading && photos.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 gap-3">
-          <ImageIcon className="w-9 h-9 text-neutral-300" />
-          <p className="text-neutral-400 text-sm"> هیچ وێنەیەک نییە</p>
+          <ImageIcon className="w-9 h-9 text-white/15" />
+          <p className="text-white/25 text-sm">هیچ وێنەیەک نییە</p>
         </div>
       )}
 
       {!loading && photos.length > 0 && (
         <div className="grid grid-cols-2 gap-3">
           {photos.map((photo) => (
-            <div key={photo.id} className="relative rounded-2xl overflow-hidden border border-neutral-200 shadow-sm" style={{ aspectRatio: '3/4' }}>
+            <div key={photo.id} className="relative rounded-2xl overflow-hidden border border-white/8" style={{ aspectRatio: '3/4' }}>
               <img src={photo.photo_url} alt={photo.caption ?? ''} className="w-full h-full object-cover" loading="lazy" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
               {photo.caption && (
@@ -175,13 +175,13 @@ export default function GalleryEditor() {
               )}
               <button
                 onClick={() => handleDelete(photo.id)}
-                className="absolute top-2 left-2 w-7 h-7 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white/80 active:text-red-400 touch-manipulation transition-colors"
+                className="absolute top-2 left-2 w-7 h-7 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white/60 active:text-red-400 touch-manipulation transition-colors"
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => { setEditError(''); setEditing({ id: photo.id, caption: photo.caption ?? '', photo_url: photo.photo_url }); }}
-                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white/80 active:text-amber-400 touch-manipulation transition-colors"
+                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white/60 active:text-amber-400 touch-manipulation transition-colors"
               >
                 <Pencil className="w-3.5 h-3.5" />
               </button>
@@ -196,23 +196,21 @@ export default function GalleryEditor() {
           className="fixed inset-0 z-50 flex items-end md:items-center justify-center"
           onClick={() => setEditing(null)}
         >
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
           <div
-            className="relative w-full md:w-[380px] bg-white rounded-t-3xl md:rounded-3xl px-5 pt-4 pb-8 md:pb-5 shadow-2xl"
+            className="relative w-full md:w-[380px] bg-neutral-900 border border-white/10 rounded-t-3xl md:rounded-3xl px-5 pt-4 pb-8 md:pb-5 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Handle (mobile only) */}
-            <div className="w-10 h-1 rounded-full bg-neutral-200 mx-auto mb-4 md:hidden" />
+            <div className="w-10 h-1 rounded-full bg-white/10 mx-auto mb-4 md:hidden" />
 
-            <p className="text-neutral-900 font-semibold text-sm text-center mb-4">دەستکاریکردنی وێنە</p>
+            <p className="text-white font-semibold text-sm text-center mb-4">دەستکاریکردنی وێنە</p>
 
-            {/* Preview — 3/4 ratio, constrained width, centered */}
             <div className="flex justify-center mb-4">
-              <div className="relative rounded-2xl overflow-hidden border border-neutral-200 w-40" style={{ aspectRatio: '3/4' }}>
+              <div className="relative rounded-2xl overflow-hidden border border-white/10 w-40" style={{ aspectRatio: '3/4' }}>
                 <img src={editing.photo_url} alt="" className="w-full h-full object-cover" />
                 {replacing && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    <Loader2 className="w-5 h-5 text-amber-500 animate-spin" />
+                    <Loader2 className="w-5 h-5 text-amber-400 animate-spin" />
                   </div>
                 )}
                 <input ref={editFileRef} type="file" accept="image/*" className="hidden" onChange={handleReplacePhoto} />
@@ -227,33 +225,31 @@ export default function GalleryEditor() {
               </div>
             </div>
 
-            {editError && <p className="text-red-500 text-xs mb-2 text-center">{editError}</p>}
+            {editError && <p className="text-red-400 text-xs mb-2 text-center">{editError}</p>}
 
-            {/* Caption */}
             <div className="mb-4">
-              <p className="text-neutral-400 text-xs mb-1.5">پێناس (ئارەزوومەند)</p>
+              <p className="text-white/35 text-xs mb-1.5">پێناس (ئارەزوومەند)</p>
               <input
                 type="text"
                 value={editing.caption}
                 onChange={(e) => setEditing({ ...editing, caption: e.target.value })}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleSaveEdit(); if (e.key === 'Escape') setEditing(null); }}
                 placeholder="پێناس بنووسە..."
-                className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-neutral-900 text-sm placeholder-neutral-400 outline-none focus:border-amber-400 transition-colors"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-white/25 outline-none focus:border-amber-500/50 transition-colors"
               />
             </div>
 
-            {/* Actions */}
             <div className="flex gap-3">
               <button
                 onClick={() => setEditing(null)}
-                className="flex-1 py-3.5 rounded-xl border border-neutral-200 text-neutral-500 font-medium text-sm touch-manipulation active:bg-neutral-50 transition-colors"
+                className="flex-1 py-3.5 rounded-xl border border-white/10 bg-white/5 text-white/50 font-medium text-sm touch-manipulation active:bg-white/10 transition-colors"
               >
                 گەڕانەوە
               </button>
               <button
                 onClick={handleSaveEdit}
                 disabled={saving || replacing}
-                className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-amber-500 text-neutral-950 font-semibold text-sm touch-manipulation active:scale-[0.98] transition-transform disabled:opacity-60"
+                className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-neutral-950 font-semibold text-sm touch-manipulation active:scale-[0.98] transition-transform disabled:opacity-40"
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                 پاشەکەوت

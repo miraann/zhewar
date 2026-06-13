@@ -18,7 +18,7 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: 'schedule',     label: 'خشتەی کار',            icon: Clock           },
   { id: 'profile',      label: 'پرۆفایل',               icon: User            },
   { id: 'gallery',      label: 'گەلەری',                icon: ImageIcon       },
-  { id: 'social',       label: 'سۆشیاڵ میدیا',         icon: Share2          },
+  { id: 'social',       label: 'پۆستەکانی سۆشیاڵ میدیا', icon: Share2          },
 ];
 
 const VALID_TABS = new Set<Tab>(['appointments', 'schedule', 'profile', 'gallery', 'social']);
@@ -43,21 +43,21 @@ function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 flex flex-col">
+    <div className="min-h-screen bg-neutral-950 flex flex-col">
       {/* ── Top Header ── */}
-      <header className="sticky top-0 z-40 bg-white border-b border-neutral-200 shadow-sm">
+      <header className="sticky top-0 z-40 bg-neutral-950/90 backdrop-blur-md border-b border-white/8">
         <div className="flex items-center justify-between px-5 h-14 max-w-lg mx-auto">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full border-2 border-amber-400 bg-amber-50 flex items-center justify-center shadow-sm">
-              <Scissors className="w-4 h-4 text-amber-600" />
+            <div className="w-8 h-8 rounded-full border border-amber-500/30 bg-amber-500/8 flex items-center justify-center">
+              <Scissors className="w-4 h-4 text-amber-400" />
             </div>
-            <span className="font-display text-sm font-bold text-neutral-900 tracking-wide">
+            <span className="font-display text-sm font-bold text-white tracking-wide">
               پانێڵی ئەدمین
             </span>
           </div>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-1.5 text-neutral-400 text-xs font-medium active:text-neutral-700 transition-colors touch-manipulation"
+            className="flex items-center gap-1.5 text-white/30 text-xs font-medium active:text-white/70 transition-colors touch-manipulation"
           >
             <LogOut className="w-3.5 h-3.5" />
             دەرچوون
@@ -65,7 +65,7 @@ function Dashboard() {
         </div>
 
         {/* Tab bar */}
-        <div className="overflow-x-auto scrollbar-hide border-t border-neutral-100">
+        <div className="overflow-x-auto scrollbar-hide border-t border-white/8">
           <div className="flex max-w-lg mx-auto px-2">
           {TABS.map(({ id, label, icon: Icon }) => (
             <button
@@ -74,8 +74,8 @@ function Dashboard() {
               className={[
                 'flex items-center gap-1.5 px-4 py-3 text-xs font-medium whitespace-nowrap flex-shrink-0 border-b-2 transition-all touch-manipulation',
                 tab === id
-                  ? 'border-amber-500 text-amber-600'
-                  : 'border-transparent text-neutral-400 active:text-neutral-700',
+                  ? 'border-amber-500 text-amber-400'
+                  : 'border-transparent text-white/30 active:text-white/60',
               ].join(' ')}
             >
               <Icon className="w-3.5 h-3.5" />

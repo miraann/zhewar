@@ -53,7 +53,7 @@ export default function LinksSection({ links }: { links: SocialLink[] }) {
       {/* ── Header ── */}
       <div className="relative z-10 px-6 mb-10 max-w-4xl mx-auto w-full text-center md:text-right">
         <div className="flex items-center gap-3 mb-3 justify-center md:justify-end">
-          <span className="text-amber-500/80 text-[0.6rem] tracking-[0.4em]">پەیوەندیمان پێوە بکە</span>
+          <span className="text-amber-500/80 text-[0.6rem] tracking-[0.4em]">پۆستەکانی</span>
           <div className="w-8 h-px bg-amber-500/50" />
         </div>
         <h2 className="font-display text-5xl font-bold text-white leading-none">
