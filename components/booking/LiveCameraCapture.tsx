@@ -159,7 +159,7 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
   const dots = '.'.repeat(dotCount);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0b0f1a]" dir="rtl">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0b0f1a] font-sans" dir="rtl">
 
       {/* Hidden analysis canvas */}
       <canvas ref={aCanvasRef} className="hidden" />
