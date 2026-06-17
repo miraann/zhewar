@@ -32,7 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const logoUrl  = profile?.logo_url ?? null;
 
   return {
-    title:       `${shopName} | Premium Grooming`,
+    title:       `${shopName} | Zhewar Muhamad`,
     description: 'Book your premium barber experience in seconds. Luxury grooming for the modern gentleman.',
     icons: logoUrl
       ? { icon: logoUrl, apple: logoUrl, shortcut: logoUrl }

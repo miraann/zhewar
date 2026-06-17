@@ -336,13 +336,13 @@ export default function CustomerRegistration({ onComplete }: Props) {
               </svg>
             </div>
             <h3 className="text-slate-900 font-bold text-lg text-center mb-1">چۆن لینکەکە بدۆزیتەوە؟</h3>
-            <p className="text-slate-400 text-xs text-center mb-6">پەیوەندیت پێوە بکەین بە ئاسانی</p>
+            <p className="text-slate-400 text-xs text-center mb-6">    </p>
             <div className="space-y-3 text-right" dir="rtl">
               {[
                 { n: '١', text: 'ئەپی فەیسبووک یان مێسینجەر بکەرەوە' },
-                { n: '٢', text: 'بچۆ بۆ پرۆفایلەکەت' },
-                { n: '٣', text: 'لینکەکە لە بارێکی ناونیشان کۆپی بکە' },
-                { n: '٤', text: 'گەڕەوە ئێرە و دوگمەی "پەیست" بپەڕێنە' },
+                { n: '٢', text: 'بڕۆ بۆ بەشی پرۆفایل' },
+                { n: '٣', text: '     کلیک لەسەر "COPY PROFILE LINK"بکە' },
+                { n: '٤', text: 'پاشان بگەرێوە ئێرە و دوگمەی "پەیست" دابگرە' },
               ].map(({ n, text }) => (
                 <div key={n} className="flex items-center gap-3">
                   <span className="w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">{n}</span>
@@ -376,8 +376,7 @@ export default function CustomerRegistration({ onComplete }: Props) {
               </a>
             </div>
             <p className="text-slate-400 text-[0.65rem] text-center mt-3" dir="rtl">
-              کرتە بکە بچۆ، لینکەکە کۆپی بکە، گەڕەوە پەیست بکە
-            </p>
+کلیک لەسەر یەکێک لەم ئایکۆنانە بکە بۆ کردنەوەی "فەیسبوک"،"مێسینجەر"            </p>
             <button
               onClick={() => setShowHelp(false)}
               className="w-full mt-4 py-3.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-700 font-semibold text-sm touch-manipulation active:scale-[0.98] transition-transform"
