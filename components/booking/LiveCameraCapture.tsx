@@ -176,7 +176,7 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
       </button>
 
       {/* Title */}
-      <p className="text-white/60 text-xs tracking-[0.3em] mb-6 font-medium">تەسدیقکردنی ناسنامە</p>
+      <p className="text-white/60 text-xs tracking-[0.3em] mb-6 font-medium">دڵنیاکردنەوەی ناسنامە</p>
 
       {/* ── Camera circle ─────────────────────────────────────────────────── */}
       <div className="relative flex items-center justify-center" style={{ width: 260, height: 260 }}>
