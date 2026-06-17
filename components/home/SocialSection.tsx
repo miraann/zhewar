@@ -6,8 +6,10 @@ interface SocialItem {
   key: keyof BarberProfile;
   label: string;
   icon: React.ElementType;
-  accent: string;
-  glowColor: string;
+  iconBg: string;
+  iconColor: string;
+  borderColor: string;
+  activeShadow: string;
 }
 
 const ITEMS: SocialItem[] = [
@@ -15,65 +17,72 @@ const ITEMS: SocialItem[] = [
     key: 'instagram_url',
     label: 'ئینستاگرام',
     icon: Instagram,
-    accent: 'from-pink-500/20 to-purple-500/20 border-pink-500/20 text-pink-400',
-    glowColor: 'rgba(236,72,153,0.15)',
+    iconBg: 'linear-gradient(135deg, #f472b6, #a855f7)',
+    iconColor: '#ffffff',
+    borderColor: '#f9a8d4',
+    activeShadow: '0 4px 20px rgba(244,114,182,0.18)',
   },
   {
     key: 'facebook_url',
     label: 'فەیسبووک',
     icon: Facebook,
-    accent: 'from-blue-500/20 to-blue-600/20 border-blue-500/20 text-blue-400',
-    glowColor: 'rgba(59,130,246,0.15)',
+    iconBg: '#1877f2',
+    iconColor: '#ffffff',
+    borderColor: '#bfdbfe',
+    activeShadow: '0 4px 20px rgba(24,119,242,0.15)',
   },
   {
     key: 'whatsapp_number',
     label: 'واتسئاپ',
     icon: MessageCircle,
-    accent: 'from-emerald-500/20 to-green-500/20 border-emerald-500/20 text-emerald-400',
-    glowColor: 'rgba(34,197,94,0.15)',
+    iconBg: '#25d366',
+    iconColor: '#ffffff',
+    borderColor: '#bbf7d0',
+    activeShadow: '0 4px 20px rgba(37,211,102,0.15)',
   },
   {
     key: 'tiktok_url',
     label: 'تیکتۆک',
     icon: Music2,
-    accent: 'from-white/10 to-white/5 border-white/10 text-white/60',
-    glowColor: 'rgba(255,255,255,0.05)',
+    iconBg: '#111827',
+    iconColor: '#ffffff',
+    borderColor: '#e5e7eb',
+    activeShadow: '0 4px 20px rgba(0,0,0,0.08)',
   },
   {
     key: 'maps_url',
     label: 'شوێنی ئێمە',
     icon: MapPin,
-    accent: 'from-red-500/20 to-orange-500/20 border-red-500/20 text-red-400',
-    glowColor: 'rgba(239,68,68,0.15)',
+    iconBg: '#ef4444',
+    iconColor: '#ffffff',
+    borderColor: '#fecaca',
+    activeShadow: '0 4px 20px rgba(239,68,68,0.15)',
   },
 ];
 
 export default function SocialSection({ profile }: { profile: BarberProfile }) {
   return (
-    <div className="relative min-h-screen flex flex-col justify-center px-5 py-24 overflow-hidden bg-neutral-950">
-      {/* Ambient */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_50%_50%,rgba(245,158,11,0.06),transparent_70%)] pointer-events-none" />
-
-      {/* Subtle top stripe */}
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-amber-500/20 to-transparent" />
+    <div className="relative pt-20 pb-8 px-5 overflow-hidden">
+      {/* Section divider */}
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-neutral-200 to-transparent" />
 
       <div className="relative z-10 w-full max-w-sm mx-auto space-y-8">
 
         {/* Header */}
-        <div>
+        <div className="text-right">
           <div className="flex items-center gap-3 mb-3 justify-end">
-            <div className="w-8 h-px bg-amber-500/40" />
-            <span className="text-amber-500/60 text-[0.6rem] tracking-[0.4em] font-medium">تۆڕی کۆمەڵایەتی</span>
+            <div className="w-8 h-px bg-neutral-300" />
+            <span className="text-neutral-400 text-[0.6rem] tracking-[0.4em] font-medium">تۆڕی کۆمەڵایەتی</span>
           </div>
-          <h2 className="font-display text-4xl font-bold text-white text-right leading-tight">
-            پەیوەندی
-            <span className="text-amber-500"> بکە</span>
+          <h2 className="font-display text-4xl font-bold text-neutral-900 leading-tight">
+            پەیوەندی{' '}
+            <span className="text-blue-600">بکە</span>
           </h2>
         </div>
 
-        {/* Social rows */}
+        {/* Brand-colored social link cards */}
         <div className="space-y-3">
-          {ITEMS.map(({ key, label, icon: Icon, accent, glowColor }) => {
+          {ITEMS.map(({ key, label, icon: Icon, iconBg, iconColor, borderColor, activeShadow }) => {
             const value    = profile[key] as string | null;
             const isActive = Boolean(value);
             const url      = value
@@ -89,20 +98,28 @@ export default function SocialSection({ profile }: { profile: BarberProfile }) {
                 target={isActive ? '_blank' : undefined}
                 rel="noopener noreferrer"
                 className={[
-                  'flex items-center gap-4 p-4 rounded-2xl border bg-gradient-to-l backdrop-blur-sm transition-all duration-200 touch-manipulation',
-                  accent,
+                  'flex items-center gap-4 p-4 rounded-2xl bg-white border transition-all duration-200 touch-manipulation',
                   isActive
                     ? 'active:scale-[0.98] cursor-pointer'
-                    : 'opacity-25 cursor-default',
+                    : 'opacity-40 cursor-default',
                 ].join(' ')}
-                style={isActive ? { boxShadow: `0 4px 24px ${glowColor}` } : undefined}
+                style={{
+                  borderColor: isActive ? borderColor : '#f3f4f6',
+                  boxShadow: isActive ? activeShadow : '0 1px 4px rgba(0,0,0,0.04)',
+                }}
               >
-                <div className="w-11 h-11 rounded-xl bg-white/8 border border-white/10 flex items-center justify-center flex-shrink-0">
-                  <Icon className="w-5 h-5" />
+                {/* Brand icon box */}
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: iconBg }}
+                >
+                  <Icon className="w-5 h-5" style={{ color: iconColor }} />
                 </div>
+
+                {/* Text */}
                 <div className="flex-1 min-w-0 text-right">
-                  <p className="text-white font-bold text-base">{label}</p>
-                  <p className="text-white/35 text-xs mt-0.5 truncate">
+                  <p className="text-neutral-900 font-bold text-base">{label}</p>
+                  <p className="text-neutral-400 text-xs mt-0.5 truncate">
                     {isActive
                       ? key === 'maps_url'
                         ? 'گوگڵ مەپس — گرتە بکە بۆ نەخشە'
@@ -110,7 +127,8 @@ export default function SocialSection({ profile }: { profile: BarberProfile }) {
                       : 'دانەنراوە'}
                   </p>
                 </div>
-                {isActive && <ExternalLink className="w-4 h-4 text-white/25 flex-shrink-0" />}
+
+                {isActive && <ExternalLink className="w-4 h-4 text-neutral-300 flex-shrink-0" />}
               </a>
             );
           })}
@@ -118,14 +136,13 @@ export default function SocialSection({ profile }: { profile: BarberProfile }) {
 
         {/* Final CTA */}
         <div className="pt-4">
-          <div className="h-px bg-gradient-to-r from-transparent via-amber-500/15 to-transparent mb-8" />
+          <div className="h-px bg-gradient-to-r from-transparent via-neutral-200 to-transparent mb-4" />
           <Link
             href="/book"
-            className="relative flex items-center justify-center gap-2.5 w-full py-5 rounded-2xl font-bold text-base tracking-wide overflow-hidden touch-manipulation active:scale-[0.98] transition-transform bg-gradient-to-r from-amber-500 to-amber-600 text-neutral-950 shadow-[0_0_50px_rgba(245,158,11,0.25),0_4px_20px_rgba(245,158,11,0.15)]"
+            className="flex items-center justify-center gap-2.5 w-full py-5 rounded-2xl font-bold text-base text-white bg-blue-600 active:bg-blue-700 active:scale-[0.98] transition-all touch-manipulation shadow-md shadow-blue-200/70"
           >
-            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
-            <CalendarPlus className="relative w-5 h-5" />
-            <span className="relative">ناو تۆمار کردن</span>
+            <CalendarPlus className="w-5 h-5" />
+            <span>ناو تۆمار کردن</span>
           </Link>
         </div>
       </div>

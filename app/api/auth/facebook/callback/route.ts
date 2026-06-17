@@ -1,10 +1,17 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   const { searchParams } = new URL(request.url);
-  const code  = searchParams.get('code');
-  const error = searchParams.get('error');
+  const code        = searchParams.get('code');
+  const error       = searchParams.get('error');
+  const stateParam  = searchParams.get('state');
+  const stateCookie = request.cookies.get('fb_state')?.value;
+
+  // Validate CSRF state
+  if (!stateParam || !stateCookie || stateParam !== stateCookie) {
+    return NextResponse.redirect(`${siteUrl}/book`);
+  }
 
   if (!code || error) {
     return NextResponse.redirect(`${siteUrl}/book`);
@@ -34,10 +41,13 @@ export async function GET(request: Request) {
     })).toString('base64');
 
     const res = NextResponse.redirect(`${siteUrl}/book`);
+    // Clear the state cookie
+    res.cookies.set('fb_state', '', { maxAge: 0, path: '/' });
+    // Set the profile cookie — httpOnly so JS cannot steal it via XSS
     res.cookies.set('fb_auth', payload, {
       maxAge:   300,
       path:     '/',
-      httpOnly: false,
+      httpOnly: true,
       sameSite: 'lax',
       secure:   process.env.NODE_ENV === 'production',
     });

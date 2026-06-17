@@ -5,9 +5,9 @@ import type { SocialLink } from '@/lib/types';
 import { Share2 } from 'lucide-react';
 
 export default function LinksSection({ links }: { links: SocialLink[] }) {
-  const trackRef     = useRef<HTMLDivElement>(null);
+  const trackRef      = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
-  const activeIdxRef = useRef(0);
+  const activeIdxRef  = useRef(0);
 
   function scrollTo(i: number) {
     const track = trackRef.current;
@@ -31,7 +31,6 @@ export default function LinksSection({ links }: { links: SocialLink[] }) {
     setActiveIdx(closest);
   }, []);
 
-  /* ── Auto-advance every 5 s ── */
   useEffect(() => {
     if (links.length < 2) return;
     const timer = setInterval(() => {
@@ -46,22 +45,22 @@ export default function LinksSection({ links }: { links: SocialLink[] }) {
   if (links.length === 0) return null;
 
   return (
-    <div className="relative py-20 overflow-hidden text-neutral-900">
-      <div className="absolute inset-0 bg-neutral-950" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_50%,rgba(245,158,11,0.08)_0%,transparent_70%)] pointer-events-none" />
+    <div className="relative py-20 overflow-hidden">
+      {/* Section divider */}
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-neutral-200 to-transparent" />
 
-      {/* ── Header ── */}
+      {/* Header */}
       <div className="relative z-10 px-6 mb-10 max-w-4xl mx-auto w-full text-center md:text-right">
         <div className="flex items-center gap-3 mb-3 justify-center md:justify-end">
-          <span className="text-amber-500/80 text-[0.6rem] tracking-[0.4em]">پۆستەکانی</span>
-          <div className="w-8 h-px bg-amber-500/50" />
+          <span className="text-neutral-400 text-[0.6rem] tracking-[0.4em]">پۆستەکانی</span>
+          <div className="w-8 h-px bg-neutral-300" />
         </div>
-        <h2 className="font-display text-5xl font-bold text-white leading-none">
+        <h2 className="font-display text-5xl font-bold text-neutral-900 leading-none">
           سۆشیاڵ میدیا
         </h2>
       </div>
 
-      {/* ── Desktop grid ── */}
+      {/* Desktop grid */}
       <div className="relative z-10 hidden md:grid md:grid-cols-3 gap-4 max-w-4xl mx-auto px-6">
         {links.map((link, i) => (
           <a
@@ -69,7 +68,7 @@ export default function LinksSection({ links }: { links: SocialLink[] }) {
             href={link.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-3xl overflow-hidden relative shadow-md hover:shadow-xl transition-shadow duration-300 group"
+            className="rounded-3xl overflow-hidden relative shadow-sm hover:shadow-lg transition-shadow duration-300 group border border-neutral-100"
             style={{ aspectRatio: '3/4' }}
           >
             {link.image_url ? (
@@ -80,24 +79,21 @@ export default function LinksSection({ links }: { links: SocialLink[] }) {
                 loading={i < 3 ? 'eager' : 'lazy'}
               />
             ) : (
-              <div className="w-full h-full bg-neutral-800 flex items-center justify-center">
-                <Share2 className="w-14 h-14 text-neutral-600" />
+              <div className="w-full h-full bg-neutral-100 flex items-center justify-center">
+                <Share2 className="w-14 h-14 text-neutral-300" />
               </div>
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-            <div className="absolute inset-0 rounded-3xl border border-white/5 group-hover:border-amber-400/40 transition-colors pointer-events-none" />
-            <div className="absolute top-4 left-4 bg-black/40 backdrop-blur-sm border border-white/10 rounded-full px-2.5 py-1">
-              <span className="text-white/70 text-xs font-mono">{String(i + 1).padStart(2, '0')}</span>
-            </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+            <div className="absolute inset-0 rounded-3xl border border-white/0 group-hover:border-blue-400/40 transition-colors pointer-events-none" />
             <div className="absolute bottom-4 right-4 left-4 text-right">
               <p className="text-white text-sm font-medium">{link.title}</p>
-              <div className="w-8 h-px bg-amber-400 mt-1.5 mr-auto" />
+              <div className="w-8 h-px bg-blue-400 mt-1.5 mr-auto" />
             </div>
           </a>
         ))}
       </div>
 
-      {/* ── Mobile carousel ── */}
+      {/* Mobile carousel */}
       <div className="md:hidden">
         <div
           ref={trackRef}
@@ -112,7 +108,7 @@ export default function LinksSection({ links }: { links: SocialLink[] }) {
               target="_blank"
               rel="noopener noreferrer"
               className={[
-                'flex-shrink-0 snap-center rounded-3xl overflow-hidden relative transition-all duration-300 shadow-lg touch-manipulation',
+                'flex-shrink-0 snap-center rounded-3xl overflow-hidden relative transition-all duration-300 shadow-md touch-manipulation border border-neutral-100',
                 i === activeIdx
                   ? 'w-[78vw] max-w-[320px] opacity-100'
                   : 'w-[65vw] max-w-[270px] opacity-40 scale-[0.97]',
@@ -127,24 +123,20 @@ export default function LinksSection({ links }: { links: SocialLink[] }) {
                   loading={i < 2 ? 'eager' : 'lazy'}
                 />
               ) : (
-                <div className="w-full h-full bg-neutral-800 flex items-center justify-center">
-                  <Share2 className="w-16 h-16 text-neutral-600" />
+                <div className="w-full h-full bg-neutral-100 flex items-center justify-center">
+                  <Share2 className="w-16 h-16 text-neutral-300" />
                 </div>
               )}
 
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
 
               {i === activeIdx && (
-                <div className="absolute inset-0 rounded-3xl border-2 border-amber-400/60 pointer-events-none" />
+                <div className="absolute inset-0 rounded-3xl border-2 border-blue-400/60 pointer-events-none" />
               )}
-
-              <div className="absolute top-4 left-4 bg-black/40 backdrop-blur-sm border border-white/10 rounded-full px-2.5 py-1">
-                <span className="text-white/70 text-xs font-mono">{String(i + 1).padStart(2, '0')}</span>
-              </div>
 
               <div className="absolute bottom-4 right-4 left-4 text-right">
                 <p className="text-white text-sm font-medium">{link.title}</p>
-                <div className="w-8 h-px bg-amber-400 mt-1.5 mr-auto" />
+                <div className="w-8 h-px bg-blue-400 mt-1.5 mr-auto" />
               </div>
             </a>
           ))}
@@ -161,7 +153,7 @@ export default function LinksSection({ links }: { links: SocialLink[] }) {
               <span
                 className={[
                   'block rounded-full transition-all duration-300',
-                  i === activeIdx ? 'w-6 h-1.5 bg-amber-500' : 'w-1.5 h-1.5 bg-white/30',
+                  i === activeIdx ? 'w-6 h-1.5 bg-blue-600' : 'w-1.5 h-1.5 bg-neutral-300',
                 ].join(' ')}
               />
             </button>

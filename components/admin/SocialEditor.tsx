@@ -2,7 +2,15 @@
 
 import { supabase } from '@/lib/supabase';
 import type { SocialLink } from '@/lib/types';
-import { Check, Link as LinkIcon, Loader2, Pencil, Plus, Share2, Trash2, Upload, X } from 'lucide-react';
+import {
+  DndContext, DragEndEvent, PointerSensor, TouchSensor,
+  closestCenter, useSensor, useSensors,
+} from '@dnd-kit/core';
+import {
+  SortableContext, arrayMove, rectSortingStrategy, useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { Check, GripVertical, Link as LinkIcon, Loader2, Pencil, Plus, Share2, Trash2, Upload, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface EditState {
@@ -28,6 +36,11 @@ export default function SocialEditor() {
   const fileRef                   = useRef<HTMLInputElement>(null);
   const editFileRef               = useRef<HTMLInputElement>(null);
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor,   { activationConstraint: { delay: 200, tolerance: 8 } }),
+  );
+
   const load = useCallback(async () => {
     setLoading(true);
     const { data } = await supabase.from('social_links').select('*').order('sort_order');
@@ -36,6 +49,14 @@ export default function SocialEditor() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('realtime:social_links')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'social_links' }, () => { load(); })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [load]);
 
   function nextOrder() {
     return links.reduce((m, l) => Math.max(m, l.sort_order), 0) + 1;
@@ -53,8 +74,21 @@ export default function SocialEditor() {
     onLoading(false);
   }
 
+  function isValidUrl(raw: string): boolean {
+    try {
+      const parsed = new URL(raw.trim());
+      return parsed.protocol === 'https:' || parsed.protocol === 'http:';
+    } catch {
+      return false;
+    }
+  }
+
   async function handleAdd() {
     if (!title.trim() || !url.trim()) return;
+    if (!isValidUrl(url)) {
+      setAddError('بەستەرێکی درست بنووسە (https://...)');
+      return;
+    }
     setAdding(true);
     setAddError('');
     const { data, error } = await supabase
@@ -82,6 +116,10 @@ export default function SocialEditor() {
 
   async function handleSaveEdit() {
     if (!editing) return;
+    if (!isValidUrl(editing.url)) {
+      setEditError('بەستەرێکی درست بنووسە (https://...)');
+      return;
+    }
     setSaving(true);
     await supabase.from('social_links').update({
       title:     editing.title.trim(),
@@ -98,25 +136,42 @@ export default function SocialEditor() {
     setSaving(false);
   }
 
+  async function persistOrder(ordered: SocialLink[]) {
+    await Promise.all(
+      ordered.map((l, i) =>
+        supabase.from('social_links').update({ sort_order: i }).eq('id', l.id)
+      )
+    );
+    await fetch('/api/revalidate', { method: 'POST' });
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    setLinks((prev) => {
+      const oldIndex = prev.findIndex((l) => l.id === active.id);
+      const newIndex = prev.findIndex((l) => l.id === over.id);
+      const reordered = arrayMove(prev, oldIndex, newIndex);
+      persistOrder(reordered);
+      return reordered;
+    });
+  }
+
   return (
     <div className="px-4 py-6 space-y-5">
       <div>
-        <h2 className="text-white font-semibold text-lg">پۆستەکانی سۆشیاڵ میدیا</h2>
-        <p className="text-white/35 text-sm mt-0.5">بەستەرەکانی تۆڕی کۆمەڵایەتی بەڕێوە ببە</p>
+        <h2 className="text-slate-900 font-semibold text-lg">پۆستەکانی سۆشیاڵ میدیا</h2>
+        <p className="text-slate-500 text-sm mt-0.5">    </p>
       </div>
 
       {/* Add form */}
-      <div className="rounded-2xl border border-amber-500/15 bg-amber-500/8 p-4 space-y-3">
-        <p className="text-amber-400/70 text-xs tracking-wider font-medium">زیادکردنی بەستەر</p>
+      <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4 space-y-3">
+        <p className="text-blue-700 text-xs font-semibold tracking-wider">زیادکردنی بەستەر</p>
 
-        {/* Image upload */}
         <div>
-          <p className="text-white/35 text-xs mb-1.5">وێنە / ئایکۆن (ئارەزوومەند)</p>
+          <p className="text-slate-700 text-xs font-medium mb-1.5">وێنە / ئایکۆن (ئارەزوومەند)</p>
           <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
+            ref={fileRef} type="file" accept="image/*" className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) uploadImage(file, setImageUrl, setUploading);
@@ -125,14 +180,9 @@ export default function SocialEditor() {
           />
           {imageUrl ? (
             <div className="flex items-center gap-3">
-              <img src={imageUrl} alt="" className="w-12 h-12 rounded-xl object-cover border border-amber-500/30 flex-shrink-0" />
-              <button
-                onClick={() => fileRef.current?.click()}
-                className="text-amber-400 text-xs font-medium touch-manipulation"
-              >
-                گۆڕینی وێنە
-              </button>
-              <button onClick={() => setImageUrl('')} className="text-white/25 active:text-red-400 touch-manipulation ml-auto">
+              <img src={imageUrl} alt="" className="w-12 h-12 rounded-xl object-cover border border-slate-200 flex-shrink-0" />
+              <button onClick={() => fileRef.current?.click()} className="text-blue-600 text-xs font-medium touch-manipulation">گۆڕینی وێنە</button>
+              <button onClick={() => setImageUrl('')} className="text-slate-400 active:text-red-500 touch-manipulation ml-auto">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -140,36 +190,30 @@ export default function SocialEditor() {
             <button
               onClick={() => fileRef.current?.click()}
               disabled={uploading}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-white/15 bg-white/3 text-white/30 text-xs touch-manipulation active:bg-white/5 transition-colors"
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-slate-300 bg-white text-slate-500 text-xs touch-manipulation active:bg-slate-50 transition-colors"
             >
-              {uploading ? <Loader2 className="w-4 h-4 animate-spin text-amber-400" /> : <Upload className="w-4 h-4" />}
+              {uploading ? <Loader2 className="w-4 h-4 animate-spin text-blue-500" /> : <Upload className="w-4 h-4" />}
               {uploading ? 'بارکردن...' : 'بارکردنی وێنە'}
             </button>
           )}
         </div>
 
-        {/* Title */}
         <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          type="text" value={title} onChange={(e) => setTitle(e.target.value)}
           placeholder="ناونیشان"
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-white/25 outline-none focus:border-amber-500/50 transition-colors"
+          className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm placeholder-slate-400 outline-none focus:border-blue-500/60 transition-colors"
         />
 
-        {/* URL */}
         <div className="relative">
-          <LinkIcon className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/25 pointer-events-none" />
+          <LinkIcon className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
           <input
-            type="url"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
+            type="url" value={url} onChange={(e) => setUrl(e.target.value)}
             placeholder="https://..."
-            className="w-full bg-white/5 border border-white/10 rounded-xl pr-10 pl-4 py-3 text-white text-sm placeholder-white/25 outline-none focus:border-amber-500/50 transition-colors"
+            className="w-full bg-white border border-slate-200 rounded-xl pr-10 pl-4 py-3 text-slate-900 text-sm placeholder-slate-400 outline-none focus:border-blue-500/60 transition-colors"
           />
         </div>
 
-        {addError && <p className="text-red-400 text-xs">{addError}</p>}
+        {addError && <p className="text-red-500 text-xs">{addError}</p>}
 
         <button
           onClick={handleAdd}
@@ -177,8 +221,8 @@ export default function SocialEditor() {
           className={[
             'w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm transition-all touch-manipulation',
             !title.trim() || !url.trim() || adding || uploading
-              ? 'bg-white/5 text-white/20 border border-white/8 cursor-not-allowed'
-              : 'bg-gradient-to-r from-amber-500 to-amber-600 text-neutral-950 active:scale-[0.98] shadow-[0_0_20px_rgba(245,158,11,0.2)]',
+              ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+              : 'bg-blue-600 text-white shadow-md shadow-blue-200/50 active:bg-blue-700 active:scale-[0.98]',
           ].join(' ')}
         >
           {adding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
@@ -190,65 +234,50 @@ export default function SocialEditor() {
       {loading && (
         <div className="space-y-2">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-16 rounded-2xl bg-white/5 border border-white/8 animate-pulse" />
+            <div key={i} className="h-16 rounded-2xl bg-slate-100 border border-slate-200 animate-pulse" />
           ))}
         </div>
       )}
 
       {!loading && links.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 gap-3">
-          <Share2 className="w-9 h-9 text-white/15" />
-          <p className="text-white/25 text-sm">هیچ بەستەرێک نییە</p>
+          <Share2 className="w-9 h-9 text-slate-300" />
+          <p className="text-slate-400 text-sm">هیچ بەستەرێک نییە</p>
         </div>
       )}
 
-      {!loading && links.map((link) => (
-        <div key={link.id} className="flex items-center gap-3 p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
-          {link.image_url ? (
-            <img src={link.image_url} alt={link.title} className="w-11 h-11 rounded-xl object-cover border border-white/10 flex-shrink-0" />
-          ) : (
-            <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
-              <Share2 className="w-5 h-5 text-white/25" />
+      {!loading && links.length > 0 && (
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={links.map((l) => l.id)} strategy={rectSortingStrategy}>
+            <div className="grid grid-cols-2 gap-3">
+              {links.map((link) => (
+                <SortableLink
+                  key={link.id}
+                  link={link}
+                  onEdit={() => { setEditError(''); setEditing({ id: link.id, title: link.title, image_url: link.image_url ?? '', url: link.url }); }}
+                  onDelete={() => handleDelete(link.id)}
+                />
+              ))}
             </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <p className="text-white text-sm font-medium truncate">{link.title}</p>
-            <p className="text-white/30 text-xs truncate mt-0.5">{link.url.replace(/https?:\/\/(www\.)?/, '')}</p>
-          </div>
-          <button
-            onClick={() => { setEditError(''); setEditing({ id: link.id, title: link.title, image_url: link.image_url ?? '', url: link.url }); }}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-white/25 active:text-amber-400 touch-manipulation transition-colors"
-          >
-            <Pencil className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={() => handleDelete(link.id)}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-white/25 active:text-red-400 touch-manipulation transition-colors"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      ))}
+          </SortableContext>
+        </DndContext>
+      )}
 
       {/* Edit modal */}
       {editing && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={() => setEditing(null)}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
           <div
-            className="relative w-full md:w-[400px] bg-neutral-900 border border-white/10 rounded-t-3xl md:rounded-3xl px-5 pt-4 pb-8 md:pb-5 shadow-2xl space-y-4"
+            className="relative w-full md:w-[400px] bg-white border border-slate-200 rounded-t-3xl md:rounded-3xl px-5 pt-4 pb-8 md:pb-5 shadow-2xl space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="w-10 h-1 rounded-full bg-white/10 mx-auto md:hidden" />
-            <p className="text-white font-semibold text-sm text-center">دەستکاریکردنی بەستەر</p>
+            <div className="w-10 h-1 rounded-full bg-slate-200 mx-auto md:hidden" />
+            <p className="text-slate-900 font-semibold text-sm text-center">دەستکاریکردنی بەستەر</p>
 
-            {/* Image */}
             <div>
-              <p className="text-white/35 text-xs mb-1.5">وێنە / ئایکۆن</p>
+              <p className="text-slate-700 text-xs font-medium mb-1.5">وێنە / ئایکۆن</p>
               <input
-                ref={editFileRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
+                ref={editFileRef} type="file" accept="image/*" className="hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) uploadImage(file, (u) => setEditing((prev) => prev ? { ...prev, image_url: u } : prev), setEditUploading);
@@ -257,12 +286,12 @@ export default function SocialEditor() {
               />
               {editing.image_url ? (
                 <div className="flex items-center gap-3">
-                  <img src={editing.image_url} alt="" className="w-12 h-12 rounded-xl object-cover border border-white/10 flex-shrink-0" />
-                  <button onClick={() => editFileRef.current?.click()} className="text-amber-400 text-xs font-medium touch-manipulation">
+                  <img src={editing.image_url} alt="" className="w-12 h-12 rounded-xl object-cover border border-slate-200 flex-shrink-0" />
+                  <button onClick={() => editFileRef.current?.click()} className="text-blue-600 text-xs font-medium touch-manipulation">
                     {editUploading ? <Loader2 className="w-3.5 h-3.5 animate-spin inline mr-1" /> : null}
                     گۆڕینی وێنە
                   </button>
-                  <button onClick={() => setEditing({ ...editing, image_url: '' })} className="text-white/25 active:text-red-400 touch-manipulation ml-auto">
+                  <button onClick={() => setEditing({ ...editing, image_url: '' })} className="text-slate-400 active:text-red-500 touch-manipulation ml-auto">
                     <X className="w-4 h-4" />
                   </button>
                 </div>
@@ -270,54 +299,50 @@ export default function SocialEditor() {
                 <button
                   onClick={() => editFileRef.current?.click()}
                   disabled={editUploading}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-white/15 bg-white/3 text-white/30 text-xs touch-manipulation"
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 text-slate-500 text-xs touch-manipulation"
                 >
-                  {editUploading ? <Loader2 className="w-4 h-4 animate-spin text-amber-400" /> : <Upload className="w-4 h-4" />}
+                  {editUploading ? <Loader2 className="w-4 h-4 animate-spin text-blue-500" /> : <Upload className="w-4 h-4" />}
                   {editUploading ? 'بارکردن...' : 'بارکردنی وێنە'}
                 </button>
               )}
             </div>
 
-            {/* Title */}
             <div>
-              <p className="text-white/35 text-xs mb-1.5">ناونیشان</p>
+              <p className="text-slate-700 text-xs font-medium mb-1.5">ناونیشان</p>
               <input
-                type="text"
-                value={editing.title}
+                type="text" value={editing.title}
                 onChange={(e) => setEditing({ ...editing, title: e.target.value })}
                 placeholder="ناونیشان"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-white/25 outline-none focus:border-amber-500/50 transition-colors"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm placeholder-slate-400 outline-none focus:border-blue-500/60 transition-colors"
               />
             </div>
 
-            {/* URL */}
             <div>
-              <p className="text-white/35 text-xs mb-1.5">بەستەر</p>
+              <p className="text-slate-700 text-xs font-medium mb-1.5">بەستەر</p>
               <div className="relative">
-                <LinkIcon className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/25 pointer-events-none" />
+                <LinkIcon className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                 <input
-                  type="url"
-                  value={editing.url}
+                  type="url" value={editing.url}
                   onChange={(e) => setEditing({ ...editing, url: e.target.value })}
                   placeholder="https://..."
-                  className="w-full bg-white/5 border border-white/10 rounded-xl pr-10 pl-4 py-3 text-white text-sm placeholder-white/25 outline-none focus:border-amber-500/50 transition-colors"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pr-10 pl-4 py-3 text-slate-900 text-sm placeholder-slate-400 outline-none focus:border-blue-500/60 transition-colors"
                 />
               </div>
             </div>
 
-            {editError && <p className="text-red-400 text-xs">{editError}</p>}
+            {editError && <p className="text-red-500 text-xs">{editError}</p>}
 
             <div className="flex gap-3">
               <button
                 onClick={() => setEditing(null)}
-                className="flex-1 py-3.5 rounded-xl border border-white/10 bg-white/5 text-white/50 font-medium text-sm touch-manipulation active:bg-white/10 transition-colors"
+                className="flex-1 py-3.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 font-medium text-sm touch-manipulation active:bg-slate-100 transition-colors"
               >
                 گەڕانەوە
               </button>
               <button
                 onClick={handleSaveEdit}
                 disabled={saving || editUploading || !editing.title.trim() || !editing.url.trim()}
-                className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-neutral-950 font-semibold text-sm touch-manipulation active:scale-[0.98] transition-transform disabled:opacity-40"
+                className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-blue-600 text-white font-semibold text-sm touch-manipulation active:scale-[0.98] transition-transform disabled:opacity-40"
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                 پاشەکەوت
@@ -326,6 +351,71 @@ export default function SocialEditor() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function SortableLink({
+  link, onEdit, onDelete,
+}: {
+  link: SocialLink;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: link.id });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 20 : undefined,
+    opacity: isDragging ? 0.55 : 1,
+    aspectRatio: '3/4',
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="relative rounded-2xl overflow-hidden border border-slate-200"
+    >
+      {link.image_url ? (
+        <img src={link.image_url} alt={link.title} className="w-full h-full object-cover" loading="lazy" />
+      ) : (
+        <div className="w-full h-full bg-slate-100 flex flex-col items-center justify-center gap-2">
+          <Share2 className="w-8 h-8 text-slate-300" />
+        </div>
+      )}
+
+      <div className="absolute inset-0 bg-gradient-to-t from-black/65 to-transparent" />
+
+      <p className="absolute bottom-2 right-2 left-8 text-white text-[0.65rem] font-semibold truncate">
+        {link.title}
+      </p>
+
+      {/* Drag handle */}
+      <button
+        {...attributes}
+        {...listeners}
+        className="absolute top-2 left-2 w-7 h-7 rounded-full bg-white/90 flex items-center justify-center text-slate-500 shadow-sm cursor-grab active:cursor-grabbing touch-manipulation"
+      >
+        <GripVertical className="w-3.5 h-3.5" />
+      </button>
+
+      {/* Delete */}
+      <button
+        onClick={onDelete}
+        className="absolute bottom-8 left-2 w-7 h-7 rounded-full bg-white/90 flex items-center justify-center text-slate-500 active:text-red-500 touch-manipulation transition-colors shadow-sm"
+      >
+        <Trash2 className="w-3.5 h-3.5" />
+      </button>
+
+      {/* Edit */}
+      <button
+        onClick={onEdit}
+        className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/90 flex items-center justify-center text-slate-500 active:text-blue-600 touch-manipulation transition-colors shadow-sm"
+      >
+        <Pencil className="w-3.5 h-3.5" />
+      </button>
     </div>
   );
 }

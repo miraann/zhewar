@@ -4,7 +4,7 @@ import { useRef, useState, useCallback, useEffect } from 'react';
 import type { GalleryPhoto } from '@/lib/types';
 
 export default function GallerySection({ photos }: { photos: GalleryPhoto[] }) {
-  const trackRef    = useRef<HTMLDivElement>(null);
+  const trackRef     = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
   const activeIdxRef = useRef(0);
 
@@ -37,20 +37,20 @@ export default function GallerySection({ photos }: { photos: GalleryPhoto[] }) {
   if (photos.length === 0) return null;
 
   return (
-    <div className="relative py-20 overflow-hidden bg-neutral-950">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_40%_at_50%_50%,rgba(245,158,11,0.06),transparent_70%)] pointer-events-none" />
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-amber-500/15 to-transparent" />
+    <div className="relative py-20 overflow-hidden">
+      {/* Section divider */}
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-neutral-200 to-transparent" />
 
       {/* Header */}
       <div className="relative z-10 px-6 mb-10 max-w-4xl mx-auto w-full text-center md:text-right">
         <div className="flex items-center gap-3 mb-3 justify-center md:justify-end">
-          <span className="text-amber-500/60 text-[0.6rem] tracking-[0.4em]">کارەکانمان</span>
-          <div className="w-8 h-px bg-amber-500/30" />
+          <span className="text-neutral-400 text-[0.6rem] tracking-[0.4em]">کارەکانمان</span>
+          <div className="w-8 h-px bg-neutral-300" />
         </div>
-        <h2 className="font-display text-5xl font-bold text-white leading-none">
-          ئەمارەکانمان
+        <h2 className="font-display text-5xl font-bold text-neutral-900 leading-none">
+          
         </h2>
-        <p className="text-white/30 text-sm mt-2 md:hidden">بکێشە بۆ گەڕان ←</p>
+        <p className="text-neutral-400 text-sm mt-2 md:hidden">بکێشە بۆ گەڕان ←</p>
       </div>
 
       {/* Desktop grid */}
@@ -58,7 +58,7 @@ export default function GallerySection({ photos }: { photos: GalleryPhoto[] }) {
         {photos.map((photo, i) => (
           <div
             key={photo.id}
-            className="rounded-3xl overflow-hidden relative shadow-md hover:shadow-xl transition-shadow duration-300 group"
+            className="rounded-3xl overflow-hidden relative shadow-md hover:shadow-xl transition-shadow duration-300 group border border-neutral-100"
             style={{ aspectRatio: '3/4' }}
           >
             <img
@@ -67,14 +67,11 @@ export default function GallerySection({ photos }: { photos: GalleryPhoto[] }) {
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               loading={i < 3 ? 'eager' : 'lazy'}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-            <div className="absolute top-4 left-4 bg-black/40 backdrop-blur-sm border border-white/10 rounded-full px-2.5 py-1">
-              <span className="text-white/70 text-xs font-mono">{String(i + 1).padStart(2, '0')}</span>
-            </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
             {photo.caption && (
               <div className="absolute bottom-4 right-4 left-4 text-right">
                 <p className="text-white text-sm font-medium">{photo.caption}</p>
-                <div className="w-8 h-px bg-amber-400 mt-1.5 mr-auto" />
+                <div className="w-8 h-px bg-blue-400 mt-1.5 mr-auto" />
               </div>
             )}
           </div>
@@ -93,7 +90,7 @@ export default function GallerySection({ photos }: { photos: GalleryPhoto[] }) {
             <div
               key={photo.id}
               className={[
-                'flex-shrink-0 snap-center rounded-3xl overflow-hidden relative transition-all duration-300 shadow-lg',
+                'flex-shrink-0 snap-center rounded-3xl overflow-hidden relative transition-all duration-300 shadow-lg border border-neutral-100',
                 i === activeIdx
                   ? 'w-[78vw] max-w-[320px] opacity-100'
                   : 'w-[65vw] max-w-[270px] opacity-40 scale-[0.97]',
@@ -106,19 +103,16 @@ export default function GallerySection({ photos }: { photos: GalleryPhoto[] }) {
                 className="w-full h-full object-cover"
                 loading={i < 2 ? 'eager' : 'lazy'}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
               {i === activeIdx && (
-                <div className="absolute inset-0 rounded-3xl border border-amber-400/40 pointer-events-none" />
+                <div className="absolute inset-0 rounded-3xl border-2 border-blue-400/60 pointer-events-none" />
               )}
               {photo.caption && (
                 <div className="absolute bottom-4 right-4 left-4 text-right">
                   <p className="text-white text-sm font-medium">{photo.caption}</p>
-                  <div className="w-8 h-px bg-amber-400 mt-1.5 mr-auto" />
+                  <div className="w-8 h-px bg-blue-400 mt-1.5 mr-auto" />
                 </div>
               )}
-              <div className="absolute top-4 left-4 bg-black/40 backdrop-blur-sm border border-white/10 rounded-full px-2.5 py-1">
-                <span className="text-white/70 text-xs font-mono">{String(i + 1).padStart(2, '0')}</span>
-              </div>
             </div>
           ))}
         </div>
@@ -139,7 +133,7 @@ export default function GallerySection({ photos }: { photos: GalleryPhoto[] }) {
               <span
                 className={[
                   'block rounded-full transition-all duration-300',
-                  i === activeIdx ? 'w-6 h-1.5 bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]' : 'w-1.5 h-1.5 bg-white/20',
+                  i === activeIdx ? 'w-6 h-1.5 bg-blue-600' : 'w-1.5 h-1.5 bg-neutral-300',
                 ].join(' ')}
               />
             </button>

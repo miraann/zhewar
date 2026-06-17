@@ -1,12 +1,11 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
-import { Clock, BanIcon } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Clock, BanIcon, Pencil } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import type { WorkingSchedule, Customer } from '@/lib/types';
 
-const DAY_SHORT   = ['یەکشەممە', 'دووشەممە', 'سێشەممە', 'چوارشەممە', 'پێنجشەممە', 'هەینی', 'شەممە'];
-const MONTH_SHORT = ['ک٢', 'شوب', 'ئاز', 'نیس', 'ئای', 'حوز', 'تەم', 'ئاب', 'ئەی', 'تش١', 'تش٢', 'ک١'];
+const DAY_SHORT = ['یەکشەممە','دووشەممە','سێشەممە','چوارشەممە','پێنجشەممە','هەینی','شەممە'];
 
 export function formatTimeFull(slot: string): string {
   const [h, m] = slot.split(':').map(Number);
@@ -22,7 +21,7 @@ export function formatTimeFull(slot: string): string {
 
 function buildDates(): Date[] {
   const today = new Date(); today.setHours(0, 0, 0, 0);
-  return Array.from({ length: 7 }, (_, i) => {
+  return Array.from({ length: 14 }, (_, i) => {
     const d = new Date(today); d.setDate(today.getDate() + i); return d;
   });
 }
@@ -48,18 +47,30 @@ interface Props {
   onDateSelect: (date: Date) => void;
   onTimeSelect: (time: string | null) => void;
   onNext: () => void;
+  onEdit: () => void;
 }
 
 export default function DateTimePicker({
   selectedDate, selectedTime,
   workingSchedule, blockedDates,
   customer,
-  onDateSelect, onTimeSelect, onNext,
+  onDateSelect, onTimeSelect, onNext, onEdit,
 }: Props) {
   const dates = buildDates();
   const [pendingSlots,   setPendingSlots]   = useState<Set<string>>(new Set());
   const [confirmedSlots, setConfirmedSlots] = useState<Set<string>>(new Set());
   const [loadingSlots,   setLoadingSlots]   = useState(false);
+  const [slotRefreshKey, setSlotRefreshKey] = useState(0);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('realtime:appointments:slots')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, () => {
+        setSlotRefreshKey(k => k + 1);
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
 
   useEffect(() => {
     if (!selectedDate) return;
@@ -89,7 +100,7 @@ export default function DateTimePicker({
     }
     fetchSlots();
     return () => { dead = true; };
-  }, [selectedDate]);
+  }, [selectedDate, slotRefreshKey]);
 
   const daySchedule = selectedDate
     ? workingSchedule.find((s) => s.day_of_week === selectedDate.getDay())
@@ -98,51 +109,58 @@ export default function DateTimePicker({
     ? generateSlots(daySchedule.start_time, daySchedule.end_time, daySchedule.slot_interval)
     : [];
 
-  const today    = new Date(); today.setHours(0,0,0,0);
+  const today     = new Date(); today.setHours(0,0,0,0);
   const isBlocked = (d: Date) => blockedDates.includes(toDateStr(d));
   const isWorkDay = (d: Date) => Boolean(workingSchedule.find((w) => w.day_of_week === d.getDay())?.is_active);
   const canProceed = Boolean(selectedDate && selectedTime);
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-2px)] bg-neutral-950 relative overflow-hidden">
-      {/* Ambient glow */}
-      <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-80 h-64 bg-amber-500/8 rounded-full blur-3xl pointer-events-none" />
+    <div className="flex flex-col min-h-[calc(100vh-3px)] bg-transparent relative">
 
       {/* Header */}
-      <div className="px-5 pt-10 pb-5 relative z-10">
-        <p className="text-amber-500/60 text-xs tracking-[0.35em] mb-1 text-right">هەنگاوی ١ لە ٢</p>
-        <h2 className="text-[1.75rem] font-bold text-white leading-tight text-right">
+      <div className="px-4 pt-8 pb-4">
+        <p className="text-blue-600 text-xs tracking-[0.35em] mb-1 text-right font-medium">هەنگاوی ١ لە ٢</p>
+        <h2 className="text-[1.75rem] font-bold text-slate-900 leading-tight text-right">
           ڕۆژ و کات هەڵبژێرە
         </h2>
 
         {/* Customer chip */}
         {customer && (
-          <div className="flex items-center justify-between mt-5 p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+          <div className="flex items-center justify-between mt-4 p-3 rounded-2xl bg-white border border-slate-200 shadow-sm">
             <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-amber-500/40 shadow-sm flex-shrink-0 bg-amber-500/10">
+              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-slate-200 flex-shrink-0 bg-slate-100">
                 {customer.photo_url
                   ? <img src={customer.photo_url} alt={customer.full_name} className="w-full h-full object-cover" />
-                  : <div className="w-full h-full flex items-center justify-center text-amber-400 font-bold text-base">
+                  : <div className="w-full h-full flex items-center justify-center text-blue-600 font-bold text-base">
                       {customer.full_name.charAt(0)}
                     </div>
                 }
               </div>
               <div>
-                <p className="text-white font-bold text-sm leading-tight">{customer.full_name}</p>
-                <p className="text-white/35 text-[0.65rem] mt-0.5">{customer.phone_number}</p>
+                <p className="text-slate-900 font-bold text-sm leading-tight">{customer.full_name}</p>
+                <p className="text-slate-400 text-[0.65rem] mt-0.5">{customer.phone_number}</p>
               </div>
             </div>
-            <span className="text-[0.6rem] font-semibold tracking-wider px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-400">
-              کاتی سەردانیکردن
-            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={onEdit}
+                className="flex items-center gap-1 text-[0.6rem] font-semibold px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-500 active:text-slate-800 transition-all touch-manipulation"
+              >
+                <Pencil className="w-2.5 h-2.5" />
+                دەستکاری
+              </button>
+              <span className="text-[0.6rem] font-semibold tracking-wider px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-600">
+                کاتی سەردانیکردن
+              </span>
+            </div>
           </div>
         )}
       </div>
 
       {/* 7-day strip */}
-      <section className="px-4 mb-5 relative z-10">
-        <p className="text-white/25 text-[0.6rem] tracking-widest mb-2.5 text-right">ڕۆژ هەڵبژێرە</p>
-        <div dir="ltr" className="grid grid-cols-7 gap-1.5">
+      <section className="px-4 mb-4">
+        <p className="text-slate-500 text-[0.6rem] tracking-widest mb-2 text-right font-medium">ڕۆژ هەڵبژێرە</p>
+        <div dir="ltr" className="flex gap-1.5 overflow-x-auto pb-1 snap-x snap-mandatory scrollbar-none" style={{ scrollbarWidth: 'none' }}>
           {dates.map((date) => {
             const isSelected = selectedDate ? sameDay(date, selectedDate) : false;
             const isToday    = sameDay(date, today);
@@ -153,33 +171,33 @@ export default function DateTimePicker({
                 onClick={() => { if (!disabled) onDateSelect(date); }}
                 disabled={disabled}
                 className={[
-                  'flex flex-col items-center justify-center gap-[2px] py-3 rounded-2xl border transition-all duration-150 touch-manipulation select-none',
+                  'flex-shrink-0 w-[13%] flex flex-col items-center justify-center gap-[2px] py-3 rounded-2xl border transition-all duration-150 touch-manipulation select-none snap-start',
                   disabled
-                    ? 'border-white/5 bg-white/3 opacity-25 cursor-not-allowed'
+                    ? 'border-slate-100 bg-slate-50 opacity-35 cursor-not-allowed'
                     : isSelected
-                      ? 'bg-amber-500 border-amber-400 shadow-[0_4px_20px_rgba(245,158,11,0.35)]'
+                      ? 'bg-blue-600 border-blue-600 shadow-md shadow-blue-200/60'
                       : isToday
-                        ? 'bg-amber-500/10 border-amber-500/30 active:scale-[0.95]'
-                        : 'bg-white/5 border-white/10 active:border-amber-500/40 active:scale-[0.95]',
+                        ? 'bg-blue-50 border-blue-300 active:scale-[0.95]'
+                        : 'bg-white border-slate-200 active:border-blue-400 active:scale-[0.95] shadow-sm',
                 ].join(' ')}
               >
                 <span className={`text-[0.5rem] font-semibold leading-tight text-center w-full px-0.5 break-words ${
-                  isSelected ? 'text-neutral-900/70' : isToday ? 'text-amber-400' : disabled ? 'text-white/20' : 'text-white/40'
+                  isSelected ? 'text-white/80' : isToday ? 'text-blue-600' : disabled ? 'text-slate-300' : 'text-slate-500'
                 }`}>
                   {DAY_SHORT[date.getDay()]}
                 </span>
                 <span className={`text-[1.05rem] font-bold leading-none ${
-                  isSelected ? 'text-neutral-900' : isToday ? 'text-amber-400' : disabled ? 'text-white/20' : 'text-white/80'
+                  isSelected ? 'text-white' : isToday ? 'text-blue-700' : disabled ? 'text-slate-300' : 'text-slate-800'
                 }`}>
                   {date.getDate()}
                 </span>
                 {isToday && !isSelected && (
-                  <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-0.5" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-0.5" />
                 )}
                 {isSelected && (
-                  <div className="w-1.5 h-1.5 rounded-full bg-neutral-900/40 mt-0.5" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-white/40 mt-0.5" />
                 )}
-                {isBlocked(date) && <BanIcon className="w-2.5 h-2.5 text-red-400/60 mt-0.5" />}
+                {isBlocked(date) && <BanIcon className="w-2.5 h-2.5 text-red-400 mt-0.5" />}
               </button>
             );
           })}
@@ -187,23 +205,25 @@ export default function DateTimePicker({
       </section>
 
       {/* Time grid */}
-      <section className="flex-1 px-4 pb-36 relative z-10">
+      <section className="flex-1 px-4 pb-36">
+
+        {/* Legend + label */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3 text-[0.6rem] font-medium">
             <span className="flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />
-              <span className="text-white/35">چاوەڕوان</span>
+              <span className="text-slate-600">چاوەڕوان</span>
             </span>
             <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-red-400/70 inline-block" />
-              <span className="text-white/35">پەسەندکراوە</span>
+              <span className="w-2 h-2 rounded-full bg-red-400 inline-block" />
+              <span className="text-slate-600">پەسەندکراوە</span>
             </span>
             <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-400/70 inline-block" />
-              <span className="text-white/35">بەردەستە</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
+              <span className="text-slate-600">بەردەستە</span>
             </span>
           </div>
-          <p className="text-white/25 text-[0.6rem] tracking-widest text-right">
+          <p className="text-slate-500 text-[0.6rem] tracking-widest text-right">
             {!selectedDate
               ? 'پێشتر ڕۆژێک هەڵبژێرە'
               : !daySchedule?.is_active
@@ -216,7 +236,7 @@ export default function DateTimePicker({
           loadingSlots ? (
             <div className="grid grid-cols-2 gap-3">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-[58px] rounded-2xl bg-white/5 animate-pulse" />
+                <div key={i} className="h-[58px] rounded-2xl bg-slate-100 animate-pulse" />
               ))}
             </div>
           ) : (
@@ -234,25 +254,15 @@ export default function DateTimePicker({
                     className={[
                       'h-[58px] rounded-2xl border text-sm font-semibold transition-all duration-150 touch-manipulation select-none relative overflow-hidden',
                       isConfirmed
-                        ? 'border-red-500/20 bg-red-500/8 text-red-400/60 cursor-not-allowed'
+                        ? 'border-red-600 bg-red-600 text-white cursor-not-allowed'
                         : isPending
-                          ? 'border-amber-500/25 bg-amber-500/8 text-amber-400/70 cursor-not-allowed'
+                          ? 'border-amber-400 bg-amber-400 text-white cursor-not-allowed'
                           : chosen
-                            ? 'border-amber-400 bg-amber-500 text-neutral-950 shadow-[0_4px_20px_rgba(245,158,11,0.3)] active:scale-[0.97]'
-                            : 'border-emerald-500/20 bg-emerald-500/8 text-emerald-400 active:border-emerald-400/40 active:scale-[0.97]',
+                            ? 'border-blue-600 bg-blue-600 text-white shadow-md shadow-blue-200/60 active:scale-[0.97]'
+                            : 'border-emerald-500 bg-emerald-500 text-white active:scale-[0.97] shadow-sm',
                     ].join(' ')}
                   >
                     {formatTimeFull(slot)}
-                    {isPending && (
-                      <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-0.5">
-                        <span className="w-1 h-1 rounded-full bg-amber-400/60" />
-                        <span className="w-1 h-1 rounded-full bg-amber-400/60" />
-                        <span className="w-1 h-1 rounded-full bg-amber-400/60" />
-                      </span>
-                    )}
-                    {isConfirmed && (
-                      <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full bg-red-400/40" />
-                    )}
                   </button>
                 );
               })}
@@ -262,10 +272,10 @@ export default function DateTimePicker({
 
         {(!selectedDate || !daySchedule?.is_active) && (
           <div className="flex flex-col items-center justify-center py-16 gap-4">
-            <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-              <Clock className="w-7 h-7 text-amber-400/60" />
+            <div className="w-16 h-16 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center">
+              <Clock className="w-7 h-7 text-blue-400" />
             </div>
-            <p className="text-white/35 text-sm text-center leading-relaxed px-6">
+            <p className="text-slate-500 text-sm text-center leading-relaxed px-6">
               {!selectedDate
                 ? 'ڕۆژێک هەڵبژێرە بۆ بینینی کاتە بەردەستەکان'
                 : 'بەربەرخانەکە ئەم ڕۆژە داخراوە'}
@@ -275,19 +285,18 @@ export default function DateTimePicker({
       </section>
 
       {/* Sticky CTA */}
-      <div className="fixed bottom-0 inset-x-0 px-4 pt-14 pb-6 bg-gradient-to-t from-neutral-950 via-neutral-950/95 to-transparent pointer-events-none z-20">
+      <div className="fixed bottom-0 inset-x-0 px-4 pt-14 pb-6 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none z-20">
         <button
           disabled={!canProceed}
           onClick={onNext}
           className={[
-            'relative w-full py-[18px] rounded-2xl font-bold text-base tracking-wide transition-all duration-200 pointer-events-auto touch-manipulation select-none overflow-hidden',
+            'w-full h-14 rounded-2xl font-bold text-base tracking-wide transition-all duration-200 pointer-events-auto touch-manipulation select-none',
             canProceed
-              ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-neutral-950 shadow-[0_0_40px_rgba(245,158,11,0.3),0_4px_20px_rgba(245,158,11,0.2)] active:scale-[0.98]'
-              : 'bg-white/5 border border-white/10 text-white/25 cursor-not-allowed',
+              ? 'bg-blue-600 text-white shadow-md shadow-blue-200/70 active:bg-blue-700 active:scale-[0.98]'
+              : 'bg-slate-100 border border-slate-200 text-slate-400 cursor-not-allowed',
           ].join(' ')}
         >
-          {canProceed && <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />}
-          <span className="relative">{canProceed ? '← تۆمار کردن' : 'ڕۆژ و کات هەڵبژێرە'}</span>
+          {canProceed ? '← تۆمار کردن' : 'ڕۆژ و کات هەڵبژێرە'}
         </button>
       </div>
     </div>

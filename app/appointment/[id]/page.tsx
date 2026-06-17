@@ -1,8 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
+import { createHmac } from 'crypto';
 import AppointmentReceiptPage from '@/components/booking/AppointmentReceiptPage';
 import { notFound } from 'next/navigation';
 import { headers } from 'next/headers';
 import type { AppointmentFull } from '@/lib/types';
+
+function signAction(appointmentId: string, action: string): string {
+  return createHmac('sha256', process.env.ADMIN_TOKEN!)
+    .update(`${appointmentId}:${action}`)
+    .digest('hex');
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -22,7 +29,7 @@ export default async function AppointmentPage({ params }: { params: { id: string
       .from('appointments')
       .select(`
         id, appointment_time, status, created_at,
-        customers(full_name, phone_number, photo_url),
+        customers(full_name, phone_number, photo_url, facebook_id),
         services(name, duration, price)
       `)
       .eq('id', params.id)
@@ -36,10 +43,8 @@ export default async function AppointmentPage({ params }: { params: { id: string
   const host  = headersList.get('host') ?? 'localhost:3000';
   const proto = headersList.get('x-forwarded-proto') ?? 'http';
   const base  = `${proto}://${host}`;
-  const token = process.env.ADMIN_TOKEN ?? '';
-
-  const confirmUrl = `${base}/api/booking/${data.id}/confirm?token=${token}`;
-  const cancelUrl  = `${base}/api/booking/${data.id}/cancel?token=${token}`;
+  const confirmUrl = `${base}/api/booking/${data.id}/confirm?token=${signAction(data.id, 'confirm')}`;
+  const cancelUrl  = `${base}/api/booking/${data.id}/cancel?token=${signAction(data.id, 'cancel')}`;
 
   return (
     <AppointmentReceiptPage

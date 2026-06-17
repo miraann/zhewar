@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { Phone, Calendar, Clock, Search, ChevronRight } from 'lucide-react';
@@ -30,9 +30,9 @@ function formatDT(iso: string) {
 }
 
 const STATUS_STYLE: Record<string, string> = {
-  confirmed: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-  pending:   'bg-amber-500/10   text-amber-400   border-amber-500/20',
-  cancelled: 'bg-red-500/10     text-red-400     border-red-500/20',
+  confirmed: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+  pending:   'bg-amber-50   text-amber-800   border-amber-200',
+  cancelled: 'bg-red-50     text-red-700     border-red-200',
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -61,6 +61,21 @@ export default function MyBookingsPage() {
   const [searched, setSearched] = useState(false);
   const [error, setError]       = useState('');
 
+  useEffect(() => {
+    if (!bookings?.length) return;
+    const ids = bookings.map(b => b.id);
+    const channel = supabase
+      .channel('realtime:appointments:customer')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'appointments' }, (payload) => {
+        const updated = payload.new as { id: string; status: string };
+        if (ids.includes(updated.id)) {
+          setBookings(prev => prev?.map(b => b.id === updated.id ? { ...b, status: updated.status } : b) ?? prev);
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [bookings]);
+
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     const p = phone.trim();
@@ -85,71 +100,84 @@ export default function MyBookingsPage() {
   const customer = bookings?.[0]?.customers ?? null;
 
   return (
-    <div className="min-h-screen bg-neutral-950 flex flex-col items-center py-12 px-4 relative overflow-hidden">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-64 bg-amber-500/8 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen flex flex-col items-center py-12 px-4 relative overflow-hidden">
 
       <div className="w-full max-w-sm space-y-6 relative z-10">
 
         {/* Header */}
         <div className="text-center space-y-1">
-          <h1 className="text-2xl font-bold text-white">کاتەکانی سەردانیکردن</h1>
-          <p className="text-white/35 text-sm">ژمارە تەلەفۆنەکەت بنووسە</p>
+          <div className="flex justify-center mb-4">
+            <div
+              className="w-12 h-12 rounded-2xl p-[2.5px]"
+              style={{
+                background:
+                  'conic-gradient(#ef4444 0deg,#ef4444 120deg,#f8fafc 145deg,#3b82f6 170deg,#3b82f6 300deg,#f8fafc 325deg,#ef4444 360deg)',
+              }}
+            >
+              <div className="w-full h-full rounded-[13px] bg-white flex items-center justify-center">
+                <Search className="w-5 h-5 text-blue-600" />
+              </div>
+            </div>
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900">کاتەکانی سەردانیکردن</h1>
+          <p className="text-slate-500 text-sm">ژمارە تەلەفۆنەکەت بنووسە</p>
         </div>
 
         {/* Search form */}
-        <form onSubmit={handleSearch} className="space-y-3">
-          <div className="relative">
-            <Phone className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500/40" />
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="٠٧٧٠١٢٣٤٥٦٧"
-              dir="ltr"
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-3.5 pr-10 pl-4 text-white text-sm placeholder-white/25 focus:outline-none focus:border-amber-500/50 transition-colors"
-            />
-          </div>
-          {error && <p className="text-red-400 text-xs text-center">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="relative w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm overflow-hidden touch-manipulation active:scale-[0.98] transition-transform disabled:opacity-50 bg-gradient-to-r from-amber-500 to-amber-600 text-neutral-950 shadow-[0_0_30px_rgba(245,158,11,0.25)]"
-          >
-            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
-            <Search className="relative w-4 h-4" />
-            <span className="relative">{loading ? 'گەڕان...' : 'گەڕان'}</span>
-          </button>
-        </form>
+        <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-xl shadow-slate-200/40 border border-slate-100 p-5">
+          <form onSubmit={handleSearch} className="space-y-3">
+            <div className="relative">
+              <Phone className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="٠٧٧٠١٢٣٤٥٦٧"
+                dir="ltr"
+                className="w-full h-14 bg-slate-50/50 border border-slate-200 rounded-2xl py-3.5 pr-10 pl-4 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:border-blue-500/60 focus:bg-white transition-colors text-right"
+              />
+            </div>
+            {error && <p className="text-red-500 text-xs text-center">{error}</p>}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full h-14 rounded-2xl font-bold text-base flex items-center justify-center gap-2 touch-manipulation active:scale-[0.98] transition-all disabled:opacity-50 bg-blue-600 text-white shadow-md shadow-blue-200/60 active:bg-blue-700"
+            >
+              <Search className="w-4 h-4" />
+              <span>{loading ? 'گەڕان...' : 'گەڕان'}</span>
+            </button>
+          </form>
+        </div>
 
         {/* Results */}
         {searched && bookings !== null && (
           bookings.length === 0 ? (
-            <div className="text-center py-10 space-y-2">
-              <p className="text-white/35 text-sm">هیچ کاتی سەردانیکردنێک نەدۆزرایەوە</p>
-              <Link href="/book" className="text-amber-400 text-sm font-medium">تۆمارکردن ←</Link>
+            <div className="text-center py-10 space-y-2 bg-white/80 backdrop-blur-xl rounded-3xl border border-slate-100 shadow-lg p-6">
+              <p className="text-slate-500 text-sm">هیچ کاتی سەردانیکردنێک نەدۆزرایەوە</p>
+              <Link href="/book" className="text-blue-600 text-sm font-medium">تۆمارکردن ←</Link>
             </div>
           ) : (
             <div className="space-y-4">
 
               {/* Customer card */}
               {customer && (
-                <div className="bg-white/5 border border-white/10 backdrop-blur-sm rounded-3xl p-5 flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-full flex-shrink-0 overflow-hidden bg-amber-500/10 border-2 border-amber-500/20">
+                <div className="bg-white border border-slate-100 shadow-md rounded-3xl p-5 flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-full flex-shrink-0 overflow-hidden bg-slate-100 border-2 border-slate-200">
                     {customer.photo_url ? (
                       <img src={customer.photo_url} alt={customer.full_name} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-amber-400/60">
+                      <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-blue-400">
                         {customer.full_name.charAt(0)}
                       </div>
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-white font-bold text-base truncate">{customer.full_name}</p>
-                    <p className="text-white/35 text-sm mt-0.5 flex items-center gap-1.5" dir="ltr">
+                    <p className="text-slate-900 font-bold text-base truncate">{customer.full_name}</p>
+                    <p className="text-slate-400 text-sm mt-0.5 flex items-center gap-1.5" dir="ltr">
                       <Phone className="w-3.5 h-3.5 flex-shrink-0" />
                       {customer.phone_number}
                     </p>
-                    <p className="text-white/25 text-xs mt-1">{bookings.length} کاتی سەردانیکردن</p>
+                    <p className="text-slate-400 text-xs mt-1">{bookings.length} کاتی سەردانیکردن</p>
                   </div>
                 </div>
               )}
@@ -158,33 +186,33 @@ export default function MyBookingsPage() {
               <div className="space-y-3">
                 {bookings.map((b) => {
                   const { date, time, isPast } = formatDT(b.appointment_time);
-                  const shortId = '#' + b.id.replace(/-/g, '').slice(0, 8).toUpperCase();
+                  const sid = '#' + b.id.replace(/-/g, '').slice(0, 8).toUpperCase();
                   return (
                     <Link
                       key={b.id}
                       href={`/appointment/${b.id}`}
                       className={[
-                        'flex items-center gap-3 bg-white/5 border border-white/8 rounded-2xl p-4 backdrop-blur-sm active:bg-white/8 transition-colors touch-manipulation',
+                        'flex items-center gap-3 bg-white border border-slate-100 shadow-sm rounded-2xl p-4 active:bg-slate-50 transition-colors touch-manipulation',
                         isPast ? 'opacity-50' : '',
                       ].join(' ')}
                     >
                       <div className="flex-1 space-y-2 min-w-0">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-[0.65rem] font-mono font-semibold text-amber-400/60">{shortId}</span>
+                          <span className="text-[0.65rem] font-mono font-semibold text-blue-600">{sid}</span>
                           <span className={`text-[0.6rem] font-semibold tracking-wider px-2 py-0.5 rounded-full border ${STATUS_STYLE[b.status] ?? ''}`}>
                             {STATUS_LABEL[b.status] ?? b.status}
                           </span>
                         </div>
-                        <div className="flex items-center gap-3 text-xs text-white/40">
+                        <div className="flex items-center gap-3 text-xs text-slate-500">
                           <span className="flex items-center gap-1.5">
-                            <Calendar className="w-3.5 h-3.5 text-amber-500/50" />{date}
+                            <Calendar className="w-3.5 h-3.5 text-slate-400" />{date}
                           </span>
                           <span className="flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5 text-amber-500/50" />{time}
+                            <Clock className="w-3.5 h-3.5 text-slate-400" />{time}
                           </span>
                         </div>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-white/20 flex-shrink-0" />
+                      <ChevronRight className="w-4 h-4 text-slate-300 flex-shrink-0" />
                     </Link>
                   );
                 })}
@@ -194,7 +222,7 @@ export default function MyBookingsPage() {
         )}
 
         <div className="text-center pt-2">
-          <Link href="/" className="text-white/25 text-xs">← گەڕانەوە بۆ سەرەتا</Link>
+          <Link href="/" className="text-slate-400 text-xs">← گەڕانەوە بۆ سەرەتا</Link>
         </div>
       </div>
     </div>

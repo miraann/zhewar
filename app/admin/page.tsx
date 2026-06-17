@@ -1,33 +1,54 @@
+import { timingSafeEqual } from 'crypto';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import AdminLoginForm from '@/components/admin/LoginForm';
-import { Scissors } from 'lucide-react';
+
+function isValidSession(value: string): boolean {
+  const expected = process.env.ADMIN_TOKEN ?? '';
+  try {
+    const bufA = Buffer.from(value);
+    const bufB = Buffer.from(expected);
+    if (bufA.length !== bufB.length) return false;
+    return timingSafeEqual(bufA, bufB);
+  } catch { return false; }
+}
 
 export default function AdminLoginPage() {
   const session = cookies().get('admin_session');
-  if (session?.value && session.value === process.env.ADMIN_TOKEN) {
+  if (session?.value && isValidSession(session.value)) {
     redirect('/admin/dashboard');
   }
 
   return (
-    <main className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center px-5 relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_40%,rgba(245,158,11,0.07)_0%,transparent_70%)]" />
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
+    <main className="min-h-screen flex flex-col items-center justify-center px-5 relative overflow-hidden">
 
       <div className="relative z-10 w-full max-w-sm">
         <div className="flex flex-col items-center gap-4 mb-10">
-          <div className="relative">
-            <div className="w-16 h-16 rounded-full border border-amber-500/40 bg-amber-500/[0.08] flex items-center justify-center">
-              <Scissors className="w-7 h-7 text-amber-500" />
+          <div
+            className="w-16 h-16 rounded-full p-[3px]"
+            style={{
+              background: 'conic-gradient(#ef4444 0deg,#ef4444 110deg,#f8fafc 135deg,#3b82f6 160deg,#3b82f6 290deg,#f8fafc 315deg,#ef4444 360deg)',
+              animation: 'ringRotate 3.5s linear infinite',
+            }}
+          >
+            <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
+              <svg viewBox="0 0 24 24" className="w-7 h-7" fill="none" stroke="#3b82f6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" />
+                <path d="M18 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" />
+                <path d="M8.59 8.59L15 15" />
+                <path d="M15 9l-6.41 6.41" />
+              </svg>
             </div>
-            <div className="absolute -inset-1.5 rounded-full border border-amber-500/15 animate-pulse" />
           </div>
           <div className="text-center">
-            <h1 className="font-display text-3xl font-bold text-white">پانێڵی ئەدمین</h1>
-            <p className="text-neutral-500 text-xs tracking-[0.3em] mt-1">بەربەری لوکس</p>
+            <h1 className="text-3xl font-bold text-slate-900">پانێڵی ئەدمین</h1>
+            <p className="text-slate-400 text-xs tracking-[0.3em] mt-1">بەربەری لوکس</p>
           </div>
         </div>
-        <AdminLoginForm />
+
+        <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-xl shadow-slate-200/40 border border-slate-100 p-6">
+          <AdminLoginForm />
+        </div>
       </div>
     </main>
   );

@@ -14,10 +14,32 @@ function extractMeta(html: string, property: string): string | null {
 
 function normaliseUrl(raw: string): string {
   let url = raw.trim();
-  // m.me/username → facebook.com/username
   url = url.replace(/^https?:\/\/m\.me\//, 'https://www.facebook.com/');
   if (!url.startsWith('http')) url = 'https://' + url;
   return url;
+}
+
+function isSafeUrl(urlStr: string): boolean {
+  try {
+    const u = new URL(urlStr);
+    if (u.protocol !== 'https:' && u.protocol !== 'http:') return false;
+    const h = u.hostname.toLowerCase();
+    // Block loopback / localhost
+    if (h === 'localhost' || h === '::1') return false;
+    // Block 127.x.x.x, 0.x.x.x
+    if (/^(127\.|0\.)/.test(h)) return false;
+    // Block private RFC-1918 ranges
+    if (/^10\./.test(h)) return false;
+    if (/^172\.(1[6-9]|2\d|3[01])\./.test(h)) return false;
+    if (/^192\.168\./.test(h)) return false;
+    // Block link-local (169.254.x.x — AWS metadata etc.)
+    if (/^169\.254\./.test(h)) return false;
+    // Block IPv6 private ranges
+    if (/^(fc|fd)/i.test(h)) return false;
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export async function GET(req: NextRequest) {
@@ -25,6 +47,10 @@ export async function GET(req: NextRequest) {
   if (!raw) return NextResponse.json({ error: 'no url' }, { status: 400 });
 
   const url = normaliseUrl(raw);
+
+  if (!isSafeUrl(url)) {
+    return NextResponse.json({ error: 'invalid url' }, { status: 400 });
+  }
 
   try {
     const res = await fetch(url, {
@@ -40,10 +66,9 @@ export async function GET(req: NextRequest) {
 
     const html = await res.text();
 
-    const rawName  = extractMeta(html, 'og:title') ?? extractMeta(html, 'twitter:title');
-    const photo    = extractMeta(html, 'og:image') ?? extractMeta(html, 'twitter:image');
+    const rawName = extractMeta(html, 'og:title') ?? extractMeta(html, 'twitter:title');
+    const photo   = extractMeta(html, 'og:image') ?? extractMeta(html, 'twitter:image');
 
-    // Strip " | Facebook" suffix Facebook appends to og:title
     const name = rawName
       ? rawName.replace(/\s*[|–-]\s*Facebook\s*$/i, '').replace(/\s*[|–-]\s*Messenger\s*$/i, '').trim()
       : null;
