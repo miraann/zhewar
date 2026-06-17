@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import type { Customer, Service, WorkingSchedule } from '@/lib/types';
+import type { Customer, WorkingSchedule } from '@/lib/types';
+import { AlertCircle } from 'lucide-react';
 import DateTimePicker from './DateTimePicker';
 import BookingSummary from './BookingSummary';
 import CustomerRegistration from './CustomerRegistration';
@@ -21,26 +22,23 @@ export default function BookingFlow({ initialName, initialPhone }: Props) {
   const [step, setStep] = useState<Step>('register');
 
   const [customer, setCustomer]               = useState<Customer | null>(null);
-  const [service, setService]                 = useState<Service | null>(null);
   const [workingSchedule, setWorkingSchedule] = useState<WorkingSchedule[]>([]);
   const [blockedDates, setBlockedDates]       = useState<string[]>([]);
   const [selectedDate, setSelectedDate]       = useState<Date | null>(null);
   const [selectedTime, setSelectedTime]       = useState<string | null>(null);
   const [confirming, setConfirming]           = useState(false);
+  const [bookingError, setBookingError]       = useState<string | null>(null);
 
   useEffect(() => {
     async function init() {
       const [
-        { data: svcData },
         { data: scheduleData },
         { data: blockedData },
       ] = await Promise.all([
-        supabase.from('services').select('*').order('price'),
         supabase.from('working_schedule').select('*').order('day_of_week'),
         supabase.from('blocked_dates').select('blocked_date'),
       ]);
 
-      if (svcData && svcData.length > 0) setService(svcData[0]);
       if (scheduleData) setWorkingSchedule(scheduleData);
       if (blockedData)  setBlockedDates(blockedData.map((r) => r.blocked_date));
 
@@ -85,8 +83,9 @@ export default function BookingFlow({ initialName, initialPhone }: Props) {
   }, []);
 
   const handleConfirm = useCallback(async () => {
-    if (!selectedDate || !selectedTime || !service) return;
+    if (!selectedDate || !selectedTime) return;
     setConfirming(true);
+    setBookingError(null);
     const [h, m] = selectedTime.split(':').map(Number);
     const dt = new Date(selectedDate);
     dt.setHours(h, m, 0, 0);
@@ -94,22 +93,51 @@ export default function BookingFlow({ initialName, initialPhone }: Props) {
       .from('appointments')
       .insert({
         customer_id:      customer?.id ?? null,
-        service_id:       service.id,
         appointment_time: dt.toISOString(),
         status:           'pending',
       })
       .select()
       .single();
     setConfirming(false);
-    if (data && !error) { router.push(`/appointment/${data.id}`); }
-  }, [customer, service, selectedDate, selectedTime, router]);
+    if (error) {
+      console.error('Appointment insert error:', error);
+      setBookingError(`خەڵەت: ${error.message} (${error.code})`);
+      return;
+    }
+    if (data) { router.push(`/appointment/${data.id}`); }
+  }, [customer, selectedDate, selectedTime, router]);
+
+  const errorModal = bookingError && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-6" dir="rtl">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setBookingError(null)} />
+      <div className="relative w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl">
+        <div className="h-1 w-full bg-gradient-to-r from-red-500 via-red-400 to-orange-500" />
+        <div className="p-6 flex flex-col items-center gap-4 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center">
+            <AlertCircle className="w-7 h-7 text-red-500" />
+          </div>
+          <p className="text-slate-800 font-semibold text-sm leading-relaxed">{bookingError}</p>
+          <button
+            onClick={() => setBookingError(null)}
+            className="w-full h-12 rounded-2xl bg-blue-600 text-white font-bold text-sm active:bg-blue-700 transition-colors"
+          >
+            باشە، تێگەیشتم
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   if (step === 'register') return (
-    <CustomerRegistration onComplete={(cust) => { setCustomer(cust); setStep('datetime'); }} />
+    <>
+      {errorModal}
+      <CustomerRegistration onComplete={(cust) => { setCustomer(cust); setStep('datetime'); }} />
+    </>
   );
 
   return (
     <div className="min-h-screen flex flex-col bg-transparent">
+      {errorModal}
       <StepBar step={step} />
       {step === 'datetime' && (
         <DateTimePicker

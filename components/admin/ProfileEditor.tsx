@@ -78,7 +78,7 @@ export default function ProfileEditor() {
           value={form.logo_url ?? ''}
           onChange={(v) => set('logo_url', v)}
         />
-        <Field icon={User}   iconColor="text-blue-500"  label="ناوی دوکان" value={form.name}         onChange={(v) => set('name', v)}    placeholder="بەربەری لوکس"    />
+        <Field icon={User}   iconColor="text-blue-500"  label="ناوی دوکان" value={form.name}         onChange={(v) => set('name', v)}    placeholder="ژێوار محمد"    />
         <Field icon={User}   iconColor="text-violet-500" label="بایۆ"  value={form.tagline ?? ''} onChange={(v) => set('tagline', v)} placeholder="چاکسازی بەرز..." />
         <Field icon={MapPin} iconColor="text-rose-500"  label="ناونیشان"  value={form.address ?? ''} onChange={(v) => set('address', v)} placeholder="کوڕە سەرەکی، شار" />
       </div>

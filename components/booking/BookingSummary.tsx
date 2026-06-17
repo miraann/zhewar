@@ -29,7 +29,6 @@ interface Props {
 export default function BookingSummary({ customer, date, time, confirming, onBack, onConfirm }: Props) {
   const fbUrl = normalizeFbUrl(customer?.facebook_id ?? null);
   const [shopName, setShopName] = useState('');
-
   useEffect(() => {
     supabase.from('barber_profile').select('name').single()
       .then(({ data }) => { if (data?.name) setShopName(data.name); });
@@ -79,26 +78,15 @@ export default function BookingSummary({ customer, date, time, confirming, onBac
             {/* Identity section */}
             <div className="px-5 pt-5 pb-4 flex items-center gap-3" dir="rtl">
 
-              {/* Spinning conic avatar */}
-              <div className="relative w-[58px] h-[58px] flex-shrink-0">
-                <div
-                  className="absolute inset-0 rounded-full"
-                  style={{
-                    background: 'conic-gradient(#ef4444 0deg,#ef4444 110deg,#f8fafc 135deg,#3b82f6 160deg,#3b82f6 290deg,#f8fafc 315deg,#ef4444 360deg)',
-                    animation: 'ringRotate 4s linear infinite',
-                  }}
-                />
-                <div className="absolute inset-[2.5px] rounded-full bg-white">
-                  <div className="absolute inset-[2px] rounded-full overflow-hidden bg-slate-100">
-                    {customer?.photo_url ? (
-                      <img src={customer.photo_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-blue-50 text-blue-600 font-bold text-xl">
-                        {customer?.full_name.charAt(0) ?? '?'}
-                      </div>
-                    )}
+              {/* Customer avatar */}
+              <div className="w-[58px] h-[58px] rounded-full overflow-hidden border-2 border-slate-200 bg-slate-100 flex-shrink-0">
+                {customer?.photo_url ? (
+                  <img src={customer.photo_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-blue-50 text-blue-600 font-bold text-xl">
+                    {customer?.full_name.charAt(0) ?? '?'}
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Name + phone + Facebook */}
@@ -198,15 +186,6 @@ export default function BookingSummary({ customer, date, time, confirming, onBac
                 <Scissors className="w-2.5 h-2.5 text-slate-300 scale-x-[-1]" />
               </div>
             </div>
-
-            {/* Bottom barber-pole strip */}
-            <div
-              className="h-2.5 w-full"
-              style={{
-                backgroundImage: 'repeating-linear-gradient(45deg, #3b82f6, #3b82f6 10px, #ffffff 10px, #ffffff 20px, #ef4444 20px, #ef4444 30px, #ffffff 30px, #ffffff 40px)',
-                backgroundSize: '57px 100%',
-              }}
-            />
 
           </div>
         </div>

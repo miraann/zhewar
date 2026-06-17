@@ -68,6 +68,52 @@ const MSG_ICON = (
   </svg>
 );
 
+// ── Countdown ──────────────────────────────────────────────────────────────────
+
+function Countdown({ appointmentTime }: { appointmentTime: string }) {
+  const [label, setLabel] = useState('');
+
+  useEffect(() => {
+    function tick() {
+      const diff = new Date(appointmentTime).getTime() - Date.now();
+      if (diff <= 0) { setLabel('00:00:00:00'); return; }
+      const d  = Math.floor(diff / 86_400_000);
+      const h  = Math.floor((diff % 86_400_000) / 3_600_000);
+      const m  = Math.floor((diff % 3_600_000)  / 60_000);
+      const s  = Math.floor((diff % 60_000)      / 1_000);
+      const pad = (n: number) => String(n).padStart(2, '0');
+      setLabel(`${pad(d)}:${pad(h)}:${pad(m)}:${pad(s)}`);
+    }
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [appointmentTime]);
+
+  const passed   = new Date(appointmentTime).getTime() <= Date.now();
+  const segments = label.split(':');
+
+  return (
+    <div
+      className="flex items-center justify-center gap-1.5 px-3 h-14 rounded-xl"
+      style={{ background: passed ? '#94a3b8' : '#10b981' }}
+    >
+      {['D','H','M','S'].map((unit, i) => (
+        <div key={unit} className="flex items-center gap-1.5">
+          <div className="flex flex-col items-center">
+            <span className="font-black text-base leading-none tabular-nums text-white">
+              {segments[i] ?? '00'}
+            </span>
+            <span className="text-[0.5rem] font-semibold mt-0.5 text-white/70">
+              {unit}
+            </span>
+          </div>
+          {i < 3 && <span className="font-black text-base leading-none pb-2 text-white/50">:</span>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── Component ──────────────────────────────────────────────────────────────────
 
 export default function AppointmentsView() {
@@ -83,8 +129,7 @@ export default function AppointmentsView() {
     const { data } = await supabase
       .from('appointments')
       .select(`id, appointment_time, status, created_at,
-               customers(full_name, phone_number, photo_url, facebook_id),
-               services(name, duration, price)`)
+               customers(full_name, phone_number, photo_url, facebook_id)`)
       .order('appointment_time', { ascending: true });
     if (data) setAppointments(data as unknown as AppointmentFull[]);
     setLoading(false);
@@ -415,22 +460,26 @@ export default function AppointmentsView() {
                   )}
 
                   {isConfirmed && (
-                    <div className="flex gap-2 pt-0.5">
-                      <button
-                        onClick={() => updateStatus(appt.id, 'cancelled')}
-                        className="flex-1 h-11 rounded-xl flex items-center justify-center gap-2 font-medium text-sm touch-manipulation transition-all duration-200 active:scale-[0.98] text-white shadow-md shadow-red-500/20"
-                        style={{ background: 'linear-gradient(135deg, #ef4444, #dc2626)' }}
-                      >
-                        <XCircle className="w-[15px] h-[15px]" />
-                        هەڵوەشاندنەوە
-                      </button>
-                      <button
-                        onClick={() => updateStatus(appt.id, 'pending')}
-                        className="w-11 h-11 rounded-xl flex items-center justify-center touch-manipulation transition-all duration-200 active:scale-95 bg-slate-50 border border-slate-200/80 text-slate-400 active:bg-slate-100"
-                      >
-                        <RefreshCw className="w-[15px] h-[15px]" />
-                      </button>
-                    </div>
+                    (filter === 'upcoming' || filter === 'today')
+                      ? <Countdown appointmentTime={appt.appointment_time} />
+                      : (
+                        <div className="flex gap-2 pt-0.5">
+                          <button
+                            onClick={() => updateStatus(appt.id, 'cancelled')}
+                            className="flex-1 h-11 rounded-xl flex items-center justify-center gap-2 font-medium text-sm touch-manipulation transition-all duration-200 active:scale-[0.98] text-white shadow-md shadow-red-500/20"
+                            style={{ background: 'linear-gradient(135deg, #ef4444, #dc2626)' }}
+                          >
+                            <XCircle className="w-[15px] h-[15px]" />
+                            هەڵوەشاندنەوە
+                          </button>
+                          <button
+                            onClick={() => updateStatus(appt.id, 'pending')}
+                            className="w-11 h-11 rounded-xl flex items-center justify-center touch-manipulation transition-all duration-200 active:scale-95 bg-slate-50 border border-slate-200/80 text-slate-400 active:bg-slate-100"
+                          >
+                            <RefreshCw className="w-[15px] h-[15px]" />
+                          </button>
+                        </div>
+                      )
                   )}
 
                   {isCancelled && (

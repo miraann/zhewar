@@ -17,7 +17,6 @@ export interface Service {
 export interface Appointment {
   id: string;
   customer_id: string;
-  service_id: string;
   appointment_time: string;
   status: 'pending' | 'confirmed' | 'cancelled';
   created_at: string;
@@ -25,7 +24,6 @@ export interface Appointment {
 
 export interface AppointmentFull extends Appointment {
   customers: { full_name: string; phone_number: string; photo_url: string | null; facebook_id: string | null };
-  services: { name: string; duration: number; price: number };
 }
 
 export interface WorkingSchedule {

@@ -38,7 +38,7 @@ export async function generateMetadata(): Promise<Metadata> {
       ? { icon: logoUrl, apple: logoUrl, shortcut: logoUrl }
       : undefined,
     openGraph: {
-      title:       `${shopName} | Premium Grooming`,
+      title:       `${shopName} | Zhewar Muhamad`,
       description: 'Book your premium barber appointment instantly.',
       type:        'website',
       images:      logoUrl
@@ -47,7 +47,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card:   'summary',
-      title:  `${shopName} | Premium Grooming`,
+      title:  `${shopName} | Zhewar Muhamad`,
       images: logoUrl ? [logoUrl] : undefined,
     },
   };

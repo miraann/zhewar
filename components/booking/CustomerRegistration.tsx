@@ -1,27 +1,18 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { Camera, User, Phone, Loader2, HelpCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Camera, User, Phone, Loader2, HelpCircle, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import type { Customer } from '@/lib/types';
+import LiveCameraCapture from './LiveCameraCapture';
 
-function compressImage(file: File, maxPx = 400, quality = 0.78): Promise<Blob> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-      const scale  = Math.min(1, maxPx / Math.max(img.width, img.height));
-      const w      = Math.round(img.width  * scale);
-      const h      = Math.round(img.height * scale);
-      const canvas = document.createElement('canvas');
-      canvas.width  = w;
-      canvas.height = h;
-      canvas.getContext('2d')!.drawImage(img, 0, 0, w, h);
-      canvas.toBlob((blob) => resolve(blob ?? file), 'image/jpeg', quality);
-    };
-    img.src = url;
-  });
+function dataUrlToBlob(dataUrl: string): Blob {
+  const [meta, b64] = dataUrl.split(',');
+  const mime = meta.match(/:(.*?);/)?.[1] ?? 'image/jpeg';
+  const bin  = atob(b64);
+  const arr  = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type: mime });
 }
 
 interface Props {
@@ -41,7 +32,8 @@ export default function CustomerRegistration({ onComplete }: Props) {
   const [uploading, setUploading]       = useState(false);
   const [saving, setSaving]             = useState(false);
   const [error, setError]               = useState('');
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [alertMsg, setAlertMsg]         = useState('');
+  const [showCamera, setShowCamera]     = useState(false);
 
   useEffect(() => {
     fetch('/api/auth/facebook/profile')
@@ -80,27 +72,30 @@ export default function CustomerRegistration({ onComplete }: Props) {
     setFetchingFb(false);
   }
 
-  async function handlePhoto(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  async function handleCameraCapture(dataUrl: string) {
+    setShowCamera(false);
     setUploading(true);
-    const compressed = await compressImage(file);
+    const blob = dataUrlToBlob(dataUrl);
     const path = `customer-${Date.now()}.jpg`;
-    const { error: uploadErr } = await supabase.storage.from('uploads').upload(path, compressed, { upsert: true, contentType: 'image/jpeg' });
+    const { error: uploadErr } = await supabase.storage
+      .from('uploads')
+      .upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
     if (!uploadErr) {
       const { data } = supabase.storage.from('uploads').getPublicUrl(path);
       setPhotoUrl(data.publicUrl);
     }
     setUploading(false);
-    e.target.value = '';
   }
 
   async function handleSubmit() {
     if (!name.trim())                  { setError('تکایە ناوی خۆت بنووسە');                     return; }
     if (name.trim().length > 60)       { setError('ناو زۆر درێژە (زیاتر لە ٦٠ پیت)');             return; }
     if (!phone.trim())                 { setError('تکایە ژمارەی مۆبایلت بنووسە');               return; }
-    if (!/^\+?[0-9\s\-]{7,20}$/.test(phone.trim())) { setError('ژمارەی تەلەفۆن درست نییە');      return; }
-    if (!messengerUrl.trim())          { setError('تکایە لینکی فەیسبووک یان مێسینجەرت بنووسە'); return; }
+    if (!/^\+?[0-9\s\-]{7,20}$/.test(phone.trim())) { setError('ژمارەی تەلەفۆن دروست نییە');      return; }
+    if (!messengerUrl.trim()) {
+      setAlertMsg('بۆ پێشەکەش کردنی داواکاری پێویستە لینکی فەیسبووک یاخود مێسینجەر هاوپێج بکەیت');
+      return;
+    }
     setError('');
     setSaving(true);
     const { data, error: dbErr } = await supabase
@@ -126,6 +121,32 @@ export default function CustomerRegistration({ onComplete }: Props) {
   return (
     <div className="min-h-screen flex flex-col px-4 py-10">
 
+      {/* Custom alert modal */}
+      {alertMsg && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-6" dir="rtl">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setAlertMsg('')} />
+          <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl shadow-slate-300/50 border border-slate-100 overflow-hidden">
+            {/* Top accent bar */}
+            <div className="h-1 w-full bg-gradient-to-r from-blue-500 via-blue-400 to-blue-600" />
+            <div className="p-6 flex flex-col items-center gap-4 text-center">
+              {/* Icon */}
+              <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center">
+                <AlertCircle className="w-7 h-7 text-blue-500" />
+              </div>
+              {/* Message */}
+              <p className="text-slate-800 font-semibold text-sm leading-relaxed">{alertMsg}</p>
+              {/* Button */}
+              <button
+                onClick={() => setAlertMsg('')}
+                className="w-full h-12 rounded-2xl bg-blue-600 text-white font-bold text-sm active:bg-blue-700 active:scale-[0.98] transition-all touch-manipulation shadow-md shadow-blue-200/60"
+              >
+                باشە، تێگەیشتم
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Floating glass card */}
       <div className="w-full max-w-md mx-auto bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl shadow-slate-200/60 border border-slate-100 p-6 flex flex-col gap-6">
 
@@ -150,13 +171,20 @@ export default function CustomerRegistration({ onComplete }: Props) {
           </p>
         </div>
 
-        {/* Photo upload */}
+        {/* Live camera capture */}
+        {showCamera && (
+          <LiveCameraCapture
+            onCapture={handleCameraCapture}
+            onCancel={() => setShowCamera(false)}
+          />
+        )}
+
+        {/* Photo trigger */}
         <div className="flex flex-col items-center">
-          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
           <button
-            onClick={() => fileRef.current?.click()}
+            onClick={() => setShowCamera(true)}
             disabled={uploading}
-            className="relative w-20 h-20 rounded-full border-2 border-dashed border-slate-300 bg-slate-50 flex items-center justify-center overflow-hidden touch-manipulation active:scale-[0.96] transition-transform"
+            className="relative w-20 h-20 rounded-full border-2 border-dashed border-blue-300 bg-blue-50/40 flex items-center justify-center overflow-hidden touch-manipulation active:scale-[0.96] transition-transform"
           >
             {photoUrl ? (
               <>
@@ -164,17 +192,20 @@ export default function CustomerRegistration({ onComplete }: Props) {
                 <div className="absolute inset-0 bg-black/30 flex items-end justify-center pb-1.5">
                   <Camera className="w-4 h-4 text-white drop-shadow" />
                 </div>
+                <div className="absolute top-0 right-0 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shadow-md">
+                  <CheckCircle2 className="w-3 h-3 text-white" />
+                </div>
               </>
             ) : uploading ? (
               <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
             ) : (
               <div className="flex flex-col items-center gap-1">
-                <Camera className="w-5 h-5 text-slate-400" />
-                <span className="text-slate-400 text-[0.55rem] font-semibold">وێنەی خۆت</span>
+                <Camera className="w-5 h-5 text-blue-400" />
+                <span className="text-blue-400 text-[0.55rem] font-semibold">وێنەی خۆت</span>
               </div>
             )}
           </button>
-          <p className="text-slate-400 text-xs mt-1.5">ئارەزوومەند</p>
+          <p className="text-slate-400 text-xs mt-1.5">وێنەی ڕوخسارت تۆمار بکە</p>
         </div>
 
         {/* Form fields */}
@@ -302,10 +333,10 @@ export default function CustomerRegistration({ onComplete }: Props) {
         {/* Submit */}
         <button
           onClick={handleSubmit}
-          disabled={saving || uploading}
+          disabled={saving}
           className={[
             'w-full h-14 rounded-2xl font-bold text-base transition-all touch-manipulation select-none',
-            saving || uploading
+            saving
               ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
               : 'bg-blue-600 text-white shadow-md shadow-blue-200/70 active:bg-blue-700 active:scale-[0.98]',
           ].join(' ')}

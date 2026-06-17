@@ -86,7 +86,7 @@ export default function SocialEditor() {
   async function handleAdd() {
     if (!title.trim() || !url.trim()) return;
     if (!isValidUrl(url)) {
-      setAddError('بەستەرێکی درست بنووسە (https://...)');
+      setAddError('بەستەرێکی دروست بنووسە (https://...)');
       return;
     }
     setAdding(true);
@@ -117,7 +117,7 @@ export default function SocialEditor() {
   async function handleSaveEdit() {
     if (!editing) return;
     if (!isValidUrl(editing.url)) {
-      setEditError('بەستەرێکی درست بنووسە (https://...)');
+      setEditError('بەستەرێکی دروست بنووسە (https://...)');
       return;
     }
     setSaving(true);

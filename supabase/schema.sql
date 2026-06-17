@@ -1,5 +1,5 @@
 -- ============================================
--- بەربەری لوکس — سکیمای داتابەیس
+-- ژێوار محمد — سکیمای داتابەیس
 -- ============================================
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS blocked_dates (
 -- ── پرۆفایلی بەربەر ─────────────────────────
 CREATE TABLE IF NOT EXISTS barber_profile (
   id              UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
-  name            TEXT        NOT NULL DEFAULT 'بەربەری لوکس',
+  name            TEXT        NOT NULL DEFAULT 'ژێوار محمد',
   tagline         TEXT        DEFAULT 'چاکسازی بەرز بۆ پیاوی مۆدێرن',
   logo_url        TEXT,
   instagram_url   TEXT,
@@ -93,7 +93,7 @@ INSERT INTO working_schedule (day_of_week, is_active, start_time, end_time, slot
 ON CONFLICT (day_of_week) DO NOTHING;
 
 INSERT INTO barber_profile (name, tagline, whatsapp_number, address)
-SELECT 'بەربەری لوکس', 'چاکسازی بەرز بۆ پیاوی مۆدێرن', '+9647501234567', 'شەقامی سەرەکی، شار'
+SELECT 'ژێوار محمد', 'چاکسازی بەرز بۆ پیاوی مۆدێرن', '+9647501234567', 'شەقامی سەرەکی، شار'
 WHERE NOT EXISTS (SELECT 1 FROM barber_profile);
 
 INSERT INTO gallery_photos (photo_url, caption, sort_order) VALUES

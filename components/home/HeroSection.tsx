@@ -94,10 +94,10 @@ export default function HeroSection({ profile }: { profile: BarberProfile }) {
         </p>
         <Link
           href="/my-bookings"
-          className="flex items-center justify-center gap-2 w-full max-w-[300px] py-3.5 rounded-2xl font-bold text-base text-red-600 bg-red-50 border-2 border-red-400 active:bg-red-100 touch-manipulation transition-colors"
+          className="flex items-center justify-center gap-2 w-full max-w-[300px] py-3.5 rounded-2xl font-bold text-base text-white bg-red-500 active:bg-red-600 touch-manipulation transition-colors"
         >
           <Search className="w-4 h-4 flex-shrink-0" />
-          <span>کاتەکانی سەردانیکردن</span>
+          <span>بینین و دڵنیاکردنەوەی کاتی سەردانیکردن</span>
         </Link>
         <div className="flex flex-col items-center gap-1">
           <span className="text-neutral-400 text-[0.6rem] tracking-[0.25em]">سەرەتا</span>

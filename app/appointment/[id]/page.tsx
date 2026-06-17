@@ -29,12 +29,11 @@ export default async function AppointmentPage({ params }: { params: { id: string
       .from('appointments')
       .select(`
         id, appointment_time, status, created_at,
-        customers(full_name, phone_number, photo_url, facebook_id),
-        services(name, duration, price)
+        customers(full_name, phone_number, photo_url, facebook_id)
       `)
       .eq('id', params.id)
       .single(),
-    supabase.from('barber_profile').select('name, logo_url, whatsapp_number').single(),
+    supabase.from('barber_profile').select('name, logo_url').single(),
   ]);
 
   if (!data) notFound();
@@ -49,9 +48,8 @@ export default async function AppointmentPage({ params }: { params: { id: string
   return (
     <AppointmentReceiptPage
       appointment={data as unknown as AppointmentFull}
-      shopName={(profile as any)?.name ?? 'بەربەری لوکس'}
+      shopName={(profile as any)?.name ?? 'ژێوار محمد '}
       logoUrl={(profile as any)?.logo_url ?? null}
-      whatsappNumber={(profile as any)?.whatsapp_number ?? null}
       confirmUrl={confirmUrl}
       cancelUrl={cancelUrl}
     />

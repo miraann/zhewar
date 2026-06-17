@@ -11,7 +11,7 @@ export const revalidate = 30;
 
 const DEFAULT_PROFILE: BarberProfile = {
   id: '',
-  name: 'بەربەری لوکس',
+  name: ' ژێوار محمد',
   tagline: 'شێوازی تۆ، ناسنامەی تۆیە. لێرە کوالێتی و وردەکاری کۆدەبنەوە',
   logo_url: null,
   instagram_url: null,
@@ -77,8 +77,8 @@ export default async function HomePage() {
           }
         `}</style>
         <div className="relative max-w-2xl mx-auto flex flex-col items-center gap-0.5 text-center">
-          <p className="text-[0.7rem] font-semibold text-white leading-snug">
-            هەموو مافەکان پارێزراون | میران بەرزنجی © ٢٠٢٦
+          <p className="text-[1rem] font-semibold text-white leading-snug">
+               میران بەرزنجی © ٢٠٢٦
           </p>
           <a href="tel:+9647701466787" dir="ltr" className="flex items-center gap-1 text-[0.7rem] text-white leading-snug">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3 flex-shrink-0">

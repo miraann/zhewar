@@ -1,7 +1,7 @@
 'use client';
 
 import type { AppointmentFull } from '@/lib/types';
-import { Calendar, CheckCircle2, Clock, Download, MessageCircle, RotateCcw, Scissors, XCircle } from 'lucide-react';
+import { Calendar, CheckCircle2, Clock, Download, Home, RotateCcw, Scissors, XCircle } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { QRCodeCanvas } from 'qrcode.react';
@@ -30,6 +30,16 @@ function formatTime(iso: string) {
   return formatTimeFull(`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`);
 }
 
+function formatCreatedAt(iso: string) {
+  const d = new Date(iso);
+  const date = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+  const h24 = d.getHours();
+  const h12 = h24 % 12 || 12;
+  const ampm = h24 < 12 ? 'AM' : 'PM';
+  const time = `${h12}:${String(d.getMinutes()).padStart(2,'0')} ${ampm}`;
+  return `${date} — ${time}`;
+}
+
 function shortId(id: string) {
   return `#${id.replace(/-/g, '').slice(0, 8).toUpperCase()}`;
 }
@@ -38,12 +48,11 @@ interface Props {
   appointment: AppointmentFull;
   shopName: string;
   logoUrl: string | null;
-  whatsappNumber: string | null;
   confirmUrl: string;
   cancelUrl: string;
 }
 
-export default function AppointmentReceiptPage({ appointment, shopName, logoUrl, whatsappNumber }: Props) {
+export default function AppointmentReceiptPage({ appointment, shopName, logoUrl }: Props) {
   const [mounted, setMounted]             = useState(false);
   const [origin, setOrigin]               = useState('');
   const [formattedDate, setFormattedDate] = useState('');
@@ -75,19 +84,6 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl,
     return null;
   })();
 
-  const adminUrl = `${origin}/admin/dashboard?tab=appointments`;
-
-  const wa = encodeURIComponent(
-    `داواکاری نوێی\n` +
-    `ناو: ${appointment.customers.full_name}\n` +
-    `ڕۆژ: ${formattedDate}\n` +
-    `کات: ${formattedTime}\n` +
-    `تەلەفۆن: ${appointment.customers.phone_number}\n` +
-    `ژمارە: ${sid}\n` +
-    (fbUrl ? `فەیس بووک: ${fbUrl}\n` : '') +
-    `\n>>>> ئادمین پانێڵ\n` +
-    adminUrl
-  );
 
   async function handleDownload() {
     const qrCanvas = qrRef.current?.querySelector<HTMLCanvasElement>('canvas');
@@ -403,7 +399,7 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl,
             </div>
 
             {/* Tear line — before customer */}
-            <div className="border-t-2 border-dashed border-slate-100 mx-4 my-0" />
+            <div className="border-t-2 border-dashed border-slate-900 mx-4 my-0" />
 
             {/* Customer identity — centered, avatar top */}
             <div className="flex flex-col items-center gap-2 px-5 pt-5 pb-4">
@@ -444,20 +440,30 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl,
               <span className="text-blue-600 font-mono text-sm font-bold tracking-wider">{sid}</span>
             </div>
 
-            {/* Date + Time rows */}
-            <div className="divide-y divide-slate-100 border-t border-slate-100" dir="rtl">
-              {[
-                { icon: Calendar, label: 'بەروار', value: formattedDate, color: 'text-blue-400' },
-                { icon: Clock,    label: 'کات',    value: formattedTime, color: 'text-emerald-400' },
-              ].map(({ icon: Icon, label, value, color }) => (
-                <div key={label} className="flex items-center justify-between px-5 py-3.5">
-                  <p className="text-sm font-extrabold text-slate-800">{value}</p>
-                  <div className="flex items-center gap-2 text-slate-400">
-                    <p className="text-[10px] font-bold tracking-wider uppercase">{label}</p>
-                    <Icon className={`w-3.5 h-3.5 ${color} flex-shrink-0`} />
-                  </div>
+            {/* Submitted at */}
+            <div className="flex items-center justify-between px-5 py-2.5 border-t border-slate-100 bg-slate-50/60" dir="rtl">
+              <p className="text-[10px] font-bold text-slate-400 tracking-wider">کاتی تۆمارکردن</p>
+              <p className="text-[11px] font-semibold text-slate-500 font-mono" dir="ltr">{formatCreatedAt(appointment.created_at)}</p>
+            </div>
+
+            {/* Date + Time cards */}
+            <div className="grid grid-cols-2 gap-3 px-4 py-4 border-t border-slate-100" dir="rtl">
+              {/* Date */}
+              <div className="flex flex-col items-center gap-2 bg-blue-50 border border-blue-100 rounded-2xl py-4 px-3">
+                <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center">
+                  <Calendar className="w-4 h-4 text-blue-600" />
                 </div>
-              ))}
+                <p className="text-[10px] font-bold text-blue-400 tracking-wider">بەروار</p>
+                <p className="text-base font-extrabold text-slate-800 leading-tight">{formattedDate}</p>
+              </div>
+              {/* Time */}
+              <div className="flex flex-col items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-2xl py-4 px-3">
+                <div className="w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center">
+                  <Clock className="w-4 h-4 text-emerald-600" />
+                </div>
+                <p className="text-[10px] font-bold text-emerald-400 tracking-wider">کات</p>
+                <p className="text-base font-extrabold text-slate-800 leading-tight">{formattedTime}</p>
+              </div>
             </div>
 
             {/* QR code */}
@@ -503,26 +509,19 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl,
 
       {/* Action buttons */}
       <div className={`w-full max-w-sm mt-4 space-y-3 ${fadeClass}`} style={{ transitionDelay: '300ms' }}>
-        {!isCancelled && (
-          <a
-            href={whatsappNumber
-              ? `https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}?text=${wa}`
-              : `https://wa.me/?text=${wa}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-3 w-full h-14 rounded-2xl font-bold text-base text-white active:scale-[0.98] transition-all touch-manipulation select-none shadow-md"
-            style={{ background: 'linear-gradient(135deg,#25d366,#128c7e)' }}
-          >
-            <MessageCircle className="w-5 h-5" />
-            <span>داواکاریەکەت بنێرە بۆ وەتسئاپ</span>
-          </a>
-        )}
         <Link
-          href="/book"
-          className="flex items-center justify-center gap-2.5 w-full h-14 rounded-2xl border-2 border-slate-200 bg-white text-slate-700 font-bold text-base active:bg-slate-50 active:scale-[0.98] transition-all touch-manipulation select-none shadow-sm"
+          href="/my-bookings"
+          className="flex items-center justify-center gap-2.5 w-full h-14 rounded-2xl bg-red-500 text-white font-bold text-base active:bg-red-600 active:scale-[0.98] transition-all touch-manipulation select-none shadow-sm"
         >
           <RotateCcw className="w-4 h-4" />
-          کاتی سەردانیکردنێکی دیکە وەربگرە
+          بینین و دڵنیاکردنەوەی کاتی سەردانیکردن
+        </Link>
+        <Link
+          href="/"
+          className="flex items-center justify-center gap-2.5 w-full h-14 rounded-2xl border-2 border-slate-200 bg-white text-slate-700 font-bold text-base active:bg-slate-50 active:scale-[0.98] transition-all touch-manipulation select-none shadow-sm"
+        >
+          <Home className="w-4 h-4" />
+          سەرەتا
         </Link>
       </div>
     </div>

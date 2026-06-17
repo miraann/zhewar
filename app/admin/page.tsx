@@ -42,7 +42,7 @@ export default function AdminLoginPage() {
           </div>
           <div className="text-center">
             <h1 className="text-3xl font-bold text-slate-900">پانێڵی ئەدمین</h1>
-            <p className="text-slate-400 text-xs tracking-[0.3em] mt-1">بەربەری لوکس</p>
+            <p className="text-slate-400 text-xs tracking-[0.3em] mt-1"> ژێوار محمد </p>
           </div>
         </div>
 

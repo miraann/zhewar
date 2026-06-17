@@ -84,29 +84,19 @@ export default function SocialSection({ profile }: { profile: BarberProfile }) {
         <div className="space-y-3">
           {ITEMS.map(({ key, label, icon: Icon, iconBg, iconColor, borderColor, activeShadow }) => {
             const value    = profile[key] as string | null;
-            const isActive = Boolean(value);
-            const url      = value
-              ? key === 'whatsapp_number'
-                ? `https://wa.me/${value.replace(/\D/g, '')}`
-                : value
-              : '#';
+            if (!value) return null;
+            const url = key === 'whatsapp_number'
+              ? `https://wa.me/${value.replace(/\D/g, '')}`
+              : value;
 
             return (
               <a
                 key={key}
-                href={isActive ? url : undefined}
-                target={isActive ? '_blank' : undefined}
+                href={url}
+                target="_blank"
                 rel="noopener noreferrer"
-                className={[
-                  'flex items-center gap-4 p-4 rounded-2xl bg-white border transition-all duration-200 touch-manipulation',
-                  isActive
-                    ? 'active:scale-[0.98] cursor-pointer'
-                    : 'opacity-40 cursor-default',
-                ].join(' ')}
-                style={{
-                  borderColor: isActive ? borderColor : '#f3f4f6',
-                  boxShadow: isActive ? activeShadow : '0 1px 4px rgba(0,0,0,0.04)',
-                }}
+                className="flex items-center gap-4 p-4 rounded-2xl bg-white border transition-all duration-200 touch-manipulation active:scale-[0.98] cursor-pointer"
+                style={{ borderColor, boxShadow: activeShadow }}
               >
                 {/* Brand icon box */}
                 <div
@@ -120,15 +110,13 @@ export default function SocialSection({ profile }: { profile: BarberProfile }) {
                 <div className="flex-1 min-w-0 text-right">
                   <p className="text-neutral-900 font-bold text-base">{label}</p>
                   <p className="text-neutral-400 text-xs mt-0.5 truncate">
-                    {isActive
-                      ? key === 'maps_url'
-                        ? 'گوگڵ مەپس — گرتە بکە بۆ نەخشە'
-                        : (value!.startsWith('http') ? value!.replace(/https?:\/\/(www\.)?/, '') : value)
-                      : 'دانەنراوە'}
+                    {key === 'maps_url'
+                      ? 'گوگڵ مەپس — گرتە بکە بۆ نەخشە'
+                      : (value.startsWith('http') ? value.replace(/https?:\/\/(www\.)?/, '') : value)}
                   </p>
                 </div>
 
-                {isActive && <ExternalLink className="w-4 h-4 text-neutral-300 flex-shrink-0" />}
+                <ExternalLink className="w-4 h-4 text-neutral-300 flex-shrink-0" />
               </a>
             );
           })}
