@@ -50,12 +50,17 @@ export default function CustomerRegistration({ onComplete }: Props) {
   function toFbUrl(raw: string): string {
     const s = raw.trim();
     if (!s) return '';
+    // m.me links
     const mme = s.match(/m\.me\/([^/?&#\s]+)/);
     if (mme) return `https://m.me/${mme[1]}`;
-    const fb = s.match(/facebook\.com\/(?:profile\.php\?id=)?([^/?&#\s]+)/);
-    if (fb) return `https://www.facebook.com/${fb[1]}`;
-    if (s.startsWith('http')) return s;
+    // Any facebook.com URL (profiles, share links, etc.) — keep full URL as-is
+    if (s.includes('facebook.com') || s.includes('fb.com')) {
+      return s.startsWith('http') ? s : `https://${s}`;
+    }
+    // Plain numeric ID
     if (/^\d+$/.test(s)) return `https://www.facebook.com/profile.php?id=${s}`;
+    // Plain username
+    if (/^[a-zA-Z0-9._]+$/.test(s)) return `https://www.facebook.com/${s}`;
     return '';
   }
 
