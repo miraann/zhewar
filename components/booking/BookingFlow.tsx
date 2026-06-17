@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import type { BarberProfile, Customer, Service, WorkingSchedule } from '@/lib/types';
+import type { Customer, Service, WorkingSchedule } from '@/lib/types';
 import DateTimePicker from './DateTimePicker';
 import BookingSummary from './BookingSummary';
 import CustomerRegistration from './CustomerRegistration';
@@ -109,7 +109,7 @@ export default function BookingFlow({ initialName, initialPhone }: Props) {
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-neutral-950">
+    <div className="min-h-screen flex flex-col bg-transparent">
       <StepBar step={step} />
       {step === 'datetime' && (
         <DateTimePicker
@@ -118,6 +118,10 @@ export default function BookingFlow({ initialName, initialPhone }: Props) {
           customer={customer}
           onDateSelect={handleDateChange} onTimeSelect={setSelectedTime}
           onNext={() => setStep('summary')}
+          onEdit={() => {
+            try { localStorage.removeItem('luxe_registered'); } catch {}
+            setStep('register');
+          }}
         />
       )}
       {step === 'summary' && selectedDate && selectedTime && (
@@ -136,9 +140,9 @@ function StepBar({ step }: { step: Step }) {
   const idx = STEP_ORDER.indexOf(step);
   if (idx === -1) return null;
   return (
-    <div className="w-full h-[2px] bg-white/5 relative">
+    <div className="w-full h-[3px] bg-slate-200 relative">
       <div
-        className="absolute right-0 top-0 h-full bg-gradient-to-l from-amber-500 to-amber-400 transition-all duration-500 ease-out rounded-full shadow-[0_0_8px_rgba(245,158,11,0.6)]"
+        className="absolute right-0 top-0 h-full bg-blue-600 transition-all duration-500 ease-out rounded-full"
         style={{ width: `${((idx + 1) / STEP_ORDER.length) * 100}%` }}
       />
     </div>

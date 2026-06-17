@@ -34,7 +34,6 @@ export default function AdminLoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Password field */}
       <div className="relative">
         <input
           type={show ? 'text' : 'password'}
@@ -42,42 +41,41 @@ export default function AdminLoginForm() {
           onChange={(e) => setPassword(e.target.value)}
           placeholder="ووشەی نهێنی ئەدمین بنووسە"
           required
-          className="w-full bg-white/[0.05] border border-white/[0.1] rounded-2xl px-5 py-4 text-white placeholder-neutral-600 text-base outline-none focus:border-amber-500/50 focus:bg-white/[0.07] transition-all pr-12"
+          dir="rtl"
+          className="w-full h-14 bg-slate-50/50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-900 placeholder-slate-400 text-base outline-none focus:border-blue-500/60 focus:bg-white transition-all pr-12"
         />
         <button
           type="button"
           onClick={() => setShow((s) => !s)}
-          className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 active:text-white transition-colors touch-manipulation"
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 active:text-slate-700 transition-colors touch-manipulation"
         >
           {show ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
         </button>
       </div>
 
-      {/* Error */}
       {error && (
-        <p className="text-red-400 text-sm text-center bg-red-500/10 border border-red-500/20 rounded-xl py-3 px-4">
+        <p className="text-red-600 text-sm text-center bg-red-50 border border-red-200 rounded-xl py-3 px-4">
           {error}
         </p>
       )}
 
-      {/* Submit */}
       <button
         type="submit"
         disabled={loading || !password}
         className={[
           'w-full flex items-center justify-center gap-2.5 py-4 rounded-2xl font-semibold text-base tracking-wide transition-all duration-200 touch-manipulation',
           loading || !password
-            ? 'bg-white/[0.05] text-neutral-600 border border-white/[0.07] cursor-not-allowed'
-            : 'bg-amber-500 text-neutral-950 shadow-[0_0_30px_rgba(245,158,11,0.3)] active:scale-[0.98]',
+            ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+            : 'bg-blue-600 text-white shadow-md shadow-blue-200/60 active:bg-blue-700 active:scale-[0.98]',
         ].join(' ')}
       >
         {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <LogIn className="w-5 h-5" />}
         {loading ? 'چوونەژوورەوە...' : 'چوونەژوورەوە'}
       </button>
 
-      <p className="text-center text-neutral-700 text-xs mt-6">
+      <p className="text-center text-slate-400 text-xs mt-6">
         تەنها دەستگەیشتنی ئەدمین. ووشەی نهێنیت لە{' '}
-        <code className="text-neutral-600">.env.local</code>{' '}
+        <code className="text-slate-500">.env.local</code>{' '}
         دادەنرێت
       </p>
     </form>
