@@ -440,34 +440,21 @@ export default function AppointmentsView() {
                     <a
                       href={`https://wa.me/${appt.customers.phone_number.replace(/[^0-9]/g, '')}`}
                       target="_blank" rel="noopener noreferrer"
-                      className="flex-1 h-11 rounded-xl flex items-center justify-center touch-manipulation transition-all duration-200 active:scale-95 bg-emerald-50 border border-emerald-100 text-emerald-600 active:bg-emerald-100"
+                      className="flex-1 h-11 rounded-xl flex items-center justify-center touch-manipulation transition-all duration-200 active:scale-95 active:opacity-80"
+                      style={{ background: '#25d366' }}
                     >
-                      {WA_ICON}
+                      <span className="text-white">{WA_ICON}</span>
                     </a>
 
-                    {fbLinks ? (
-                      <>
-                        {/* Facebook */}
-                        <a
-                          href={fbLinks.fbUrl}
-                          target="_blank" rel="noopener noreferrer"
-                          className="flex-1 h-11 rounded-xl flex items-center justify-center touch-manipulation transition-all duration-200 active:scale-95 bg-blue-50 border border-blue-100 text-blue-600 active:bg-blue-100"
-                        >
-                          {FB_ICON}
-                        </a>
-
-                        {/* Messenger */}
-                        <a
-                          href={fbLinks.messengerUrl}
-                          target="_blank" rel="noopener noreferrer"
-                          className="flex-1 h-11 rounded-xl flex items-center justify-center touch-manipulation transition-all duration-200 active:scale-95 bg-sky-50 border border-sky-100 text-sky-600 active:bg-sky-100"
-                        >
-                          {MSG_ICON}
-                        </a>
-                      </>
-                    ) : (
-                      /* No Facebook: WA fills remaining space, already flex-1 above */
-                      null
+                    {fbLinks && (
+                      <a
+                        href={fbLinks.fbUrl}
+                        target="_blank" rel="noopener noreferrer"
+                        className="flex-1 h-11 rounded-xl flex items-center justify-center touch-manipulation transition-all duration-200 active:scale-95 active:opacity-80"
+                        style={{ background: '#1877f2' }}
+                      >
+                        <span className="text-white">{FB_ICON}</span>
+                      </a>
                     )}
                   </div>
 
