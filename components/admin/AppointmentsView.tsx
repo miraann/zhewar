@@ -13,10 +13,28 @@ import {
 function getFbLinks(raw: string): { fbUrl: string; messengerUrl: string } | null {
   if (!raw) return null;
   const s = raw.trim();
+
+  // m.me/username → direct messenger link
   const mme = s.match(/m\.me\/([^/?&#\s]+)/);
   if (mme) return { fbUrl: `https://www.facebook.com/${mme[1]}`, messengerUrl: `https://m.me/${mme[1]}` };
-  const fb = s.match(/facebook\.com\/(?:profile\.php\?id=)?([^/?&#\s]+)/);
+
+  // profile.php?id=NUMERIC → numeric ID works for m.me too
+  const numId = s.match(/facebook\.com\/profile\.php\?id=(\d+)/);
+  if (numId) return { fbUrl: s, messengerUrl: `https://m.me/${numId[1]}` };
+
+  // facebook.com/share/... — obfuscated share link, no username available
+  if (/facebook\.com\/share\//i.test(s)) return { fbUrl: s, messengerUrl: s };
+
+  // facebook.com/USERNAME (regular profile)
+  const fb = s.match(/facebook\.com\/([^/?&#\s]+)/);
   if (fb) return { fbUrl: `https://www.facebook.com/${fb[1]}`, messengerUrl: `https://m.me/${fb[1]}` };
+
+  // bare numeric ID
+  if (/^\d+$/.test(s)) return {
+    fbUrl: `https://www.facebook.com/profile.php?id=${s}`,
+    messengerUrl: `https://m.me/${s}`,
+  };
+
   if (s.startsWith('http')) return { fbUrl: s, messengerUrl: s };
   return null;
 }
