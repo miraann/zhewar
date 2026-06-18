@@ -246,7 +246,7 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0b0f1a] font-sans"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-md font-sans"
       dir="rtl"
     >
       {/* Hidden analysis canvas (not used for display) */}
@@ -286,20 +286,20 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
               'none',
           }}
         >
-          <div className="w-full h-full rounded-full bg-[#0b0f1a]" />
+          <div className="w-full h-full rounded-full bg-slate-950/90" />
         </div>
 
         {/* Outer pulse ring */}
         {phase === 'searching' && (
           <div
-            className="absolute rounded-full border-2 border-dashed border-amber-400/35 animate-pulse"
-            style={{ inset: -10 }}
+            className="absolute rounded-full border-2 border-dashed border-amber-500/60 animate-pulse"
+            style={{ inset: -10, boxShadow: '0 0 30px rgba(245,158,11,0.15)' }}
           />
         )}
         {phase === 'face_found' && (
           <div
-            className="absolute rounded-full border-2 border-emerald-500/50"
-            style={{ inset: -10 }}
+            className="absolute rounded-full border-2 border-emerald-500"
+            style={{ inset: -10, boxShadow: '0 0 40px rgba(16,185,129,0.3)' }}
           />
         )}
 
@@ -479,16 +479,6 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
             <RefreshCw className="w-4 h-4" />
           </button>
         </div>
-      )}
-
-      {/* Manual capture fallback */}
-      {(phase === 'searching' || phase === 'face_found') && (
-        <button
-          onClick={captureNow}
-          className="mt-6 text-white/25 text-xs underline underline-offset-4 touch-manipulation"
-        >
-          بەدەستی وێنە بگرە
-        </button>
       )}
 
       <style>{`
