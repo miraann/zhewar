@@ -39,6 +39,18 @@ function getFbLinks(raw: string): { fbUrl: string; messengerUrl: string } | null
   return null;
 }
 
+function formatCreatedAt(iso: string) {
+  const d  = new Date(iso);
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const yy = d.getFullYear();
+  const h24 = d.getHours();
+  const h12 = h24 % 12 || 12;
+  const min  = String(d.getMinutes()).padStart(2, '0');
+  const ampm = h24 < 12 ? 'AM' : 'PM';
+  return `${dd}/${mm}/${yy} — ${h12}:${min} ${ampm}`;
+}
+
 const DAY_NAMES_KU = ['یەکشەممە', 'دووشەممە', 'سێشەممە', 'چوارشەممە', 'پێنجشەممە', 'هەینی', 'شەممە'];
 
 function formatDT(iso: string) {
@@ -401,6 +413,9 @@ export default function AppointmentsView() {
                       </div>
                       <p className="text-[0.67rem] text-slate-400 mt-[3px] font-mono tracking-wide" dir="ltr">
                         {appt.customers.phone_number}
+                      </p>
+                      <p className="text-[0.62rem] text-slate-300 mt-[2px] font-mono" dir="ltr">
+                        ⏱ {formatCreatedAt(appt.created_at)}
                       </p>
                     </div>
 
