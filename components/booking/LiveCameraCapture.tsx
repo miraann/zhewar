@@ -495,10 +495,10 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
             <p className="text-amber-400 font-bold text-base leading-snug">
               {faceHint === 'partial'
                 ? 'تکایە ڕوخسارت بهێنە ناوەڕاستی چوارچێوەکە'
-                : 'دەموچاوی خۆت بخرە بەرامبەر کامێرا'}
+                : '  کامێرا بکە سەر ڕوخسارت'}
             </p>
             <p className="text-white/45 text-xs">
-              {faceHint === 'partial' ? 'ڕووخسار دۆزرایەوە، بەڵام ئەلایمانی ڕاستەقینە نییە' : 'گەڕان بۆ ڕووخسار...'}
+              {faceHint === 'partial' ? 'ڕووخسار دۆزرایەوە، بەڵام کەسی ڕاستەقینە نییە' : 'گەڕان بۆ ڕووخسار...'}
             </p>
             <div className="flex gap-1.5 mt-1">
               {[0, 1, 2].map(i => (
@@ -518,7 +518,7 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
               ڕووخسار ڕێکە
             </p>
             <p className="text-white font-semibold text-sm leading-snug">
-              ئێستا چاو ببڕکێنە
+              ئێستا چاو بتروکێنە
             </p>
             <p className="text-white/40 text-[0.7rem] mt-0.5">
               یان چاوەڕوان بە بۆ وێنەگرتنی خۆکار
@@ -535,8 +535,8 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
 
         {phase === 'captured' && (
           <>
-            <p className="text-emerald-400 font-bold text-lg">پڕوکێنان تەسدیق کرا ✓</p>
-            <p className="text-white/55 text-xs">وێنەکەت تۆمار کرا</p>
+            <p className="text-emerald-400 font-bold text-lg">وێنەکەت تۆمار کرا ✓</p>
+            <p className="text-white/55 text-xs">  کارەکەت سەرکەوتووبوو</p>
           </>
         )}
 
