@@ -73,11 +73,6 @@ export default function AdminLoginForm() {
         {loading ? 'چوونەژوورەوە...' : 'چوونەژوورەوە'}
       </button>
 
-      <p className="text-center text-slate-400 text-xs mt-6">
-        تەنها دەستگەیشتنی ئەدمین. ووشەی نهێنیت لە{' '}
-        <code className="text-slate-500">.env.local</code>{' '}
-        دادەنرێت
-      </p>
     </form>
   );
 }
