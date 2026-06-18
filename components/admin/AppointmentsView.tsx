@@ -431,7 +431,7 @@ export default function AppointmentsView() {
                     {/* Phone */}
                     <a
                       href={`tel:${appt.customers.phone_number}`}
-                      className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 touch-manipulation transition-all duration-200 active:scale-95 bg-slate-50 border border-slate-200/80 text-slate-600 active:bg-slate-100"
+                      className="flex-1 h-11 rounded-xl flex items-center justify-center touch-manipulation transition-all duration-200 active:scale-95 bg-slate-50 border border-slate-200/80 text-slate-600 active:bg-slate-100"
                     >
                       <Phone className="w-[17px] h-[17px]" />
                     </a>
@@ -469,37 +469,41 @@ export default function AppointmentsView() {
                         <CheckCircle2 className="w-[15px] h-[15px]" />
                         پەسەندکردن
                       </button>
-                      <button
-                        onClick={() => updateStatus(appt.id, 'cancelled')}
-                        className="w-11 h-11 rounded-xl flex items-center justify-center touch-manipulation transition-all duration-200 active:scale-[0.98] text-white shadow-md shadow-red-500/20"
-                        style={{ background: 'linear-gradient(135deg, #ef4444, #dc2626)' }}
-                      >
-                        <XCircle className="w-[17px] h-[17px]" />
-                      </button>
+                      {filter === 'all' && (
+                        <button
+                          onClick={() => updateStatus(appt.id, 'cancelled')}
+                          className="w-11 h-11 rounded-xl flex items-center justify-center touch-manipulation transition-all duration-200 active:scale-[0.98] text-white shadow-md shadow-red-500/20"
+                          style={{ background: 'linear-gradient(135deg, #ef4444, #dc2626)' }}
+                        >
+                          <XCircle className="w-[17px] h-[17px]" />
+                        </button>
+                      )}
                     </div>
                   )}
 
                   {isConfirmed && (
                     (filter === 'upcoming' || filter === 'today')
                       ? <Countdown appointmentTime={appt.appointment_time} />
-                      : (
-                        <div className="flex gap-2 pt-0.5">
-                          <button
-                            onClick={() => updateStatus(appt.id, 'cancelled')}
-                            className="flex-1 h-11 rounded-xl flex items-center justify-center gap-2 font-medium text-sm touch-manipulation transition-all duration-200 active:scale-[0.98] text-white shadow-md shadow-red-500/20"
-                            style={{ background: 'linear-gradient(135deg, #ef4444, #dc2626)' }}
-                          >
-                            <XCircle className="w-[15px] h-[15px]" />
-                            هەڵوەشاندنەوە
-                          </button>
-                          <button
-                            onClick={() => updateStatus(appt.id, 'pending')}
-                            className="w-11 h-11 rounded-xl flex items-center justify-center touch-manipulation transition-all duration-200 active:scale-95 bg-slate-50 border border-slate-200/80 text-slate-400 active:bg-slate-100"
-                          >
-                            <RefreshCw className="w-[15px] h-[15px]" />
-                          </button>
-                        </div>
-                      )
+                      : filter === 'all'
+                        ? (
+                          <div className="flex gap-2 pt-0.5">
+                            <button
+                              onClick={() => updateStatus(appt.id, 'cancelled')}
+                              className="flex-1 h-11 rounded-xl flex items-center justify-center gap-2 font-medium text-sm touch-manipulation transition-all duration-200 active:scale-[0.98] text-white shadow-md shadow-red-500/20"
+                              style={{ background: 'linear-gradient(135deg, #ef4444, #dc2626)' }}
+                            >
+                              <XCircle className="w-[15px] h-[15px]" />
+                              هەڵوەشاندنەوە
+                            </button>
+                            <button
+                              onClick={() => updateStatus(appt.id, 'pending')}
+                              className="w-11 h-11 rounded-xl flex items-center justify-center touch-manipulation transition-all duration-200 active:scale-95 bg-slate-50 border border-slate-200/80 text-slate-400 active:bg-slate-100"
+                            >
+                              <RefreshCw className="w-[15px] h-[15px]" />
+                            </button>
+                          </div>
+                        )
+                        : null
                   )}
 
                   {isCancelled && (

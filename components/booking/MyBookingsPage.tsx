@@ -11,6 +11,10 @@ function toAr(n: number) {
   return String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[+d]);
 }
 
+function normalizeDigits(s: string): string {
+  return s.replace(/[٠١٢٣٤٥٦٧٨٩]/g, d => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)));
+}
+
 function formatDT(iso: string) {
   const d = new Date(iso);
   const h = d.getHours();
@@ -131,7 +135,7 @@ export default function MyBookingsPage() {
               <input
                 type="tel"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => setPhone(normalizeDigits(e.target.value))}
                 placeholder="٠٧٧٠١٢٣٤٥٦٧"
                 dir="ltr"
                 className="w-full h-14 bg-slate-50/50 border border-slate-200 rounded-2xl py-3.5 pr-10 pl-4 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:border-blue-500/60 focus:bg-white transition-colors text-right"

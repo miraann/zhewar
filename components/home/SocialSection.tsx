@@ -74,10 +74,7 @@ export default function SocialSection({ profile }: { profile: BarberProfile }) {
             <div className="w-8 h-px bg-neutral-300" />
             <span className="text-neutral-400 text-[0.6rem] tracking-[0.4em] font-medium">تۆڕی کۆمەڵایەتی</span>
           </div>
-          <h2 className="font-display text-4xl font-bold text-neutral-900 leading-tight">
-            پەیوەندی{' '}
-            <span className="text-blue-600">بکە</span>
-          </h2>
+       
         </div>
 
         {/* Brand-colored social link cards */}

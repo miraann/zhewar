@@ -84,7 +84,7 @@ export default function SocialEditor() {
   }
 
   async function handleAdd() {
-    if (!title.trim() || !url.trim()) return;
+    if (!imageUrl || !url.trim()) return;
     if (!isValidUrl(url)) {
       setAddError('بەستەرێکی دروست بنووسە (https://...)');
       return;
@@ -169,7 +169,7 @@ export default function SocialEditor() {
         <p className="text-blue-700 text-xs font-semibold tracking-wider">زیادکردنی بەستەر</p>
 
         <div>
-          <p className="text-slate-700 text-xs font-medium mb-1.5">وێنە / ئایکۆن (ئارەزوومەند)</p>
+          <p className="text-slate-700 text-xs font-medium mb-1.5">وێنە / ئایکۆن <span className="text-red-500">*</span></p>
           <input
             ref={fileRef} type="file" accept="image/*" className="hidden"
             onChange={(e) => {
@@ -200,7 +200,7 @@ export default function SocialEditor() {
 
         <input
           type="text" value={title} onChange={(e) => setTitle(e.target.value)}
-          placeholder="ناونیشان"
+          placeholder="ناونیشان (ئارەزوومەند)"
           className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm placeholder-slate-400 outline-none focus:border-blue-500/60 transition-colors"
         />
 
@@ -217,10 +217,10 @@ export default function SocialEditor() {
 
         <button
           onClick={handleAdd}
-          disabled={!title.trim() || !url.trim() || adding || uploading}
+          disabled={!imageUrl || !url.trim() || adding || uploading}
           className={[
             'w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm transition-all touch-manipulation',
-            !title.trim() || !url.trim() || adding || uploading
+            !imageUrl || !url.trim() || adding || uploading
               ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
               : 'bg-blue-600 text-white shadow-md shadow-blue-200/50 active:bg-blue-700 active:scale-[0.98]',
           ].join(' ')}
@@ -275,7 +275,7 @@ export default function SocialEditor() {
             <p className="text-slate-900 font-semibold text-sm text-center">دەستکاریکردنی بەستەر</p>
 
             <div>
-              <p className="text-slate-700 text-xs font-medium mb-1.5">وێنە / ئایکۆن</p>
+              <p className="text-slate-700 text-xs font-medium mb-1.5">وێنە / ئایکۆن <span className="text-red-500">*</span></p>
               <input
                 ref={editFileRef} type="file" accept="image/*" className="hidden"
                 onChange={(e) => {
@@ -308,7 +308,7 @@ export default function SocialEditor() {
             </div>
 
             <div>
-              <p className="text-slate-700 text-xs font-medium mb-1.5">ناونیشان</p>
+              <p className="text-slate-700 text-xs font-medium mb-1.5">ناونیشان (ئارەزوومەند)</p>
               <input
                 type="text" value={editing.title}
                 onChange={(e) => setEditing({ ...editing, title: e.target.value })}
@@ -341,7 +341,7 @@ export default function SocialEditor() {
               </button>
               <button
                 onClick={handleSaveEdit}
-                disabled={saving || editUploading || !editing.title.trim() || !editing.url.trim()}
+                disabled={saving || editUploading || !editing.image_url || !editing.url.trim()}
                 className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-blue-600 text-white font-semibold text-sm touch-manipulation active:scale-[0.98] transition-transform disabled:opacity-40"
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}

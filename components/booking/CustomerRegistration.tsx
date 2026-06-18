@@ -284,7 +284,7 @@ export default function CustomerRegistration({ onComplete }: Props) {
                 چۆن بدۆزمەوە؟
               </button>
               <span className="text-slate-700 text-xs font-medium">
-                فەیسبووک / مێسینجەر <span className="text-red-500">*</span>
+                فەیسبووک <span className="text-red-500">*</span>
               </span>
             </div>
             <div className="flex gap-2 items-stretch">
@@ -400,7 +400,7 @@ export default function CustomerRegistration({ onComplete }: Props) {
             <p className="text-slate-400 text-xs text-center mb-6">    </p>
             <div className="space-y-3 text-right" dir="rtl">
               {[
-                { n: '١', text: 'ئەپی فەیسبووک یان مێسینجەر بکەرەوە' },
+                { n: '١', text: 'ئەپی فەیسبووک بکەرەوە' },
                 { n: '٢', text: 'بڕۆ بۆ بەشی پرۆفایل' },
                 { n: '٣', text: '     کلیک لەسەر "COPY PROFILE LINK"بکە' },
                 { n: '٤', text: 'پاشان بگەرێوە ئێرە و دوگمەی "پەیست" دابگرە' },
@@ -411,7 +411,7 @@ export default function CustomerRegistration({ onComplete }: Props) {
                 </div>
               ))}
             </div>
-            <div className="grid grid-cols-2 gap-3 mt-6">
+            <div className="mt-6">
               <a
                 href="https://www.facebook.com/me"
                 target="_blank"
@@ -423,21 +423,10 @@ export default function CustomerRegistration({ onComplete }: Props) {
                 </svg>
                 <span className="text-xs font-bold">فەیسبووک</span>
               </a>
-              <a
-                href="https://www.messenger.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex flex-col items-center gap-2 py-4 rounded-2xl text-white touch-manipulation active:scale-[0.97] transition-transform"
-                style={{ background: 'linear-gradient(135deg,#00B2FF,#7B5FF2)' }}
-              >
-                <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-                  <path d="M12 0C5.373 0 0 4.975 0 11.111c0 3.497 1.745 6.616 4.472 8.652V24l4.086-2.242c1.09.301 2.246.464 3.442.464 6.627 0 12-4.975 12-11.111C24 4.975 18.627 0 12 0zm1.193 14.963l-3.056-3.259-5.963 3.259 6.559-6.963 3.13 3.259 5.889-3.259-6.559 6.963z" />
-                </svg>
-                <span className="text-xs font-bold">مێسینجەر</span>
-              </a>
             </div>
             <p className="text-slate-400 text-[0.65rem] text-center mt-3" dir="rtl">
-کلیک لەسەر یەکێک لەم ئایکۆنانە بکە بۆ کردنەوەی "فەیسبوک"،"مێسینجەر"            </p>
+              کلیک لەسەر ئایکۆنی فەیسبووک بکە بۆ کردنەوەی پرۆفایلەکەت
+            </p>
             <button
               onClick={() => setShowHelp(false)}
               className="w-full mt-4 py-3.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-700 font-semibold text-sm touch-manipulation active:scale-[0.98] transition-transform"
