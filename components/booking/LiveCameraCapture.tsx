@@ -3,40 +3,77 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { X, RefreshCw, CheckCircle2 } from 'lucide-react';
 
-type Phase = 'starting' | 'scanning' | 'captured' | 'error';
+// ── Types ─────────────────────────────────────────────────────────────────────
+type Phase = 'loading' | 'searching' | 'face_found' | 'captured' | 'error';
 
 interface Props {
   onCapture: (dataUrl: string) => void;
   onCancel:  () => void;
 }
 
+// ── Constants ─────────────────────────────────────────────────────────────────
+// Models hosted on jsDelivr CDN — loaded once, browser-cached thereafter
+const MODEL_CDN = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/model';
+
+// Eye Aspect Ratio below this = eye is closing (blink)
+const EAR_BLINK_THRESHOLD = 0.21;
+
+// Auto-capture after face held steady for this long (ms)
+const AUTO_CAPTURE_MS = 2500;
+
+// Run face detection every N animation frames (~5fps on a 30fps device)
+const DETECT_EVERY_N_FRAMES = 6;
+
+// ── Geometry helpers ──────────────────────────────────────────────────────────
+type Pt = { x: number; y: number };
+
+function d(a: Pt, b: Pt) {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+// Eye Aspect Ratio — expects 6 contour points (faceapi landmark order)
+// EAR = (||p2-p6|| + ||p3-p5||) / (2 * ||p1-p4||)
+function ear(pts: Pt[]): number {
+  if (pts.length < 6) return 1;
+  return (d(pts[1], pts[5]) + d(pts[2], pts[4])) / (2 * d(pts[0], pts[3]));
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
 export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
-  const videoRef    = useRef<HTMLVideoElement>(null);
-  const aCanvasRef  = useRef<HTMLCanvasElement>(null); // analysis (hidden)
-  const streamRef   = useRef<MediaStream | null>(null);
-  const rafRef      = useRef<number>(0);
-  const phaseRef    = useRef<Phase>('starting');
+  const videoRef   = useRef<HTMLVideoElement>(null);
+  const streamRef  = useRef<MediaStream | null>(null);
+  const rafRef     = useRef<number>(0);
+  const phaseRef   = useRef<Phase>('loading');
 
-  const [phase, setPhase]         = useState<Phase>('starting');
-  const [flash, setFlash]         = useState(false);
-  const [capturedUrl, setCaptured] = useState('');
-  const [errorMsg, setError]      = useState('');
-  const [dotCount, setDotCount]   = useState(0); // animated dots
+  // face-lock timing
+  const faceFoundAt  = useRef(0); // timestamp when face first locked
+  const faceLostAt   = useRef(0); // timestamp when face was last lost (debounce)
 
-  // blink detection
-  const history    = useRef<number[]>([]);
-  const blinkState = useRef<'open' | 'closing'>('open');
-  const blinkStart = useRef(0);
+  // blink state machine
+  const blinkStateRef = useRef<'open' | 'closing'>('open');
 
-  const setPhaseSync = (p: Phase) => { phaseRef.current = p; setPhase(p); };
+  const [phase,        setPhase]        = useState<Phase>('loading');
+  const [flash,        setFlash]        = useState(false);
+  const [capturedUrl,  setCaptured]     = useState('');
+  const [errorMsg,     setError]        = useState('');
+  const [loadStep,     setLoadStep]     = useState('');
+  // 0-100 — progress toward auto-capture while face is held
+  const [autoProgress, setAutoProgress] = useState(0);
 
+  // Keep phaseRef in sync with React state
+  const setPhaseSync = useCallback((p: Phase) => {
+    phaseRef.current = p;
+    setPhase(p);
+  }, []);
+
+  // ── stop camera ─────────────────────────────────────────────────────────────
   const stopStream = useCallback(() => {
     cancelAnimationFrame(rafRef.current);
     streamRef.current?.getTracks().forEach(t => t.stop());
     streamRef.current = null;
   }, []);
 
-  // ── capture ────────────────────────────────────────────────────────────────
+  // ── capture frame ────────────────────────────────────────────────────────────
   const captureNow = useCallback(() => {
     const video = videoRef.current;
     if (!video || video.readyState < 2) return;
@@ -45,38 +82,21 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
     const cv = document.createElement('canvas');
     cv.width = W; cv.height = H;
     const ctx = cv.getContext('2d')!;
-    ctx.translate(W, 0); ctx.scale(-1, 1); // mirror
+    ctx.translate(W, 0);
+    ctx.scale(-1, 1); // mirror (selfie)
     ctx.drawImage(video, 0, 0, W, H);
     setCaptured(cv.toDataURL('image/jpeg', 0.85));
     setPhaseSync('captured');
     stopStream();
-  }, [stopStream]);
+  }, [stopStream, setPhaseSync]);
 
-  // ── brightness of eye-region ───────────────────────────────────────────────
-  function eyeBrightness(video: HTMLVideoElement, canvas: HTMLCanvasElement): number {
-    const W = 96, H = 72;
-    canvas.width = W; canvas.height = H;
-    const ctx = canvas.getContext('2d')!;
-    ctx.drawImage(video, 0, 0, W, H);
-    // eye strip: centre 50% wide, rows 28-50% from top
-    const x = Math.floor(W * 0.25), y = Math.floor(H * 0.28);
-    const w = Math.floor(W * 0.50), h = Math.floor(H * 0.22);
-    const d = ctx.getImageData(x, y, w, h).data;
-    let s = 0;
-    for (let i = 0; i < d.length; i += 16)
-      s += d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114;
-    return s / (d.length / 16);
-  }
-
-  // ── main effect ────────────────────────────────────────────────────────────
+  // ── main effect ──────────────────────────────────────────────────────────────
   useEffect(() => {
     let mounted = true;
 
-    // animated dots
-    const dotInterval = setInterval(() => setDotCount(n => (n + 1) % 4), 450);
-
     async function init() {
       try {
+        // Start camera immediately so the user sees themselves while models load
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
           audio: false,
@@ -89,85 +109,154 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
         v.muted = true;
         await v.play();
         if (!mounted) return;
-        setPhaseSync('scanning');
 
-        let frameCount = 0;
+        // ── load face-api models from CDN ──────────────────────────────────────
+        if (mounted) setLoadStep('ناسینی ڕووخسار بارکردن...');
+        const faceapi = await import('@vladmandic/face-api');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const fa = faceapi as any;
 
-        const analyze = (): void => {
-          if (!mounted || phaseRef.current !== 'scanning') return;
-          const v = videoRef.current, c = aCanvasRef.current;
-          if (!v || !c || v.readyState < 2) { rafRef.current = requestAnimationFrame(analyze); return; }
+        await fa.nets.tinyFaceDetector.loadFromUri(MODEL_CDN);
+        if (!mounted) return;
 
-          const brightness = eyeBrightness(v, c);
-          history.current.push(brightness);
-          if (history.current.length > 60) history.current.shift();
-          frameCount++;
+        if (mounted) setLoadStep('دیاریکردنی چاوەکان...');
+        await fa.nets.faceLandmark68TinyNet.loadFromUri(MODEL_CDN);
+        if (!mounted) return;
 
-          // need ~20 frames to establish baseline
-          if (frameCount < 20) { rafRef.current = requestAnimationFrame(analyze); return; }
+        setPhaseSync('searching');
 
-          // baseline: mean of "open eye" samples (top 70% brightest)
-          const sorted   = [...history.current].sort((a, b) => b - a);
-          const baseline = sorted.slice(0, Math.ceil(sorted.length * 0.7))
-                                 .reduce((a, b) => a + b, 0) / Math.ceil(sorted.length * 0.7);
-          const threshold = baseline * 0.78;
-          const now = performance.now();
+        // ── detection loop ─────────────────────────────────────────────────────
+        const detectorOptions = new fa.TinyFaceDetectorOptions({
+          inputSize: 224,      // smaller input = faster inference on mobile
+          scoreThreshold: 0.5,
+        });
 
-          if (blinkState.current === 'open' && brightness < threshold) {
-            blinkState.current = 'closing';
-            blinkStart.current = now;
-          } else if (blinkState.current === 'closing' && brightness >= threshold) {
-            const dur = now - blinkStart.current;
-            blinkState.current = 'open';
-            if (dur >= 50 && dur <= 650) {
-              // ✅ blink confirmed → flash + capture
-              if (!mounted) return;
-              setFlash(true);
-              setTimeout(() => { if (mounted) setFlash(false); }, 350);
-              setTimeout(() => { if (mounted) captureNow(); },    250);
+        let frame = 0;
+
+        const loop = (): void => {
+          if (!mounted || phaseRef.current === 'captured') return;
+          rafRef.current = requestAnimationFrame(async () => {
+            frame++;
+
+            // Throttle — only run heavy detection every N frames
+            if (frame % DETECT_EVERY_N_FRAMES !== 0) { loop(); return; }
+
+            const video = videoRef.current;
+            if (!video || video.readyState < 2) { loop(); return; }
+
+            let result: unknown;
+            try {
+              result = await fa
+                .detectSingleFace(video, detectorOptions)
+                .withFaceLandmarks(/* tiny= */ true);
+            } catch {
+              // Frame-level detection error is non-fatal — skip this frame
+              loop();
               return;
             }
-          }
 
-          rafRef.current = requestAnimationFrame(analyze);
+            if (!mounted) return;
+
+            // ── no face in frame ───────────────────────────────────────────────
+            if (!result) {
+              faceLostAt.current = Date.now();
+              // Debounce: only drop back to 'searching' if face has been
+              // absent for more than 400 ms (avoids flickering on fast movement)
+              if (
+                phaseRef.current === 'face_found' &&
+                Date.now() - faceLostAt.current > 400
+              ) {
+                faceFoundAt.current = 0;
+                setAutoProgress(0);
+                blinkStateRef.current = 'open';
+                setPhaseSync('searching');
+              }
+              loop();
+              return;
+            }
+
+            // ── face detected ──────────────────────────────────────────────────
+            if (phaseRef.current === 'searching') {
+              setPhaseSync('face_found');
+              faceFoundAt.current = Date.now();
+              blinkStateRef.current = 'open';
+            }
+
+            // ── EAR blink detection ────────────────────────────────────────────
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const lm         = (result as any).landmarks;
+            const leftEye    = lm.getLeftEye()  as Pt[];
+            const rightEye   = lm.getRightEye() as Pt[];
+            const avgEar     = (ear(leftEye) + ear(rightEye)) / 2;
+
+            if (blinkStateRef.current === 'open' && avgEar < EAR_BLINK_THRESHOLD) {
+              blinkStateRef.current = 'closing';
+            } else if (blinkStateRef.current === 'closing' && avgEar >= EAR_BLINK_THRESHOLD) {
+              // Full blink cycle completed → capture
+              blinkStateRef.current = 'open';
+              if (mounted) {
+                setFlash(true);
+                setTimeout(() => { if (mounted) setFlash(false); }, 350);
+                setTimeout(() => { if (mounted) captureNow(); },    250);
+                return;
+              }
+            }
+
+            // ── auto-capture countdown ─────────────────────────────────────────
+            const held = Date.now() - faceFoundAt.current;
+            const pct  = Math.min((held / AUTO_CAPTURE_MS) * 100, 100);
+            setAutoProgress(pct);
+
+            if (held >= AUTO_CAPTURE_MS && mounted) {
+              captureNow();
+              return;
+            }
+
+            loop();
+          });
         };
 
-        rafRef.current = requestAnimationFrame(analyze);
-      } catch {
-        if (mounted) {
-          setError('کامێرا بەردەست نییە. تکایە مۆڵەتی کامێرا بدە');
-          setPhaseSync('error');
-        }
+        loop();
+      } catch (err: unknown) {
+        if (!mounted) return;
+        const name = (err as { name?: string }).name ?? '';
+        setError(
+          name === 'NotAllowedError'
+            ? 'مۆڵەتی کامێرا نەدرا. تکایە مۆڵەت بدە'
+            : 'کامێرا یان مۆدێل بارنەبوو. دووبارە هەوڵ بدەرەوە',
+        );
+        setPhaseSync('error');
       }
     }
 
     init();
-    return () => { mounted = false; stopStream(); clearInterval(dotInterval); };
-  }, [captureNow, stopStream]);
+    return () => { mounted = false; stopStream(); };
+  }, [captureNow, stopStream, setPhaseSync]);
 
-  // ── retry ──────────────────────────────────────────────────────────────────
-  const retry = () => {
-    setCaptured('');
-    setError('');
-    setPhaseSync('starting');
-    history.current = [];
-    blinkState.current = 'open';
-    // re-mount effect by forcing key change via parent; just re-call init inline
-    window.location.reload();
-  };
+  const retry = () => window.location.reload();
 
-  const dots = '.'.repeat(dotCount);
+  // ── Derived UI values ─────────────────────────────────────────────────────
+  const ringColor =
+    phase === 'captured'  ? 'conic-gradient(#10b981 0deg,#10b981 360deg)' :
+    phase === 'face_found'? 'conic-gradient(#10b981 0deg,#10b981 360deg)' :
+                            'conic-gradient(#f59e0b 0deg,#f59e0b 180deg,transparent 180deg)';
+
+  const bracketColor =
+    phase === 'face_found' ? 'border-emerald-500' : 'border-amber-400';
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0b0f1a] font-sans" dir="rtl">
+    <div
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0b0f1a] font-sans"
+      dir="rtl"
+    >
+      {/* Hidden analysis canvas (not used for display) */}
 
-      {/* Hidden analysis canvas */}
-      <canvas ref={aCanvasRef} className="hidden" />
+      {/* Flash on blink capture */}
+      {flash && (
+        <div className="absolute inset-0 bg-white/65 z-20 pointer-events-none transition-opacity" />
+      )}
 
-      {/* Flash overlay */}
-      {flash && <div className="absolute inset-0 bg-white/60 z-20 pointer-events-none" />}
-
-      {/* Close */}
+      {/* Close button */}
       <button
         onClick={() => { stopStream(); onCancel(); }}
         className="absolute top-5 right-5 z-30 w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white touch-manipulation active:scale-95 transition-transform"
@@ -175,118 +264,194 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
         <X className="w-5 h-5" />
       </button>
 
-      {/* Title */}
-      <p className="text-white/60 text-xs tracking-[0.3em] mb-6 font-medium">دڵنیاکردنەوەی ناسنامە</p>
+      {/* Page title */}
+      <p className="text-white/60 text-xs tracking-[0.3em] mb-6 font-medium">
+        دڵنیاکردنەوەی ناسنامە
+      </p>
 
-      {/* ── Camera circle ─────────────────────────────────────────────────── */}
-      <div className="relative flex items-center justify-center" style={{ width: 260, height: 260 }}>
-
-        {/* Outer glow ring */}
+      {/* ── Camera viewport ─────────────────────────────────────────────────── */}
+      <div
+        className="relative flex items-center justify-center"
+        style={{ width: 268, height: 268 }}
+      >
+        {/* Spinning conic ring */}
         <div
           className="absolute inset-0 rounded-full"
           style={{
-            background: phase === 'captured'
-              ? 'conic-gradient(#10b981 0deg,#10b981 360deg)'
-              : 'conic-gradient(#3b82f6 0deg,#3b82f6 200deg,transparent 200deg)',
+            background: ringColor,
             padding: 3,
-            animation: phase === 'scanning' ? 'scanSpin 2s linear infinite' : 'none',
+            animation:
+              phase === 'searching' ? 'scanSpin 2.2s linear infinite' :
+              phase === 'face_found'? 'scanSpin 1.2s linear infinite' :
+              'none',
           }}
         >
           <div className="w-full h-full rounded-full bg-[#0b0f1a]" />
         </div>
 
-        {/* Dashed pulse ring */}
-        {phase === 'scanning' && (
+        {/* Outer pulse ring */}
+        {phase === 'searching' && (
           <div
-            className="absolute rounded-full border-2 border-dashed border-blue-400/40 animate-pulse"
+            className="absolute rounded-full border-2 border-dashed border-amber-400/35 animate-pulse"
+            style={{ inset: -10 }}
+          />
+        )}
+        {phase === 'face_found' && (
+          <div
+            className="absolute rounded-full border-2 border-emerald-500/50"
             style={{ inset: -10 }}
           />
         )}
 
-        {/* Video / captured preview */}
+        {/* Circular camera frame */}
         <div
-          className="relative rounded-full overflow-hidden bg-slate-800 flex items-center justify-center"
-          style={{ width: 240, height: 240 }}
+          className="relative rounded-full overflow-hidden bg-slate-900 flex items-center justify-center"
+          style={{ width: 246, height: 246 }}
         >
+          {/* Live video */}
           <video
             ref={videoRef}
             playsInline
             muted
             className="w-full h-full object-cover"
-            style={{ transform: 'scaleX(-1)', display: phase === 'captured' ? 'none' : 'block' }}
+            style={{
+              transform: 'scaleX(-1)',
+              display: phase === 'captured' ? 'none' : 'block',
+            }}
           />
-          {capturedUrl && (
-            <img src={capturedUrl} alt="" className="w-full h-full object-cover absolute inset-0" />
-          )}
-          {phase === 'starting' && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-10 h-10 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
-            </div>
-          )}
 
-          {/* Scanning line */}
-          {phase === 'scanning' && (
-            <div
-              className="absolute inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-blue-400/70 to-transparent pointer-events-none"
-              style={{ animation: 'scanLine 2s ease-in-out infinite' }}
+          {/* Captured photo */}
+          {capturedUrl && (
+            <img
+              src={capturedUrl}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover"
             />
           )}
 
-          {/* Captured checkmark */}
+          {/* Loading spinner overlay */}
+          {phase === 'loading' && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+              <div className="w-10 h-10 rounded-full border-2 border-blue-400 border-t-transparent animate-spin" />
+            </div>
+          )}
+
+          {/* Amber scanning line — searching */}
+          {phase === 'searching' && (
+            <div
+              className="absolute inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400/80 to-transparent pointer-events-none"
+              style={{ animation: 'scanLine 2.2s ease-in-out infinite' }}
+            />
+          )}
+
+          {/* Auto-capture arc progress */}
+          {phase === 'face_found' && autoProgress > 0 && (
+            <div
+              className="absolute inset-0 rounded-full pointer-events-none"
+              style={{
+                background: `conic-gradient(rgba(16,185,129,0.25) ${autoProgress * 3.6}deg, transparent ${autoProgress * 3.6}deg)`,
+              }}
+            />
+          )}
+
+          {/* Success checkmark */}
           {phase === 'captured' && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-full">
-              <div className="w-16 h-16 rounded-full bg-emerald-500 flex items-center justify-center shadow-xl">
+            <div className="absolute inset-0 flex items-center justify-center bg-black/25 rounded-full">
+              <div className="w-16 h-16 rounded-full bg-emerald-500 flex items-center justify-center shadow-xl shadow-emerald-500/40">
                 <CheckCircle2 className="w-8 h-8 text-white" />
               </div>
             </div>
           )}
         </div>
 
-        {/* Corner brackets */}
-        {phase === 'scanning' && (
+        {/* Corner crosshair brackets */}
+        {(phase === 'searching' || phase === 'face_found') && (
           <>
-            {[['top-4 left-4', 'border-t-2 border-l-2'], ['top-4 right-4', 'border-t-2 border-r-2'],
-              ['bottom-4 left-4', 'border-b-2 border-l-2'], ['bottom-4 right-4', 'border-b-2 border-r-2']
-            ].map(([pos, border]) => (
-              <div key={pos} className={`absolute ${pos} w-6 h-6 border-blue-400 rounded-sm ${border}`} />
+            {(
+              [
+                ['top-3 left-3',    'border-t-2 border-l-2'],
+                ['top-3 right-3',   'border-t-2 border-r-2'],
+                ['bottom-3 left-3', 'border-b-2 border-l-2'],
+                ['bottom-3 right-3','border-b-2 border-r-2'],
+              ] as [string, string][]
+            ).map(([pos, border]) => (
+              <div
+                key={pos}
+                className={`absolute ${pos} w-7 h-7 rounded-sm ${border} ${bracketColor} transition-colors duration-300`}
+              />
             ))}
           </>
         )}
+
+        {/* Face-lock badge */}
+        {phase === 'face_found' && (
+          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 backdrop-blur-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-emerald-300 text-[0.6rem] font-bold tracking-wide whitespace-nowrap">
+              ڕووخسار دۆزرایەوە
+            </span>
+          </div>
+        )}
       </div>
 
-      {/* Instruction text */}
-      <div className="mt-8 flex flex-col items-center gap-3 px-8 text-center">
-        {phase === 'starting' && (
-          <p className="text-white/70 text-sm">چاوەڕوانبە{dots}</p>
-        )}
-        {phase === 'scanning' && (
+      {/* ── Instruction text ─────────────────────────────────────────────────── */}
+      <div className="mt-10 flex flex-col items-center gap-2.5 px-8 text-center">
+        {phase === 'loading' && (
           <>
-            <p className="text-white font-bold text-lg leading-snug">
-              تکایە چاوەکانت بپڕوکێنە
+            <p className="text-white/80 font-semibold text-sm">{loadStep || 'بارکردن...'}</p>
+            <p className="text-white/35 text-xs">ئامادەکردنی تەکنەلۆژیای ناسینی ڕووخسار</p>
+          </>
+        )}
+
+        {phase === 'searching' && (
+          <>
+            <p className="text-amber-400 font-bold text-base leading-snug">
+              دەموچاوی خۆت بخرە بەرامبەر کامێرا
             </p>
-            <p className="text-blue-400/80 text-xs tracking-wide">
-              بۆ دڵنیابوونەوە لە بوونی ئەنسانی ڕاستەقینە
-            </p>
-            <div className="flex items-center gap-2 mt-1">
-              {[0,1,2].map(i => (
+            <p className="text-white/45 text-xs">گەڕان بۆ ڕووخسار...</p>
+            <div className="flex gap-1.5 mt-1">
+              {[0, 1, 2].map(i => (
                 <div
                   key={i}
-                  className="w-2 h-2 rounded-full bg-blue-500"
+                  className="w-2 h-2 rounded-full bg-amber-400"
                   style={{ animation: `blinkDot 1.4s ease-in-out ${i * 0.2}s infinite` }}
                 />
               ))}
             </div>
           </>
         )}
+
+        {phase === 'face_found' && (
+          <>
+            <p className="text-emerald-400 font-bold text-base">
+              دەموچاو دۆزرایەوە
+            </p>
+            <p className="text-white font-semibold text-sm leading-snug">
+              تکایە چاوەکانت بپڕوکێنە
+            </p>
+            <p className="text-white/40 text-[0.7rem] mt-0.5">
+              یان چاوەڕوان بە بۆ وێنەگرتنی خۆکار
+            </p>
+            {/* Auto-capture countdown bar */}
+            <div className="w-40 h-1 mt-2 rounded-full bg-white/10 overflow-hidden">
+              <div
+                className="h-full bg-emerald-500 rounded-full transition-all duration-200"
+                style={{ width: `${autoProgress}%` }}
+              />
+            </div>
+          </>
+        )}
+
         {phase === 'captured' && (
           <>
             <p className="text-emerald-400 font-bold text-lg">پڕوکێنان تەسدیق کرا ✓</p>
-            <p className="text-white/60 text-xs">وێنەکەت تۆمار کرا</p>
+            <p className="text-white/55 text-xs">وێنەکەت تۆمار کرا</p>
           </>
         )}
+
         {phase === 'error' && (
           <>
-            <p className="text-red-400 font-semibold text-sm">{errorMsg}</p>
+            <p className="text-red-400 font-semibold text-sm leading-relaxed">{errorMsg}</p>
             <button
               onClick={retry}
               className="mt-2 flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white text-sm font-medium touch-manipulation active:scale-95 transition-transform"
@@ -298,7 +463,7 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
         )}
       </div>
 
-      {/* Confirm / retake buttons after capture */}
+      {/* ── Post-capture buttons ─────────────────────────────────────────────── */}
       {phase === 'captured' && capturedUrl && (
         <div className="flex gap-3 mt-6 w-full max-w-xs px-4">
           <button
@@ -317,26 +482,29 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
       )}
 
       {/* Manual capture fallback */}
-      {phase === 'scanning' && (
+      {(phase === 'searching' || phase === 'face_found') && (
         <button
           onClick={captureNow}
-          className="mt-5 text-white/30 text-xs underline underline-offset-4 touch-manipulation"
+          className="mt-6 text-white/25 text-xs underline underline-offset-4 touch-manipulation"
         >
           بەدەستی وێنە بگرە
         </button>
       )}
 
       <style>{`
-        @keyframes scanSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes scanSpin {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(360deg); }
+        }
         @keyframes scanLine {
-          0%   { top: 20%; opacity: 0; }
-          10%  { opacity: 1; }
-          90%  { opacity: 1; }
-          100% { top: 80%; opacity: 0; }
+          0%   { top: 18%; opacity: 0; }
+          8%   { opacity: 1; }
+          92%  { opacity: 1; }
+          100% { top: 82%; opacity: 0; }
         }
         @keyframes blinkDot {
-          0%,100% { opacity: 0.3; transform: scale(0.8); }
-          50%     { opacity: 1;   transform: scale(1.2); }
+          0%, 100% { opacity: 0.3; transform: scale(0.8); }
+          50%      { opacity: 1;   transform: scale(1.2); }
         }
       `}</style>
     </div>
