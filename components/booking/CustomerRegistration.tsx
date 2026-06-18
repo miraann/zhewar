@@ -189,7 +189,7 @@ export default function CustomerRegistration({ onComplete }: Props) {
           <button
             onClick={() => setShowCamera(true)}
             disabled={uploading}
-            className="relative w-20 h-20 rounded-full border-2 border-dashed border-blue-300 bg-blue-50/40 flex items-center justify-center overflow-hidden touch-manipulation active:scale-[0.96] transition-transform"
+            className="relative w-28 h-28 rounded-full border-2 border-dashed border-blue-300 bg-blue-50/40 flex items-center justify-center overflow-hidden touch-manipulation active:scale-[0.96] transition-transform"
           >
             {photoUrl ? (
               <>
