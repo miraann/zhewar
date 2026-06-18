@@ -22,6 +22,8 @@
   body {
     overscroll-behavior-y: none;
     font-family: 'Kurdish', system-ui, sans-serif;
+    max-width: 100vw;
+    overflow-x: hidden;
   }
   input, button, textarea, select {
     font-family: 'Kurdish', system-ui, sans-serif;

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { createClient } from '@supabase/supabase-js';
+import RegisterSW from '@/components/RegisterSW';
 import './globals.css';
 
 const inter = Inter({
@@ -27,23 +28,30 @@ async function getProfile() {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const profile = await getProfile();
-  const shopName = profile?.name ?? 'Luxe Barber';
+  const profile  = await getProfile();
+  const shopName = (profile?.name ?? 'Luxe Barber').trim();
   const logoUrl  = profile?.logo_url ?? null;
+  const icon     = logoUrl ?? '/icons/icon.svg';
 
   return {
-    title:       `${shopName} | Zhewar Muhamad`,
-    description: 'Book your premium barber experience in seconds. Luxury grooming for the modern gentleman.',
-    icons: logoUrl
-      ? { icon: logoUrl, apple: logoUrl, shortcut: logoUrl }
-      : undefined,
+    title:             `${shopName} | Zhewar Muhamad`,
+    description:       'Book your premium barber experience in seconds. Luxury grooming for the modern gentleman.',
+    applicationName:   shopName,
+    appleWebApp: {
+      capable:        true,
+      title:          shopName,
+      statusBarStyle: 'default',
+    },
+    icons: {
+      icon:     icon,
+      apple:    icon,
+      shortcut: icon,
+    },
     openGraph: {
       title:       `${shopName} | Zhewar Muhamad`,
       description: 'Book your premium barber appointment instantly.',
       type:        'website',
-      images:      logoUrl
-        ? [{ url: logoUrl, width: 400, height: 400, alt: shopName }]
-        : undefined,
+      images:      logoUrl ? [{ url: logoUrl, width: 400, height: 400, alt: shopName }] : undefined,
     },
     twitter: {
       card:   'summary',
@@ -58,14 +66,14 @@ export const viewport: Viewport = {
   initialScale:  1,
   maximumScale:  1,
   userScalable:  false,
-  themeColor:    '#ffffff',
+  themeColor:    '#2563eb',
   viewportFit:   'cover',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ckb" className={inter.variable} suppressHydrationWarning>
-      <body className="text-neutral-900 antialiased min-h-screen bg-white" suppressHydrationWarning>
+      <body className="text-neutral-900 antialiased min-h-screen bg-white overflow-x-hidden" suppressHydrationWarning>
         {/* ── Global background ── */}
         <div aria-hidden className="fixed inset-0 -z-10 overflow-hidden">
           <div className="absolute inset-0 bg-neutral-50" />
@@ -84,6 +92,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           @keyframes stripeScroll { from { background-position: 0 0; } to { background-position: 141px 141px; } }
           @keyframes ringRotate   { from { transform: rotate(0deg); }  to { transform: rotate(360deg); } }
         `}</style>
+        <RegisterSW />
         {children}
       </body>
     </html>

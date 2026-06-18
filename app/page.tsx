@@ -49,7 +49,7 @@ export default async function HomePage() {
   return (
     <>
       <ClientOnly><ScrollNav profile={profile} /></ClientOnly>
-      <main>
+      <main className="w-full overflow-x-hidden">
         <section id="home">
           <HeroSection profile={profile} />
         </section>
