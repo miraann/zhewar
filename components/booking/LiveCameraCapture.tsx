@@ -498,7 +498,7 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
                 : '  کامێرا بکە سەر ڕوخسارت'}
             </p>
             <p className="text-white/45 text-xs">
-              {faceHint === 'partial' ? 'ڕووخسار دۆزرایەوە، بەڵام کەسی ڕاستەقینە نییە' : 'گەڕان بۆ ڕووخسار...'}
+              {faceHint === 'partial' ? 'ڕووخسار دۆزرایەوە، بەڵام پێویستە ڕوخسارت بە شێوازێکی ڕێک بێت  بەرامبەر کامێرا' : 'گەڕان بۆ ڕووخسار...'}
             </p>
             <div className="flex gap-1.5 mt-1">
               {[0, 1, 2].map(i => (
