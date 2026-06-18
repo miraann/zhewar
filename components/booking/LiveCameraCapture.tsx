@@ -26,6 +26,7 @@ const DETECT_EVERY_N_FRAMES = 6;
 
 // ── Geometry helpers ──────────────────────────────────────────────────────────
 type Pt = { x: number; y: number };
+type FaceValidity = 'invalid' | 'misaligned' | 'valid';
 
 function d(a: Pt, b: Pt) {
   return Math.hypot(a.x - b.x, a.y - b.y);
@@ -36,6 +37,57 @@ function d(a: Pt, b: Pt) {
 function ear(pts: Pt[]): number {
   if (pts.length < 6) return 1;
   return (d(pts[1], pts[5]) + d(pts[2], pts[4])) / (2 * d(pts[0], pts[3]));
+}
+
+// ── Strict full-face validation ───────────────────────────────────────────────
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function validateFace(result: any, videoW: number, videoH: number): FaceValidity {
+  const det   = result.detection;
+  const score = det.score  as number;
+  const box   = det.box    as { x: number; y: number; width: number; height: number };
+
+  // 1. High confidence gate
+  if (score < 0.92) return 'invalid';
+
+  // 2. Bounding box must not clip any canvas edge
+  if (box.x < 0 || box.y < 0 ||
+      box.x + box.width  > videoW ||
+      box.y + box.height > videoH) return 'misaligned';
+
+  // 3. Face must occupy 30–55 % of canvas area (too far / too close → amber)
+  const faceRatio = (box.width * box.height) / (videoW * videoH);
+  if (faceRatio < 0.30 || faceRatio > 0.55) return 'misaligned';
+
+  // 4. Face centre must be within ±15 % of canvas centre on both axes
+  const normCx = (box.x + box.width  / 2) / videoW - 0.5;
+  const normCy = (box.y + box.height / 2) / videoH - 0.5;
+  if (Math.abs(normCx) > 0.15 || Math.abs(normCy) > 0.15) return 'misaligned';
+
+  // 5. Yaw + Roll from 68 landmarks ─────────────────────────────────────────
+  const pts = result.landmarks.positions as Pt[];
+
+  const avg = (idxs: number[]): Pt => ({
+    x: idxs.reduce((s, i) => s + pts[i].x, 0) / idxs.length,
+    y: idxs.reduce((s, i) => s + pts[i].y, 0) / idxs.length,
+  });
+
+  // face-api 68-pt model: right eye = 36-41, left eye = 42-47, nose tip = 30
+  const rEye = avg([36, 37, 38, 39, 40, 41]);
+  const lEye = avg([42, 43, 44, 45, 46, 47]);
+  const nose = pts[30];
+
+  // Roll: slope of the inter-eye line — allow ±15°
+  const rollDeg = Math.atan2(lEye.y - rEye.y, lEye.x - rEye.x) * (180 / Math.PI);
+  if (Math.abs(rollDeg) > 15) return 'misaligned';
+
+  // Yaw: how far nose deviates from eye-midpoint, normalised by inter-eye distance
+  const interEyeDist = Math.abs(lEye.x - rEye.x);
+  const yawOffset    = interEyeDist > 0
+    ? Math.abs(nose.x - (rEye.x + lEye.x) / 2) / interEyeDist
+    : 0;
+  if (yawOffset > 0.25) return 'misaligned';
+
+  return 'valid';
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -59,6 +111,8 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
   const [loadStep,     setLoadStep]     = useState('');
   // 0-100 — progress toward auto-capture while face is held
   const [autoProgress, setAutoProgress] = useState(0);
+  // 'none' = no face | 'partial' = face found but alignment/score rejected
+  const [faceHint, setFaceHint] = useState<'none' | 'partial'>('none');
 
   // Keep phaseRef in sync with React state
   const setPhaseSync = useCallback((p: Phase) => {
@@ -160,8 +214,6 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
             // ── no face in frame ───────────────────────────────────────────────
             if (!result) {
               faceLostAt.current = Date.now();
-              // Debounce: only drop back to 'searching' if face has been
-              // absent for more than 400 ms (avoids flickering on fast movement)
               if (
                 phaseRef.current === 'face_found' &&
                 Date.now() - faceLostAt.current > 400
@@ -171,11 +223,46 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
                 blinkStateRef.current = 'open';
                 setPhaseSync('searching');
               }
+              setFaceHint('none');
               loop();
               return;
             }
 
-            // ── face detected ──────────────────────────────────────────────────
+            // ── strict face validation ─────────────────────────────────────────
+            const validity = validateFace(
+              result,
+              video.videoWidth  || 640,
+              video.videoHeight || 480,
+            );
+
+            if (validity === 'invalid') {
+              // Confidence too low — treat as no face
+              if (phaseRef.current === 'face_found') {
+                faceFoundAt.current = 0;
+                setAutoProgress(0);
+                blinkStateRef.current = 'open';
+                setPhaseSync('searching');
+              }
+              setFaceHint('none');
+              loop();
+              return;
+            }
+
+            if (validity === 'misaligned') {
+              // Real face detected but angle / centering / size rejected → stay amber
+              if (phaseRef.current === 'face_found') {
+                faceFoundAt.current = 0;
+                setAutoProgress(0);
+                blinkStateRef.current = 'open';
+                setPhaseSync('searching');
+              }
+              setFaceHint('partial');
+              loop();
+              return;
+            }
+
+            // ── all checks passed → lock face ──────────────────────────────────
+            setFaceHint('none');
             if (phaseRef.current === 'searching') {
               setPhaseSync('face_found');
               faceFoundAt.current = Date.now();
@@ -406,9 +493,13 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
         {phase === 'searching' && (
           <>
             <p className="text-amber-400 font-bold text-base leading-snug">
-              دەموچاوی خۆت بخرە بەرامبەر کامێرا
+              {faceHint === 'partial'
+                ? 'تکایە ڕوخسارت بهێنە ناوەڕاستی چوارچێوەکە'
+                : 'دەموچاوی خۆت بخرە بەرامبەر کامێرا'}
             </p>
-            <p className="text-white/45 text-xs">گەڕان بۆ ڕووخسار...</p>
+            <p className="text-white/45 text-xs">
+              {faceHint === 'partial' ? 'ڕووخسار دۆزرایەوە، بەڵام ئەلایمانی ڕاستەقینە نییە' : 'گەڕان بۆ ڕووخسار...'}
+            </p>
             <div className="flex gap-1.5 mt-1">
               {[0, 1, 2].map(i => (
                 <div
@@ -424,10 +515,10 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
         {phase === 'face_found' && (
           <>
             <p className="text-emerald-400 font-bold text-base">
-              دەموچاو دۆزرایەوە
+              ڕووخسار ڕێکە
             </p>
             <p className="text-white font-semibold text-sm leading-snug">
-              تکایە چاوەکانت بپڕوکێنە
+              ئێستا چاو ببڕکێنە
             </p>
             <p className="text-white/40 text-[0.7rem] mt-0.5">
               یان چاوەڕوان بە بۆ وێنەگرتنی خۆکار
