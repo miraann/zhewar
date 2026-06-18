@@ -34,6 +34,7 @@ export default function CustomerRegistration({ onComplete }: Props) {
   const [error, setError]               = useState('');
   const [alertMsg, setAlertMsg]         = useState('');
   const [showCamera, setShowCamera]     = useState(false);
+  const [logoUrl, setLogoUrl]           = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/auth/facebook/profile')
@@ -45,6 +46,9 @@ export default function CustomerRegistration({ onComplete }: Props) {
         if (data.id)    setFbId(data.id);
       })
       .catch(() => {});
+
+    supabase.from('barber_profile').select('logo_url').single()
+      .then(({ data }) => { if (data?.logo_url) setLogoUrl(data.logo_url); });
   }, []);
 
   function toFbUrl(raw: string): string {
@@ -157,7 +161,28 @@ export default function CustomerRegistration({ onComplete }: Props) {
 
         {/* Header */}
         <div className="text-right">
-          <div className="flex items-center justify-end mb-4">
+          <style>{`@keyframes regRingRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+          <div className="flex items-center justify-between mb-4">
+            {/* Shop logo — spinning red/blue ring */}
+            <div className="relative w-12 h-12 flex-shrink-0">
+              <div
+                className="absolute inset-0 rounded-full"
+                style={{
+                  background: 'conic-gradient(#ef4444 0deg,#ef4444 110deg,#f8fafc 135deg,#3b82f6 160deg,#3b82f6 290deg,#f8fafc 315deg,#ef4444 360deg)',
+                  animation: 'regRingRotate 4s linear infinite',
+                }}
+              />
+              <div className="absolute inset-[2.5px] rounded-full bg-white">
+                <div className="absolute inset-[2px] rounded-full overflow-hidden bg-slate-100 flex items-center justify-center">
+                  {logoUrl
+                    ? <img src={logoUrl} alt="" className="w-full h-full object-cover" />
+                    : <span className="text-blue-600 text-base">✂</span>
+                  }
+                </div>
+              </div>
+            </div>
+
+            {/* Scissors badge */}
             <div
               className="w-10 h-10 rounded-2xl p-[2px] flex-shrink-0"
               style={{
