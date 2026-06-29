@@ -92,7 +92,8 @@ export default function MyBookingsPage() {
       .from('appointments')
       .select(`id, appointment_time, status, customers!inner(full_name, phone_number, photo_url)`)
       .eq('customers.phone_number', p)
-      .order('appointment_time', { ascending: false });
+      .gte('appointment_time', new Date().toISOString())
+      .order('appointment_time', { ascending: true });
 
     setLoading(false);
     setSearched(true);
@@ -157,7 +158,7 @@ export default function MyBookingsPage() {
         {searched && bookings !== null && (
           bookings.length === 0 ? (
             <div className="text-center py-10 space-y-2 bg-white/80 backdrop-blur-xl rounded-3xl border border-slate-100 shadow-lg p-6">
-              <p className="text-slate-500 text-sm">هیچ کاتی سەردانیکردنێک نەدۆزرایەوە</p>
+              <p className="text-slate-500 text-sm">هیچ کاتی سەردانیکردنێکی داهاتوو نەدۆزرایەوە</p>
               <Link href="/book" className="text-blue-600 text-sm font-medium">تۆمارکردن ←</Link>
             </div>
           ) : (
@@ -197,7 +198,6 @@ export default function MyBookingsPage() {
                       href={`/appointment/${b.id}`}
                       className={[
                         'flex items-center gap-3 bg-white border border-slate-100 shadow-sm rounded-2xl p-4 active:bg-slate-50 transition-colors touch-manipulation',
-                        isPast ? 'opacity-50' : '',
                       ].join(' ')}
                     >
                       <div className="flex-1 space-y-2 min-w-0">

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Camera, User, Phone, Loader2, HelpCircle, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Camera, User, Phone, Loader2, HelpCircle, AlertCircle, CheckCircle2, Home } from 'lucide-react';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import type { Customer } from '@/lib/types';
 import LiveCameraCapture from './LiveCameraCapture';
@@ -202,18 +203,13 @@ export default function CustomerRegistration({ onComplete }: Props) {
               </div>
             </div>
 
-            {/* Scissors badge */}
-            <div
-              className="w-10 h-10 rounded-2xl p-[2px] flex-shrink-0"
-              style={{
-                background:
-                  'conic-gradient(#ef4444 0deg,#ef4444 120deg,#f8fafc 145deg,#3b82f6 170deg,#3b82f6 300deg,#f8fafc 325deg,#ef4444 360deg)',
-              }}
+            {/* Home button */}
+            <Link
+              href="/"
+              className="w-10 h-10 rounded-2xl border border-slate-200 bg-white flex items-center justify-center shadow-sm active:bg-slate-50 active:scale-95 transition-all touch-manipulation"
             >
-              <div className="w-full h-full rounded-[14px] bg-white flex items-center justify-center">
-                <span className="text-blue-600 text-lg">✂</span>
-              </div>
-            </div>
+              <Home className="w-4 h-4 text-slate-500" />
+            </Link>
           </div>
           <h1 className="text-[1.75rem] font-bold text-slate-900 leading-tight">بەخێربێیت</h1>
           <p className="text-slate-500 text-sm mt-1 leading-relaxed">

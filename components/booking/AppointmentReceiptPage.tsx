@@ -2,11 +2,11 @@
 
 import type { AppointmentFull } from '@/lib/types';
 import { Calendar, CheckCircle2, Clock, Download, Home, RotateCcw, Scissors, XCircle } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { QRCodeCanvas } from 'qrcode.react';
 import { useEffect, useRef, useState } from 'react';
 import { formatTimeFull } from './DateTimePicker';
+import html2canvas from 'html2canvas';
 
 const STATUS_LABEL: Record<string, string> = {
   confirmed: 'دڵنیاکراوە',
@@ -57,7 +57,7 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl 
   const [origin, setOrigin]               = useState('');
   const [formattedDate, setFormattedDate] = useState('');
   const [formattedTime, setFormattedTime] = useState('');
-  const qrRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setFormattedDate(formatDate(appointment.appointment_time));
@@ -86,230 +86,95 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl 
 
 
   async function handleDownload() {
-    const qrCanvas = qrRef.current?.querySelector<HTMLCanvasElement>('canvas');
-    if (!qrCanvas) return;
+    if (!cardRef.current) return;
 
-    const kFont = new FontFace('KurdishFont', 'url(/font/kurdish.ttf)');
-    await kFont.load();
-    document.fonts.add(kFont);
-    const F = (size: number, weight = 400) =>
-      `${weight === 700 ? 'bold ' : weight === 600 ? '600 ' : ''}${size}px KurdishFont, system-ui, Arial`;
+    // Pre-load Kurdish font
+    try {
+      const kFont = new FontFace('UniSalar', 'url(/font/kurdish.ttf)');
+      await kFont.load();
+      document.fonts.add(kFont);
+    } catch { /* already loaded or unavailable */ }
 
-    const loadImg = (src: string) => new Promise<HTMLImageElement | null>(res => {
-      const img = new window.Image();
-      img.crossOrigin = 'anonymous';
-      img.onload  = () => res(img);
-      img.onerror = () => res(null);
-      img.src = src;
-    });
-
-    const [logoImg, photoImg] = await Promise.all([
-      logoUrl                         ? loadImg(logoUrl)                         : Promise.resolve(null),
-      appointment.customers.photo_url ? loadImg(appointment.customers.photo_url) : Promise.resolve(null),
-    ]);
-
-    const W = 520, PAD = 36;
-    const QR_SZ = 180, QR_PAD = 14;
-    const QR_FRAME_H = QR_SZ + QR_PAD * 2;
-
-    // Pre-compute total height to match card sections
-    const H =
-      10                              // stripe
-      + 20 + 56 + 8 + 22 + 16        // shop identity
-      + 16                            // gap after tear1
-      + 20 + 80 + 10 + 24 + 6 + 18 + 8  // customer (avatar + name + phone)
-      + (fbUrl ? 26 + 16 : 16)       // FB button or pb-4
-      + 12 + 28 + 12                  // status + code row
-      + 14 + 20 + 14                  // date row
-      + 14 + 20 + 14                  // time row
-      + 4 + 16                        // tear2
-      + (!isCancelled ? 16 + QR_FRAME_H + 8 + 18 + 16 + 42 + 20 : 0)
-      + 20;                           // bottom padding
-
-    const cv  = document.createElement('canvas');
-    cv.width  = W; cv.height = H;
-    const ctx = cv.getContext('2d')!;
-
-    // ── Helpers ──
-    const rr = (x: number, y: number, w: number, h: number, r: number) => {
-      ctx.beginPath(); ctx.roundRect(x, y, w, h, r);
-    };
-    const circ = (cx: number, cy: number, r: number) => {
-      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    };
-    const drawStripe = (sy: number, sh: number) => {
-      const seg = 14, cols = ['#ef4444', '#ffffff', '#3b82f6', '#ffffff'], span = seg * cols.length;
-      ctx.save();
-      ctx.beginPath(); ctx.rect(0, sy, W, sh); ctx.clip();
-      for (let x = -sh; x < W + span; x += span)
-        cols.forEach((c, i) => {
-          ctx.fillStyle = c;
-          ctx.beginPath();
-          ctx.moveTo(x + i*seg, sy); ctx.lineTo(x + i*seg + seg, sy);
-          ctx.lineTo(x + i*seg + seg + sh, sy + sh); ctx.lineTo(x + i*seg + sh, sy + sh);
-          ctx.closePath(); ctx.fill();
+    // Fetch all cross-origin images as data URLs BEFORE html2canvas runs.
+    // This is the only reliable way to bypass CORS taint in html2canvas —
+    // data URLs are same-origin so the canvas is never tainted.
+    async function toDataUrl(url: string): Promise<string> {
+      try {
+        const res = await fetch(url, { mode: 'cors', cache: 'no-cache' });
+        const blob = await res.blob();
+        return await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload  = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
         });
-      ctx.restore();
-    };
-    const drawDash = (dy: number) => {
-      ctx.save();
-      ctx.setLineDash([6, 5]); ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(PAD, dy); ctx.lineTo(W - PAD, dy); ctx.stroke();
-      ctx.setLineDash([]); ctx.restore();
-    };
-    const drawHLine = (ly: number) => {
-      ctx.strokeStyle = '#f1f5f9'; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(0, ly); ctx.lineTo(W, ly); ctx.stroke();
-    };
-
-    // ── Background ──
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, W, H);
-
-    let y = 0;
-
-    // 1. Barber-pole stripe
-    drawStripe(y, 10);
-    y += 10;
-
-    // 2. Shop identity: spinning conic ring + logo + name
-    y += 20;
-    const logoR = 28, logoCX = W / 2, logoCY = y + logoR;
-    // Ring segments: red, white, blue, white
-    [['#ef4444', -Math.PI * 0.5, Math.PI * 0.6], ['#f8fafc', Math.PI * 0.6, Math.PI * 1.0],
-     ['#3b82f6', Math.PI * 1.0, Math.PI * 1.6],  ['#f8fafc', Math.PI * 1.6, Math.PI * 1.9]
-    ].forEach(([color, start, end]) => {
-      ctx.beginPath();
-      ctx.arc(logoCX, logoCY, logoR + 4, start as number, end as number);
-      ctx.strokeStyle = color as string; ctx.lineWidth = 7; ctx.stroke();
-    });
-    circ(logoCX, logoCY, logoR + 1); ctx.fillStyle = '#ffffff'; ctx.fill();
-    ctx.save();
-    circ(logoCX, logoCY, logoR); ctx.fillStyle = '#f1f5f9'; ctx.fill(); ctx.clip();
-    if (logoImg) {
-      ctx.drawImage(logoImg, logoCX - logoR, logoCY - logoR, logoR * 2, logoR * 2);
-    } else {
-      ctx.fillStyle = '#3b82f6'; ctx.font = F(logoR * 0.8, 700);
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('✂', logoCX, logoCY);
-    }
-    ctx.restore();
-    y += logoR * 2 + 8;
-    ctx.fillStyle = '#1e293b'; ctx.font = F(18, 700);
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.direction = 'ltr';
-    ctx.fillText(shopName, W / 2, y + 11);
-    y += 22 + 16;
-
-    // 3. Dashed tear line
-    drawDash(y);
-    y += 16;
-
-    // 4. Customer identity: centered avatar + name + phone + FB
-    y += 20;
-    const avR = 40, avCX = W / 2, avCY = y + avR;
-    ctx.save();
-    circ(avCX, avCY, avR + 2); ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 2; ctx.stroke();
-    circ(avCX, avCY, avR); ctx.fillStyle = '#f1f5f9'; ctx.fill(); ctx.clip();
-    if (photoImg) {
-      ctx.drawImage(photoImg, avCX - avR, avCY - avR, avR * 2, avR * 2);
-    } else {
-      ctx.fillStyle = '#3b82f6'; ctx.font = F(avR, 700);
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(appointment.customers.full_name.charAt(0).toUpperCase(), avCX, avCY);
-    }
-    ctx.restore();
-    y += avR * 2 + 10;
-    ctx.fillStyle = '#0f172a'; ctx.font = F(20, 700);
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.direction = 'rtl';
-    ctx.fillText(appointment.customers.full_name, W / 2, y + 12);
-    y += 24 + 6;
-    ctx.fillStyle = '#94a3b8'; ctx.font = F(14);
-    ctx.textAlign = 'center'; ctx.direction = 'ltr';
-    ctx.fillText(appointment.customers.phone_number, W / 2, y + 9);
-    y += 18 + 8;
-    if (fbUrl) {
-      const fbLabel = 'پرۆفایلی فەیسبووک';
-      ctx.font = F(13, 600);
-      const fbTw = ctx.measureText(fbLabel).width;
-      const bW = fbTw + 40, bH = 26, bX = W / 2 - bW / 2;
-      rr(bX, y, bW, bH, 8);
-      ctx.fillStyle = '#eff6ff'; ctx.fill();
-      ctx.strokeStyle = '#bfdbfe'; ctx.lineWidth = 1; ctx.stroke();
-      ctx.fillStyle = '#1877F2';
-      ctx.textAlign = 'center'; ctx.direction = 'rtl'; ctx.textBaseline = 'middle';
-      ctx.fillText(fbLabel, W / 2 + 4, y + bH / 2);
-      y += bH + 16;
-    } else {
-      y += 16;
+      } catch {
+        return url; // fallback — image may still be blank but won't crash
+      }
     }
 
-    // 5. Status pill + booking code
-    drawHLine(y);
-    y += 12;
-    const statusBg: Record<string, string> = { confirmed: '#10b981', pending: '#f59e0b', cancelled: '#ef4444' };
-    const sBg = statusBg[appointment.status] ?? '#94a3b8';
-    const sTxt = STATUS_LABEL[appointment.status] ?? appointment.status;
-    ctx.font = F(13, 700);
-    const sTw = ctx.measureText(sTxt).width;
-    const sPW = sTw + 24, sPH = 28;
-    rr(PAD, y, sPW, sPH, 100); ctx.fillStyle = sBg; ctx.fill();
-    ctx.fillStyle = '#ffffff'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.direction = 'rtl';
-    ctx.fillText(sTxt, PAD + 12, y + sPH / 2);
-    ctx.fillStyle = '#2563eb'; ctx.font = F(16, 700);
-    ctx.textAlign = 'right'; ctx.direction = 'ltr';
-    ctx.fillText(sid, W - PAD, y + sPH / 2);
-    y += sPH + 12;
+    const imgEls = Array.from(cardRef.current.querySelectorAll<HTMLImageElement>('img'));
+    const urlMap = new Map<string, string>();
+    await Promise.all(
+      imgEls
+        .filter(img => img.src && !img.src.startsWith('data:') && !img.src.startsWith('blob:'))
+        .map(async img => {
+          const dataUrl = await toDataUrl(img.src);
+          urlMap.set(img.src, dataUrl);
+        })
+    );
 
-    // 6. Date row
-    drawHLine(y); y += 14;
-    ctx.fillStyle = '#1e293b'; ctx.font = F(16, 700);
-    ctx.textAlign = 'right'; ctx.direction = 'ltr'; ctx.textBaseline = 'middle';
-    ctx.fillText(formattedDate, W - PAD, y + 10);
-    ctx.fillStyle = '#94a3b8'; ctx.font = F(12, 700);
-    ctx.textAlign = 'left'; ctx.direction = 'rtl';
-    ctx.fillText('بەروار', PAD, y + 10);
-    y += 20 + 14;
+    // Pause spinning animations so the ring is crisp in the snapshot
+    const animated = cardRef.current.querySelectorAll<HTMLElement>('[style*="animation"]');
+    animated.forEach(el => { el.style.animationPlayState = 'paused'; });
 
-    // 7. Time row
-    drawHLine(y); y += 14;
-    ctx.fillStyle = '#1e293b'; ctx.font = F(16, 700);
-    ctx.textAlign = 'right'; ctx.direction = 'rtl'; ctx.textBaseline = 'middle';
-    ctx.fillText(formattedTime, W - PAD, y + 10);
-    ctx.fillStyle = '#94a3b8'; ctx.font = F(12, 700);
-    ctx.textAlign = 'left'; ctx.direction = 'rtl';
-    ctx.fillText('کات', PAD, y + 10);
-    y += 20 + 14;
+    try {
+      const canvas = await html2canvas(cardRef.current, {
+        scale: 3,
+        useCORS: false,      // not needed — all images are now data URLs
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        imageTimeout: 0,
+        onclone: (clonedDoc, clonedEl) => {
+          // Inject font + fix RTL text shaping
+          const style = clonedDoc.createElement('style');
+          style.textContent = `
+            @font-face {
+              font-family: 'UniSalar';
+              src: url('/font/kurdish.ttf') format('truetype');
+              font-display: block;
+            }
+            * {
+              letter-spacing: normal !important;
+              font-feature-settings: "kern" 1, "liga" 1, "calt" 1, "clig" 1 !important;
+            }
+          `;
+          clonedDoc.head.appendChild(style);
+          clonedDoc.body.style.direction = 'rtl';
 
-    // 8. Second dashed tear line
-    y += 4; drawDash(y); y += 16;
+          // Swap every image src for its pre-fetched data URL
+          clonedEl.querySelectorAll<HTMLImageElement>('img').forEach(img => {
+            const dataUrl = urlMap.get(img.src);
+            if (dataUrl) img.src = dataUrl;
+            if (!img.style.width)  img.style.width  = `${img.offsetWidth  || img.naturalWidth  || 64}px`;
+            if (!img.style.height) img.style.height = `${img.offsetHeight || img.naturalHeight || 64}px`;
+          });
 
-    // 9. QR + caption + reminder
-    if (!isCancelled) {
-      y += 16;
-      const qrFX = W / 2 - (QR_SZ + QR_PAD * 2) / 2;
-      rr(qrFX, y, QR_SZ + QR_PAD * 2, QR_FRAME_H, 16);
-      ctx.fillStyle = '#f8fafc'; ctx.fill();
-      ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1; ctx.stroke();
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(qrCanvas, qrFX + QR_PAD, y + QR_PAD, QR_SZ, QR_SZ);
-      ctx.imageSmoothingEnabled = true;
-      y += QR_FRAME_H + 8;
-      ctx.fillStyle = '#94a3b8'; ctx.font = F(12);
-      ctx.textAlign = 'center'; ctx.direction = 'rtl'; ctx.textBaseline = 'middle';
-      ctx.fillText('کۆدی تایبەت بە کاتی سەردانیکردن', W / 2, y + 9);
-      y += 18 + 16;
-      const noteH = 42;
-      rr(PAD, y, W - PAD * 2, noteH, 16);
-      ctx.fillStyle = '#eff6ff'; ctx.fill();
-      ctx.strokeStyle = '#bfdbfe'; ctx.lineWidth = 1; ctx.stroke();
-      ctx.fillStyle = '#1d4ed8'; ctx.font = F(14, 700);
-      ctx.textAlign = 'center'; ctx.direction = 'rtl'; ctx.textBaseline = 'middle';
-      ctx.fillText('تکایە ٥ خولەک زووتر ئامادەبە', W / 2, y + noteH / 2);
+          // Pause animations in the clone too
+          clonedEl.querySelectorAll<HTMLElement>('[style*="animation"]').forEach(el => {
+            el.style.animationPlayState = 'paused';
+          });
+        },
+      });
+
+      const a = document.createElement('a');
+      a.download = `بۆخت-${sid.replace('#', '')}.png`;
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    } finally {
+      animated.forEach(el => { el.style.animationPlayState = ''; });
     }
-
-    const a = document.createElement('a');
-    a.download = `بۆخت-${sid.replace('#', '')}.png`;
-    a.href = cv.toDataURL('image/png');
-    a.click();
   }
 
   const fadeClass = `transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`;
@@ -362,7 +227,7 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl 
           <div className="absolute -left-3 z-10 w-6 h-6 rounded-full bg-slate-100 border border-slate-200/60" style={{ top: '72%', transform: 'translateY(-50%)' }} />
           <div className="absolute -right-3 z-10 w-6 h-6 rounded-full bg-slate-100 border border-slate-200/60" style={{ top: '72%', transform: 'translateY(-50%)' }} />
 
-          <div className={`bg-white rounded-3xl border shadow-[0_15px_40px_rgba(0,0,0,0.06)] overflow-hidden ${isCancelled ? 'border-red-200' : 'border-slate-100'}`}>
+          <div id="visitor-pass-card" ref={cardRef} className={`bg-white rounded-3xl border shadow-[0_15px_40px_rgba(0,0,0,0.06)] overflow-hidden ${isCancelled ? 'border-red-200' : 'border-slate-100'}`}>
 
             {/* Top barber-pole strip */}
             <div
@@ -375,7 +240,8 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl 
 
             {/* Shop identity */}
             <div className="flex flex-col items-center gap-2 pt-5 pb-4">
-              <div className="relative w-14 h-14 flex-shrink-0">
+              <div className="relative flex-shrink-0" style={{ width: 56, height: 56 }}>
+                {/* Spinning ring */}
                 <div
                   className="absolute inset-0 rounded-full"
                   style={{
@@ -383,16 +249,29 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl 
                     animation: 'ringRotate 4s linear infinite',
                   }}
                 />
-                <div className="absolute inset-[2.5px] rounded-full bg-white">
-                  <div className="absolute inset-[2px] rounded-full overflow-hidden bg-slate-100">
-                    {logoUrl ? (
-                      <Image src={logoUrl} alt={shopName} width={48} height={48} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-blue-50">
-                        <Scissors className="w-5 h-5 text-blue-500" />
-                      </div>
-                    )}
-                  </div>
+                {/* White gap ring */}
+                <div
+                  className="absolute rounded-full bg-white"
+                  style={{ inset: '2.5px' }}
+                />
+                {/* Logo image — plain <img> with explicit px size for html2canvas */}
+                <div
+                  className="absolute rounded-full bg-slate-100"
+                  style={{ inset: '4.5px', overflow: 'hidden' }}
+                >
+                  {logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={logoUrl}
+                      alt={shopName}
+                      crossOrigin="anonymous"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-blue-50">
+                      <Scissors className="w-5 h-5 text-blue-500" />
+                    </div>
+                  )}
                 </div>
               </div>
               <p className="text-slate-800 font-bold text-sm tracking-wide">{shopName}</p>
@@ -407,7 +286,7 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl 
               {/* Customer avatar — centered, larger */}
               <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-slate-200 bg-slate-100 shadow-sm">
                 {appointment.customers.photo_url ? (
-                  <img src={appointment.customers.photo_url} alt="" className="w-full h-full object-cover" />
+                  <img src={appointment.customers.photo_url} alt="" crossOrigin="anonymous" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-blue-50 text-blue-600 font-bold text-2xl">
                     {appointment.customers.full_name.charAt(0)}
@@ -469,7 +348,7 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl 
             {/* QR code */}
             {origin && !isCancelled && (
               <div className="flex flex-col items-center gap-2 px-5 pb-4">
-                <div ref={qrRef} className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-100 shadow-inner">
+                <div className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-100 shadow-inner">
                   <QRCodeCanvas value={apptUrl} size={148} bgColor="#f8fafc" fgColor="#0f172a" level="M" />
                 </div>
                 <p className="text-slate-400 text-[0.58rem] tracking-wider text-center">کۆدی تایبەت بە کاتی سەردانیکردن</p>
