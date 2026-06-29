@@ -48,7 +48,7 @@ export default function ScheduleEditor() {
     <div className="px-4 py-6 space-y-4">
       <div className="mb-6">
         <h2 className="text-slate-900 font-semibold text-lg">خشتەی کاری</h2>
-        <p className="text-slate-500 text-sm mt-0.5">رووژەکان دەگوێزەرەوە و کاتی بەردەستەکانت دیاری بکە</p>
+        <p className="text-slate-500 text-sm mt-0.5">ڕۆژ و کاتی کارکردن دیاری بکە</p>
       </div>
 
       {schedule.map((day) => (

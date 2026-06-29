@@ -6,6 +6,24 @@ import { supabase } from '@/lib/supabase';
 import type { Customer } from '@/lib/types';
 import LiveCameraCapture from './LiveCameraCapture';
 
+// Re-compress to a capped JPEG before uploading (guards against large inputs)
+function compressDataUrl(dataUrl: string, maxPx = 360, quality = 0.72): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(maxPx / img.width, maxPx / img.height, 1);
+      const w = Math.round(img.width  * scale);
+      const h = Math.round(img.height * scale);
+      const cv  = document.createElement('canvas');
+      cv.width  = w;
+      cv.height = h;
+      cv.getContext('2d')!.drawImage(img, 0, 0, w, h);
+      resolve(cv.toDataURL('image/jpeg', quality));
+    };
+    img.src = dataUrl;
+  });
+}
+
 function dataUrlToBlob(dataUrl: string): Blob {
   const [meta, b64] = dataUrl.split(',');
   const mime = meta.match(/:(.*?);/)?.[1] ?? 'image/jpeg';
@@ -84,7 +102,8 @@ export default function CustomerRegistration({ onComplete }: Props) {
   async function handleCameraCapture(dataUrl: string) {
     setShowCamera(false);
     setUploading(true);
-    const blob = dataUrlToBlob(dataUrl);
+    const compressed = await compressDataUrl(dataUrl);
+    const blob = dataUrlToBlob(compressed);
     const path = `customer-${Date.now()}.jpg`;
     const { error: uploadErr } = await supabase.storage
       .from('uploads')

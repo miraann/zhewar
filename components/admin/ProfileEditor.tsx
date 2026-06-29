@@ -68,7 +68,7 @@ export default function ProfileEditor() {
     <div className="px-4 py-6 space-y-6">
       <div>
         <h2 className="text-slate-900 font-semibold text-lg">پرۆفایلی دوکان</h2>
-        <p className="text-slate-500 text-sm mt-0.5">زانیاری خۆت نوێ بکەرەوە</p>
+        <p className="text-slate-500 text-sm mt-0.5">زانیارییەکانت نوێ بکەرەوە</p>
       </div>
 
       {/* Identity */}

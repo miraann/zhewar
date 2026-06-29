@@ -176,8 +176,8 @@ export default function GalleryEditor() {
           ].join(' ')}
         >
           {adding ? <Loader2 className="w-7 h-7 text-blue-500 animate-spin" /> : <Upload className="w-7 h-7 text-slate-400" />}
-          <span className="text-slate-600 text-sm font-medium">{adding ? 'بارکردن...' : 'کرتە بکە بۆ هەڵبژاردنی وێنە'}</span>
-          {!adding && <span className="text-slate-400 text-xs">دەکرێت چەند وێنەیەک لەکاتێکدا هەڵبژێریت</span>}
+          <span className="text-slate-600 text-sm font-medium">{adding ? 'بارکردن...' : 'کلیک بکە بۆ هەڵبژاردنی وێنە'}</span>
+          {!adding && <span className="text-slate-400 text-xs">پێویستە شێوازی وێنەکە ٩:١٦ بێت</span>}
         </button>
         {addError && <p className="text-red-500 text-xs">{addError}</p>}
       </div>

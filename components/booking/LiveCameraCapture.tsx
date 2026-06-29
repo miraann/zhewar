@@ -131,15 +131,24 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
   const captureNow = useCallback(() => {
     const video = videoRef.current;
     if (!video || video.readyState < 2) return;
-    const W = video.videoWidth  || 480;
-    const H = video.videoHeight || 640;
-    const cv = document.createElement('canvas');
-    cv.width = W; cv.height = H;
+    const srcW = video.videoWidth  || 480;
+    const srcH = video.videoHeight || 640;
+
+    // Scale down to max 360px on the longest side — avatar display is max 112px
+    const maxPx = 360;
+    const scale = Math.min(maxPx / srcW, maxPx / srcH, 1);
+    const outW  = Math.round(srcW * scale);
+    const outH  = Math.round(srcH * scale);
+
+    const cv  = document.createElement('canvas');
+    cv.width  = outW;
+    cv.height = outH;
     const ctx = cv.getContext('2d')!;
-    ctx.translate(W, 0);
+    ctx.translate(outW, 0);
     ctx.scale(-1, 1); // mirror (selfie)
-    ctx.drawImage(video, 0, 0, W, H);
-    setCaptured(cv.toDataURL('image/jpeg', 0.85));
+    ctx.drawImage(video, 0, 0, outW, outH);
+    // quality 0.72 → ~20-40 KB for a 360px face crop
+    setCaptured(cv.toDataURL('image/jpeg', 0.72));
     setPhaseSync('captured');
     stopStream();
   }, [stopStream, setPhaseSync]);

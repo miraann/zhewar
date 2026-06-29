@@ -33,6 +33,12 @@ function Dashboard() {
   const tab: Tab     = raw && VALID_TABS.has(raw) ? raw : 'appointments';
 
   const [pendingCount, setPendingCount] = useState(0);
+  const [logoUrl, setLogoUrl]           = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.from('barber_profile').select('logo_url').single()
+      .then(({ data }) => { if (data?.logo_url) setLogoUrl(data.logo_url); });
+  }, []);
 
   useEffect(() => {
     function fetchPending() {
@@ -75,21 +81,26 @@ function Dashboard() {
           <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-3">
 
-              {/* Animated conic ring logo */}
-              <div
-                className="w-9 h-9 rounded-full p-[2.5px] flex-shrink-0"
-                style={{
-                  background: 'conic-gradient(#ef4444 0deg,#ef4444 110deg,#f8fafc 135deg,#3b82f6 160deg,#3b82f6 290deg,#f8fafc 315deg,#ef4444 360deg)',
-                  animation: 'ringRotate 3.5s linear infinite',
-                }}
-              >
-                <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
-                  <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="#3b82f6" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M6 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" />
-                    <path d="M18 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" />
-                    <path d="M8.59 8.59L15 15" />
-                    <path d="M15 9l-6.41 6.41" />
-                  </svg>
+              {/* Shop logo with spinning ring */}
+              <div className="relative w-14 h-14 flex-shrink-0">
+                <div
+                  className="absolute inset-0 rounded-full"
+                  style={{
+                    background: 'conic-gradient(#ef4444 0deg,#ef4444 110deg,#f8fafc 135deg,#3b82f6 160deg,#3b82f6 290deg,#f8fafc 315deg,#ef4444 360deg)',
+                    animation: 'ringRotate 3.5s linear infinite',
+                  }}
+                />
+                <div className="absolute inset-[2.5px] rounded-full bg-white overflow-hidden flex items-center justify-center">
+                  {logoUrl ? (
+                    <img src={logoUrl} alt="logo" className="w-full h-full object-cover rounded-full" />
+                  ) : (
+                    <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="#3b82f6" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M6 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" />
+                      <path d="M18 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" />
+                      <path d="M8.59 8.59L15 15" />
+                      <path d="M15 9l-6.41 6.41" />
+                    </svg>
+                  )}
                 </div>
               </div>
 
