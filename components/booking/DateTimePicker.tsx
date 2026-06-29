@@ -114,6 +114,14 @@ export default function DateTimePicker({
   const isWorkDay = (d: Date) => Boolean(workingSchedule.find((w) => w.day_of_week === d.getDay())?.is_active);
   const canProceed = Boolean(selectedDate && selectedTime);
 
+  const now = new Date();
+  const filteredTimeSlots = (selectedDate && sameDay(selectedDate, today))
+    ? timeSlots.filter(slot => {
+        const [h, m] = slot.split(':').map(Number);
+        return h * 60 + m > now.getHours() * 60 + now.getMinutes();
+      })
+    : timeSlots;
+
   return (
     <div className="flex flex-col min-h-[calc(100vh-3px)] bg-transparent relative">
 
@@ -232,7 +240,18 @@ export default function DateTimePicker({
           </p>
         </div>
 
-        {selectedDate && daySchedule?.is_active && (
+        {selectedDate && daySchedule?.is_active && filteredTimeSlots.length === 0 && !loadingSlots && (
+          <div className="flex flex-col items-center justify-center py-16 gap-4">
+            <div className="w-16 h-16 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center">
+              <Clock className="w-7 h-7 text-slate-300" />
+            </div>
+            <p className="text-slate-500 text-sm text-center leading-relaxed px-6">
+              کاتی بەردەست نەماوە بۆ ئەمڕۆ، تکایە ڕۆژی دیکە هەڵبژێرە
+            </p>
+          </div>
+        )}
+
+        {selectedDate && daySchedule?.is_active && filteredTimeSlots.length > 0 && (
           loadingSlots ? (
             <div className="grid grid-cols-2 gap-3">
               {[...Array(6)].map((_, i) => (
@@ -241,7 +260,7 @@ export default function DateTimePicker({
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3">
-              {timeSlots.map((slot) => {
+              {filteredTimeSlots.map((slot) => {
                 const isPending   = pendingSlots.has(slot);
                 const isConfirmed = confirmedSlots.has(slot);
                 const taken  = isPending || isConfirmed;

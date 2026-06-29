@@ -77,9 +77,9 @@ export default function GalleryEditor() {
     for (const file of files) {
       const ext  = file.name.split('.').pop();
       const path = `gallery-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error: uploadErr } = await supabase.storage.from('uploads').upload(path, file, { upsert: true });
+      const { error: uploadErr } = await supabase.storage.from('gallery_photos').upload(path, file, { upsert: true });
       if (uploadErr) { setAddError(uploadErr.message); break; }
-      const { data } = supabase.storage.from('uploads').getPublicUrl(path);
+      const { data } = supabase.storage.from('gallery_photos').getPublicUrl(path);
       await insertPhoto(data.publicUrl);
     }
     setAdding(false);
@@ -100,11 +100,11 @@ export default function GalleryEditor() {
     setReplacing(true);
     const ext  = file.name.split('.').pop();
     const path = `gallery-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const { error: uploadErr } = await supabase.storage.from('uploads').upload(path, file, { upsert: true });
+    const { error: uploadErr } = await supabase.storage.from('gallery_photos').upload(path, file, { upsert: true });
     if (uploadErr) {
       setEditError(uploadErr.message);
     } else {
-      const { data } = supabase.storage.from('uploads').getPublicUrl(path);
+      const { data } = supabase.storage.from('gallery_photos').getPublicUrl(path);
       setEditing((prev) => prev ? { ...prev, photo_url: data.publicUrl } : prev);
     }
     setReplacing(false);

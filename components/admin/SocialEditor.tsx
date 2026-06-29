@@ -66,9 +66,9 @@ export default function SocialEditor() {
     onLoading(true);
     const ext  = file.name.split('.').pop();
     const path = `social-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const { error: uploadErr } = await supabase.storage.from('uploads').upload(path, file, { upsert: true });
+    const { error: uploadErr } = await supabase.storage.from('social_posts').upload(path, file, { upsert: true });
     if (!uploadErr) {
-      const { data } = supabase.storage.from('uploads').getPublicUrl(path);
+      const { data } = supabase.storage.from('social_posts').getPublicUrl(path);
       onDone(data.publicUrl);
     }
     onLoading(false);

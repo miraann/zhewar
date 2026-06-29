@@ -101,12 +101,13 @@ const MSG_ICON = (
 // ── Countdown ──────────────────────────────────────────────────────────────────
 
 function Countdown({ appointmentTime }: { appointmentTime: string }) {
-  const [label, setLabel] = useState('');
+  const [label,  setLabel]  = useState('');
+  const [passed, setPassed] = useState(false);
 
   useEffect(() => {
     function tick() {
       const diff = new Date(appointmentTime).getTime() - Date.now();
-      if (diff <= 0) { setLabel('00:00:00:00'); return; }
+      if (diff <= 0) { setPassed(true); return; }
       const d  = Math.floor(diff / 86_400_000);
       const h  = Math.floor((diff % 86_400_000) / 3_600_000);
       const m  = Math.floor((diff % 3_600_000)  / 60_000);
@@ -119,13 +120,14 @@ function Countdown({ appointmentTime }: { appointmentTime: string }) {
     return () => clearInterval(id);
   }, [appointmentTime]);
 
-  const passed   = new Date(appointmentTime).getTime() <= Date.now();
+  if (passed) return null;
+
   const segments = label.split(':');
 
   return (
     <div
       className="flex items-center justify-center gap-1.5 px-3 h-14 rounded-xl"
-      style={{ background: passed ? '#94a3b8' : '#10b981' }}
+      style={{ background: '#10b981' }}
     >
       {['D','H','M','S'].map((unit, i) => (
         <div key={unit} className="flex items-center gap-1.5">
@@ -180,15 +182,17 @@ export default function AppointmentsView() {
     setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a));
   }
 
-  const now      = new Date();
-  const today    = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const todayEnd = new Date(today.getTime() + 86_400_000);
+  const now        = new Date();
+  const today      = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayEnd   = new Date(today.getTime() + 86_400_000);
+  const yesterday  = new Date(today.getTime() - 86_400_000);
 
   const filtered = appointments.filter(a => {
     const dt = new Date(a.appointment_time);
     if (filter === 'today')    { if (!(dt >= today && dt < todayEnd) || a.status !== 'confirmed') return false; }
     if (filter === 'upcoming') { if (!(dt >= now) || a.status !== 'confirmed') return false; }
     if (filter === 'pending')  { if (a.status !== 'pending') return false; }
+    if (filter === 'all')      { if (dt < yesterday) return false; }
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       if (!a.customers.full_name.toLowerCase().includes(q) && !a.customers.phone_number.includes(q)) return false;
@@ -365,13 +369,20 @@ export default function AppointmentsView() {
                   <div className="flex items-center gap-3">
 
                     {/* Avatar */}
-                    <div className="relative flex-shrink-0">
+                    <div className="relative w-14 h-14 flex-shrink-0">
+                      {/* Spinning gold ring */}
+                      <div
+                        className="absolute inset-0 rounded-full"
+                        style={{
+                          background: 'conic-gradient(#f59e0b 0deg,#fde68a 60deg,#ffffff 90deg,#fde68a 120deg,#f59e0b 180deg,#d97706 240deg,#ffffff 270deg,#d97706 300deg,#f59e0b 360deg)',
+                          animation: 'ringRotate 3s linear infinite',
+                        }}
+                      />
                       {appt.customers.photo_url && !failedPhotos.has(appt.id) ? (
                         <button
                           type="button"
                           onClick={() => setPreview(appt.customers.photo_url)}
-                          className="w-11 h-11 rounded-full overflow-hidden block touch-manipulation active:opacity-70 transition-opacity"
-                          style={{ boxShadow: `0 0 0 2px ${dotColor}35` }}
+                          className="absolute inset-[2.5px] rounded-full overflow-hidden touch-manipulation active:opacity-70 transition-opacity"
                         >
                           <img
                             src={appt.customers.photo_url}
@@ -382,19 +393,15 @@ export default function AppointmentsView() {
                         </button>
                       ) : (
                         <div
-                          className="w-11 h-11 rounded-full flex items-center justify-center font-semibold text-sm select-none"
-                          style={{
-                            background: `${dotColor}12`,
-                            color: dotColor,
-                            boxShadow: `0 0 0 2px ${dotColor}28`,
-                          }}
+                          className="absolute inset-[2.5px] rounded-full flex items-center justify-center font-semibold text-sm select-none"
+                          style={{ background: `${dotColor}12`, color: dotColor }}
                         >
                           {appt.customers.full_name.charAt(0)}
                         </div>
                       )}
                       {/* Presence dot */}
                       <span
-                        className="absolute -bottom-0.5 -right-0.5 w-[11px] h-[11px] rounded-full border-2 border-white"
+                        className="absolute -bottom-0.5 -right-0.5 w-[11px] h-[11px] rounded-full border-2 border-white z-10"
                         style={{ background: dotColor }}
                       />
                     </div>
@@ -405,11 +412,11 @@ export default function AppointmentsView() {
                         {appt.customers.full_name}
                       </p>
                       <div className="flex items-center gap-1 mt-[3px]">
-                        <Calendar className="w-[11px] h-[11px] text-slate-400 flex-shrink-0" />
-                        <span className="text-[0.7rem] text-slate-500 font-medium">{dayName} · {date}</span>
-                        <span className="text-slate-300 mx-0.5 text-[0.6rem]">|</span>
-                        <Clock className="w-[11px] h-[11px] text-slate-400 flex-shrink-0" />
-                        <span className="text-[0.7rem] text-slate-500 font-medium">{time}</span>
+                        <Calendar className="w-[11px] h-[11px] text-slate-700 flex-shrink-0" />
+                        <span className="text-[0.7rem] text-slate-900 font-medium">{dayName} · {date}</span>
+                        <span className="text-slate-400 mx-0.5 text-[0.6rem]">|</span>
+                        <Clock className="w-[11px] h-[11px] text-slate-700 flex-shrink-0" />
+                        <span className="text-[0.7rem] text-slate-900 font-medium">{time}</span>
                       </div>
                       <p className="text-[0.67rem] text-slate-400 mt-[3px] font-mono tracking-wide" dir="ltr">
                         {appt.customers.phone_number}

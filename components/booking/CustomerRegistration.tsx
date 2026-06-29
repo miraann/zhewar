@@ -7,7 +7,7 @@ import type { Customer } from '@/lib/types';
 import LiveCameraCapture from './LiveCameraCapture';
 
 // Re-compress to a capped JPEG before uploading (guards against large inputs)
-function compressDataUrl(dataUrl: string, maxPx = 360, quality = 0.72): Promise<string> {
+function compressDataUrl(dataUrl: string, maxPx = 240, quality = 0.60): Promise<string> {
   return new Promise((resolve) => {
     const img = new Image();
     img.onload = () => {
@@ -106,10 +106,10 @@ export default function CustomerRegistration({ onComplete }: Props) {
     const blob = dataUrlToBlob(compressed);
     const path = `customer-${Date.now()}.jpg`;
     const { error: uploadErr } = await supabase.storage
-      .from('uploads')
+      .from('customer_photos')
       .upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
     if (!uploadErr) {
-      const { data } = supabase.storage.from('uploads').getPublicUrl(path);
+      const { data } = supabase.storage.from('customer_photos').getPublicUrl(path);
       setPhotoUrl(data.publicUrl);
     }
     setUploading(false);
@@ -136,6 +136,7 @@ export default function CustomerRegistration({ onComplete }: Props) {
       .single();
     setSaving(false);
     if (data && !dbErr) {
+      fetch('/api/customer-cleanup', { method: 'POST' }).catch(() => {});
       try {
         localStorage.setItem('luxe_customer', JSON.stringify(data));
         localStorage.setItem('luxe_registered', '1');

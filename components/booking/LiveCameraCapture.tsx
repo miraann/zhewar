@@ -134,8 +134,8 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
     const srcW = video.videoWidth  || 480;
     const srcH = video.videoHeight || 640;
 
-    // Scale down to max 360px on the longest side — avatar display is max 112px
-    const maxPx = 360;
+    // Scale down to max 240px — fits ~3000+ images in 50 MB bucket
+    const maxPx = 240;
     const scale = Math.min(maxPx / srcW, maxPx / srcH, 1);
     const outW  = Math.round(srcW * scale);
     const outH  = Math.round(srcH * scale);
@@ -147,8 +147,8 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
     ctx.translate(outW, 0);
     ctx.scale(-1, 1); // mirror (selfie)
     ctx.drawImage(video, 0, 0, outW, outH);
-    // quality 0.72 → ~20-40 KB for a 360px face crop
-    setCaptured(cv.toDataURL('image/jpeg', 0.72));
+    // quality 0.60 → ~8-15 KB per image
+    setCaptured(cv.toDataURL('image/jpeg', 0.60));
     setPhaseSync('captured');
     stopStream();
   }, [stopStream, setPhaseSync]);

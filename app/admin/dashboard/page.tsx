@@ -78,7 +78,7 @@ function Dashboard() {
         <div className="max-w-lg mx-auto px-4">
 
           {/* ── Title row ── */}
-          <div className="flex items-center justify-between h-14">
+          <div className="flex items-center justify-between h-14 mt-5">
             <div className="flex items-center gap-3">
 
               {/* Shop logo with spinning ring */}
