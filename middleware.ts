@@ -27,5 +27,6 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/dashboard/:path*', '/api/admin/:path*'],
+  // Protect all admin routes EXCEPT the login endpoint itself
+  matcher: ['/admin/dashboard/:path*', '/api/admin/((?!login).*)'],
 };
