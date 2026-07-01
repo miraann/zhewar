@@ -22,7 +22,11 @@ export default function AdminLoginForm() {
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
       setCountdown(prev => {
-        if (prev <= 1) { clearInterval(timerRef.current!); return 0; }
+        if (prev <= 1) {
+          clearInterval(timerRef.current!);
+          setError('');
+          return 0;
+        }
         return prev - 1;
       });
     }, 1000);
@@ -49,7 +53,8 @@ export default function AdminLoginForm() {
       startCountdown(data.secondsLeft ?? 60);
       setPassword('');
     } else {
-      setError('ووشەی نهێنی هەڵەیە. تکایە دووبارە هەوڵبدەرەوە.');
+      setError('ووشەی نهێنی هەڵەیە.');
+      startCountdown(60);
       setPassword('');
     }
   }

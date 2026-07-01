@@ -1,7 +1,7 @@
 import { timingSafeEqual } from 'crypto';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { createClient } from '@supabase/supabase-js';
 import AdminLoginForm from '@/components/admin/LoginForm';
 
 function isValidSession(value: string): boolean {
@@ -22,7 +22,10 @@ export default async function AdminLoginPage() {
 
   let logoUrl: string | null = null;
   try {
-    const db = getSupabaseAdmin();
+    const db = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    );
     const { data } = await db.from('barber_profile').select('logo_url').single();
     logoUrl = data?.logo_url ?? null;
   } catch {}
