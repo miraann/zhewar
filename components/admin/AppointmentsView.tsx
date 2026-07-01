@@ -10,6 +10,14 @@ import {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+// Convert Iraqi local number (07XX…) to WhatsApp international format (964 7XX…)
+function toWaNumber(raw: string): string {
+  const digits = raw.replace(/\D/g, '');
+  if (digits.startsWith('964')) return digits;
+  if (digits.startsWith('0'))   return '964' + digits.slice(1);
+  return digits;
+}
+
 function getFbLinks(raw: string): { fbUrl: string; messengerUrl: string } | null {
   if (!raw) return null;
   const s = raw.trim();
@@ -449,7 +457,7 @@ export default function AppointmentsView() {
 
                     {/* WhatsApp */}
                     <a
-                      href={`https://wa.me/${appt.customers.phone_number.replace(/[^0-9]/g, '')}`}
+                      href={`https://wa.me/${toWaNumber(appt.customers.phone_number)}`}
                       target="_blank" rel="noopener noreferrer"
                       className="flex-1 h-11 rounded-xl flex items-center justify-center touch-manipulation transition-all duration-200 active:scale-95 active:opacity-80"
                       style={{ background: '#25d366' }}
