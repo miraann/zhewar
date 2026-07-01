@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
+import { useWakeLock } from '@/hooks/useWakeLock';
 import { Clock, ImageIcon, User, LayoutDashboard, LogOut, Share2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import ScheduleEditor   from '@/components/admin/ScheduleEditor';
@@ -27,6 +28,7 @@ export default function AdminDashboard() {
 }
 
 function Dashboard() {
+  useWakeLock();
   const router       = useRouter();
   const searchParams = useSearchParams();
   const raw          = searchParams.get('tab') as Tab | null;
