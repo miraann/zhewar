@@ -4,17 +4,17 @@ import type { BarberProfile } from '@/lib/types';
 
 export default function HeroSection({ profile }: { profile: BarberProfile }) {
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center px-5 overflow-hidden pb-44">
+    <div className="relative h-full flex flex-col items-center justify-center px-5 overflow-hidden pb-28 sm:pb-44">
 
       <style>{`
         @keyframes ringRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       `}</style>
 
       {/* ── Content ── */}
-      <div className="relative z-[3] flex flex-col items-center text-center gap-5 max-w-xs mx-auto w-full pt-24">
+      <div className="relative z-[3] flex flex-col items-center text-center gap-3 sm:gap-5 max-w-xs mx-auto w-full pt-20 sm:pt-24">
 
         {/* Avatar with rotating red/blue conic ring */}
-        <div className="relative w-72 h-72 sm:w-80 sm:h-80 flex-shrink-0">
+        <div className="relative w-52 h-52 sm:w-72 sm:h-72 flex-shrink-0">
 
           {/* Spinning border only — image is NOT a child of this element */}
           <div

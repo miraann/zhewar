@@ -20,25 +20,42 @@ const POLE_STYLE: React.CSSProperties = {
 };
 
 export default function ScrollNav({ profile }: { profile: BarberProfile }) {
-  const [active, setActive]     = useState('home');
-  const [scrolled, setScrolled] = useState(false);
+  const [active, setActive] = useState('home');
+
+  // Header is transparent only on the first section
+  const scrolled = active !== 'home';
 
   useEffect(() => {
-    const onScroll = () => {
-      setScrolled(window.scrollY > 40);
-      const threshold = window.innerHeight * 0.4;
-      for (const { id } of [...SECTIONS].reverse()) {
-        const el = document.getElementById(id);
-        if (el && el.getBoundingClientRect().top <= threshold) {
-          setActive(id);
-          break;
-        }
-      }
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    // Use the snap container as the IntersectionObserver root so intersection
+    // is computed relative to the scrollable viewport, not the document.
+    const root = document.getElementById('snap-root');
+    if (!root) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActive(entry.target.id);
+          }
+        });
+      },
+      {
+        root,
+        // A section is "active" when at least 50 % of it is in view.
+        threshold: 0.5,
+      },
+    );
+
+    SECTIONS.forEach(({ id }) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
   }, []);
 
+  // scrollIntoView walks up to the nearest scrollable ancestor (snap-root),
+  // so this works without any extra ref passing.
   const scrollTo = (id: string) =>
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
 
@@ -79,7 +96,7 @@ export default function ScrollNav({ profile }: { profile: BarberProfile }) {
           </span>
         </button>
 
-        {/* Section dots */}
+        {/* Section indicator dots */}
         <nav className="hidden sm:flex items-center gap-1">
           {SECTIONS.map(({ id, label }) => (
             <button
