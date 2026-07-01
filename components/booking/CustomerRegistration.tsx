@@ -104,12 +104,15 @@ export default function CustomerRegistration({ onComplete }: Props) {
     setShowCamera(false);
     setUploading(true);
     const compressed = await compressDataUrl(dataUrl);
+    // Show the photo immediately — don't wait for storage upload
+    setPhotoUrl(compressed);
     const blob = dataUrlToBlob(compressed);
     const path = `customer-${Date.now()}.jpg`;
     const { error: uploadErr } = await supabase.storage
       .from('customer_photos')
       .upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
     if (!uploadErr) {
+      // Swap to permanent public URL once upload succeeds
       const { data } = supabase.storage.from('customer_photos').getPublicUrl(path);
       setPhotoUrl(data.publicUrl);
     }
