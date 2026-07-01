@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from 'crypto';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
 
 function expectedToken(appointmentId: string, action: string): string {
@@ -33,7 +33,7 @@ export async function GET(
     return new NextResponse('Unauthorized', { status: 401 });
   }
 
-  await supabase.from('appointments').update({ status }).eq('id', id);
+  await getSupabaseAdmin().from('appointments').update({ status }).eq('id', id);
 
   return NextResponse.redirect(new URL('/admin/dashboard?tab=appointments', req.url));
 }

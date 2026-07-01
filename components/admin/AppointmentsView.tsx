@@ -178,7 +178,11 @@ export default function AppointmentsView() {
   }, [load]);
 
   async function updateStatus(id: string, status: 'confirmed' | 'cancelled' | 'pending') {
-    await supabase.from('appointments').update({ status }).eq('id', id);
+    await fetch(`/api/admin/appointments/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
     setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a));
   }
 

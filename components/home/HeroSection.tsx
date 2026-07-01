@@ -14,7 +14,7 @@ export default function HeroSection({ profile }: { profile: BarberProfile }) {
       <div className="relative z-[3] flex flex-col items-center text-center gap-5 max-w-xs mx-auto w-full pt-24">
 
         {/* Avatar with rotating red/blue conic ring */}
-        <div className="relative w-36 h-36 sm:w-44 sm:h-44 flex-shrink-0">
+        <div className="relative w-72 h-72 sm:w-80 sm:h-80 flex-shrink-0">
 
           {/* Spinning border only — image is NOT a child of this element */}
           <div

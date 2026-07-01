@@ -1,9 +1,23 @@
+import { timingSafeEqual } from 'crypto';
+import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+
+function safeEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) return false;
+  return timingSafeEqual(bufA, bufB);
+}
 
 const MAX_CUSTOMERS = 1000;
 
 export async function POST() {
+  const session = cookies().get('admin_session');
+  if (!session?.value || !safeEqual(session.value, process.env.ADMIN_TOKEN ?? '')) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,

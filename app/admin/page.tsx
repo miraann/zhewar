@@ -1,6 +1,7 @@
 import { timingSafeEqual } from 'crypto';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import AdminLoginForm from '@/components/admin/LoginForm';
 
 function isValidSession(value: string): boolean {
@@ -13,31 +14,49 @@ function isValidSession(value: string): boolean {
   } catch { return false; }
 }
 
-export default function AdminLoginPage() {
+export default async function AdminLoginPage() {
   const session = cookies().get('admin_session');
   if (session?.value && isValidSession(session.value)) {
     redirect('/admin/dashboard');
   }
+
+  let logoUrl: string | null = null;
+  try {
+    const db = getSupabaseAdmin();
+    const { data } = await db.from('barber_profile').select('logo_url').single();
+    logoUrl = data?.logo_url ?? null;
+  } catch {}
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-5 relative overflow-hidden">
 
       <div className="relative z-10 w-full max-w-sm">
         <div className="flex flex-col items-center gap-4 mb-10">
-          <div
-            className="w-16 h-16 rounded-full p-[3px]"
-            style={{
-              background: 'conic-gradient(#ef4444 0deg,#ef4444 110deg,#f8fafc 135deg,#3b82f6 160deg,#3b82f6 290deg,#f8fafc 315deg,#ef4444 360deg)',
-              animation: 'ringRotate 3.5s linear infinite',
-            }}
-          >
-            <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
-              <svg viewBox="0 0 24 24" className="w-7 h-7" fill="none" stroke="#3b82f6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" />
-                <path d="M18 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" />
-                <path d="M8.59 8.59L15 15" />
-                <path d="M15 9l-6.41 6.41" />
-              </svg>
+          <div className="relative w-64 h-64">
+            {/* Spinning ring only */}
+            <div
+              className="absolute inset-0 rounded-full"
+              style={{
+                background: 'conic-gradient(#ef4444 0deg,#ef4444 110deg,#f8fafc 135deg,#3b82f6 160deg,#3b82f6 290deg,#f8fafc 315deg,#ef4444 360deg)',
+                animation: 'ringRotate 3.5s linear infinite',
+              }}
+            />
+            {/* Static logo — does not rotate */}
+            <div className="absolute inset-[5px] rounded-full bg-white overflow-hidden flex items-center justify-center">
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt="shop logo"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <svg viewBox="0 0 24 24" className="w-7 h-7" fill="none" stroke="#3b82f6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" />
+                  <path d="M18 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" />
+                  <path d="M8.59 8.59L15 15" />
+                  <path d="M15 9l-6.41 6.41" />
+                </svg>
+              )}
             </div>
           </div>
           <div className="text-center">

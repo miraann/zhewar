@@ -25,7 +25,7 @@ self.addEventListener('fetch', (e) => {
 
   // Skip non-GET and cross-origin API requests (Supabase, etc.)
   if (request.method !== 'GET') return;
-  if (url.hostname !== self.location.hostname && !url.hostname.endsWith('supabase.co') === false) return;
+  if (url.hostname !== self.location.hostname && !url.hostname.endsWith('supabase.co')) return;
 
   // For Supabase storage images — stale-while-revalidate
   if (url.hostname.includes('supabase.co') && url.pathname.includes('/storage/')) {

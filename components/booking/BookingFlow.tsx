@@ -100,8 +100,7 @@ export default function BookingFlow({ initialName, initialPhone }: Props) {
       .single();
     setConfirming(false);
     if (error) {
-      console.error('Appointment insert error:', error);
-      setBookingError(`خەڵەت: ${error.message} (${error.code})`);
+      setBookingError('کاتی سەردانیکردن تۆمار نەکرا. تکایە دووبارە هەوڵ بدەرەوە.');
       return;
     }
     if (data) { router.push(`/appointment/${data.id}`); }
