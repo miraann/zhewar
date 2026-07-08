@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
         phone_number: phone_number.trim(),
         photo_url:    typeof photo_url === 'string' && photo_url ? photo_url : null,
         facebook_id:  typeof facebook_id === 'string' && facebook_id ? facebook_id : null,
-        notes:        typeof notes === 'string' && notes.trim() ? notes.trim().slice(0, 500) : null,
+        notes:        typeof notes === 'string' && notes.trim() ? notes.trim().slice(0, 100) : null,
       },
       { onConflict: 'phone_number' },
     )

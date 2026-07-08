@@ -388,14 +388,14 @@ export default function CustomerRegistration({ onComplete }: Props) {
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              maxLength={500}
+              maxLength={100}
               rows={3}
               placeholder="ئایا تێبینییەکت هەیە؟ وەک جۆری مووی، خواستەکانت…"
               className="w-full bg-slate-50/50 border border-slate-200 rounded-2xl px-4 py-3.5 text-slate-900 text-sm placeholder-slate-400 outline-none focus:border-blue-500/60 focus:bg-white transition-all resize-none leading-relaxed"
               dir="rtl"
             />
-            {notes.length > 400 && (
-              <p className="text-slate-400 text-[0.65rem] text-left mt-1">{notes.length}/500</p>
+            {notes.length > 70 && (
+              <p className="text-slate-400 text-[0.65rem] text-left mt-1">{notes.length}/100</p>
             )}
           </div>
 
