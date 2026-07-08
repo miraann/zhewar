@@ -130,22 +130,28 @@ export default function CustomerRegistration({ onComplete }: Props) {
     }
     setError('');
     setSaving(true);
-    const { data, error: dbErr } = await supabase
-      .from('customers')
-      .upsert(
-        { full_name: name.trim(), phone_number: phone.trim(), photo_url: photoUrl || null, facebook_id: fbId || messengerUrl.trim() || null },
-        { onConflict: 'phone_number' },
-      )
-      .select()
-      .single();
+    let saved: Customer | null = null;
+    try {
+      const res = await fetch('/api/register-customer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          full_name:    name.trim(),
+          phone_number: phone.trim(),
+          photo_url:    photoUrl || null,
+          facebook_id:  fbId || messengerUrl.trim() || null,
+        }),
+      });
+      const json = await res.json();
+      if (res.ok && json?.id) saved = json as Customer;
+    } catch {}
     setSaving(false);
-    if (data && !dbErr) {
-      fetch('/api/customer-cleanup', { method: 'POST' }).catch(() => {});
+    if (saved) {
       try {
-        localStorage.setItem('luxe_customer', JSON.stringify(data));
+        localStorage.setItem('luxe_customer', JSON.stringify(saved));
         localStorage.setItem('luxe_registered', '1');
       } catch {}
-      onComplete(data as Customer);
+      onComplete(saved);
     } else {
       setError('هەڵەیەک ڕوویدا. تکایە دووبارە هەوڵبدەرەوە.');
     }
