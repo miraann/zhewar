@@ -20,6 +20,7 @@ const DEFAULT_PROFILE: BarberProfile = {
   tiktok_url: null,
   maps_url: null,
   address: null,
+  face_scan_enabled: true,
   updated_at: '',
 };
 
