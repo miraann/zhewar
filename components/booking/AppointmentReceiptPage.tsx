@@ -1,7 +1,7 @@
 'use client';
 
 import type { AppointmentFull } from '@/lib/types';
-import { Calendar, CheckCircle2, Clock, Download, Home, RotateCcw, Scissors, XCircle } from 'lucide-react';
+import { Calendar, CheckCircle, Clock, Download, ExternalLink, Home, RotateCcw, Scissors, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { QRCodeCanvas } from 'qrcode.react';
 import { useEffect, useRef, useState } from 'react';
@@ -10,14 +10,14 @@ import html2canvas from 'html2canvas';
 
 const STATUS_LABEL: Record<string, string> = {
   confirmed: 'دڵنیاکراوە',
-  pending:   'چاوەڕوانکردن',
+  pending:   'چاوەڕوان',
   cancelled: 'هەڵوەشاوە',
 };
 
-const STATUS_STYLE: Record<string, string> = {
-  confirmed: 'bg-emerald-500 text-white',
-  pending:   'bg-amber-400 text-white',
-  cancelled: 'bg-red-500 text-white',
+const STATUS_COLOR: Record<string, { bg: string; text: string; border: string; iconBg: string }> = {
+  confirmed: { bg: 'bg-emerald-50',    text: 'text-emerald-600', border: 'border-emerald-100', iconBg: 'bg-emerald-500/10' },
+  pending:   { bg: 'bg-amber-50/60',   text: 'text-amber-600',   border: 'border-amber-100',   iconBg: 'bg-amber-500/10'   },
+  cancelled: { bg: 'bg-red-50',        text: 'text-red-500',     border: 'border-red-100',     iconBg: 'bg-red-500/10'     },
 };
 
 function formatDate(iso: string) {
@@ -28,16 +28,6 @@ function formatDate(iso: string) {
 function formatTime(iso: string) {
   const d = new Date(iso);
   return formatTimeFull(`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`);
-}
-
-function formatCreatedAt(iso: string) {
-  const d = new Date(iso);
-  const date = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
-  const h24 = d.getHours();
-  const h12 = h24 % 12 || 12;
-  const ampm = h24 < 12 ? 'AM' : 'PM';
-  const time = `${h12}:${String(d.getMinutes()).padStart(2,'0')} ${ampm}`;
-  return `${date} — ${time}`;
 }
 
 function shortId(id: string) {
@@ -67,9 +57,10 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl 
     return () => clearTimeout(t);
   }, [appointment.appointment_time]);
 
-  const apptUrl    = `${origin}/appointment/${appointment.id}`;
-  const sid        = shortId(appointment.id);
+  const apptUrl     = `${origin}/appointment/${appointment.id}`;
+  const sid         = shortId(appointment.id);
   const isCancelled = appointment.status === 'cancelled';
+  const statusStyle = STATUS_COLOR[appointment.status] ?? STATUS_COLOR.pending;
 
   const rawFb = (appointment.customers as any).facebook_id as string | null;
   const fbUrl = (() => {
@@ -84,20 +75,14 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl 
     return null;
   })();
 
-
   async function handleDownload() {
     if (!cardRef.current) return;
-
-    // Pre-load Kurdish font
     try {
       const kFont = new FontFace('UniSalar', 'url(/font/kurdish.ttf)');
       await kFont.load();
       document.fonts.add(kFont);
-    } catch { /* already loaded or unavailable */ }
+    } catch { }
 
-    // Fetch all cross-origin images as data URLs BEFORE html2canvas runs.
-    // This is the only reliable way to bypass CORS taint in html2canvas —
-    // data URLs are same-origin so the canvas is never tainted.
     async function toDataUrl(url: string): Promise<string> {
       try {
         const res = await fetch(url, { mode: 'cors', cache: 'no-cache' });
@@ -108,9 +93,7 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl 
           reader.onerror = reject;
           reader.readAsDataURL(blob);
         });
-      } catch {
-        return url; // fallback — image may still be blank but won't crash
-      }
+      } catch { return url; }
     }
 
     const imgEls = Array.from(cardRef.current.querySelectorAll<HTMLImageElement>('img'));
@@ -124,50 +107,36 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl 
         })
     );
 
-    // Pause spinning animations so the ring is crisp in the snapshot
     const animated = cardRef.current.querySelectorAll<HTMLElement>('[style*="animation"]');
     animated.forEach(el => { el.style.animationPlayState = 'paused'; });
 
     try {
       const canvas = await html2canvas(cardRef.current, {
         scale: 3,
-        useCORS: false,      // not needed — all images are now data URLs
+        useCORS: false,
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
         imageTimeout: 0,
         onclone: (clonedDoc, clonedEl) => {
-          // Inject font + fix RTL text shaping
           const style = clonedDoc.createElement('style');
           style.textContent = `
-            @font-face {
-              font-family: 'UniSalar';
-              src: url('/font/kurdish.ttf') format('truetype');
-              font-display: block;
-            }
-            * {
-              letter-spacing: normal !important;
-              font-feature-settings: "kern" 1, "liga" 1, "calt" 1, "clig" 1 !important;
-            }
+            @font-face { font-family: 'UniSalar'; src: url('/font/kurdish.ttf') format('truetype'); font-display: block; }
+            * { letter-spacing: normal !important; font-feature-settings: "kern" 1, "liga" 1, "calt" 1, "clig" 1 !important; }
           `;
           clonedDoc.head.appendChild(style);
           clonedDoc.body.style.direction = 'rtl';
-
-          // Swap every image src for its pre-fetched data URL
           clonedEl.querySelectorAll<HTMLImageElement>('img').forEach(img => {
             const dataUrl = urlMap.get(img.src);
             if (dataUrl) img.src = dataUrl;
             if (!img.style.width)  img.style.width  = `${img.offsetWidth  || img.naturalWidth  || 64}px`;
             if (!img.style.height) img.style.height = `${img.offsetHeight || img.naturalHeight || 64}px`;
           });
-
-          // Pause animations in the clone too
           clonedEl.querySelectorAll<HTMLElement>('[style*="animation"]').forEach(el => {
             el.style.animationPlayState = 'paused';
           });
         },
       });
-
       const a = document.createElement('a');
       a.download = `بۆخت-${sid.replace('#', '')}.png`;
       a.href = canvas.toDataURL('image/png');
@@ -181,8 +150,9 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl 
 
   return (
     <div className="flex flex-col items-center min-h-screen px-4 py-10 relative overflow-hidden">
-
-      <style>{`@keyframes ringRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+      <style>{`
+        @keyframes subtle-slide { from { background-position: 0 0; } to { background-position: 40px 0; } }
+      `}</style>
 
       {/* Status heading */}
       <div className={`flex flex-col items-center gap-3 mt-6 mb-7 ${fadeClass}`} style={{ transitionDelay: '0ms' }}>
@@ -194,7 +164,7 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl 
           ) : (
             <>
               <div className="w-20 h-20 rounded-full bg-emerald-50 border-2 border-emerald-200 flex items-center justify-center shadow-md">
-                <CheckCircle2 className="w-9 h-9 text-emerald-500" />
+                <CheckCircle className="w-9 h-9 text-emerald-500" />
               </div>
               <div className="absolute -inset-2 rounded-full border-2 border-emerald-300/30 animate-ping" style={{ animationDuration: '2.5s' }} />
             </>
@@ -209,149 +179,155 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl 
           ) : (
             <>
               <h2 className="text-xl font-bold text-slate-900">داواکارییەکەت تۆمار کرا</h2>
-              <p className="text-slate-500 text-sm font-medium px-4 leading-relaxed text-center">
-                چاوەڕوان بە تا پەسەند دەکرێت
-              </p>
+              <p className="text-slate-500 text-sm font-medium px-4 leading-relaxed text-center">چاوەڕوان بە تا پەسەند دەکرێت</p>
             </>
           )}
         </div>
       </div>
 
-      {/* ── Premium Boarding Pass ── */}
-      <div className={`w-full max-w-sm ${fadeClass}`} style={{ transitionDelay: '150ms' }}>
-
-        {/* Outer wrapper — holds notch circles outside overflow:hidden */}
+      {/* ── Ticket Card ── */}
+      <div className={`w-full max-w-md ${fadeClass}`} style={{ transitionDelay: '150ms' }}>
+        {/* Outer wrapper: holds notch circles outside overflow:hidden */}
         <div className="relative">
+          <div className="absolute -left-3 z-10 w-6 h-6 rounded-full bg-slate-100 border border-slate-200/60" style={{ top: '44%', transform: 'translateY(-50%)' }} />
+          <div className="absolute -right-3 z-10 w-6 h-6 rounded-full bg-slate-100 border border-slate-200/60" style={{ top: '44%', transform: 'translateY(-50%)' }} />
 
-          {/* Perforated notches at price divider (~73% down) */}
-          <div className="absolute -left-3 z-10 w-6 h-6 rounded-full bg-slate-100 border border-slate-200/60" style={{ top: '72%', transform: 'translateY(-50%)' }} />
-          <div className="absolute -right-3 z-10 w-6 h-6 rounded-full bg-slate-100 border border-slate-200/60" style={{ top: '72%', transform: 'translateY(-50%)' }} />
+          <div ref={cardRef} className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
 
-          <div id="visitor-pass-card" ref={cardRef} className={`bg-white rounded-3xl border shadow-[0_15px_40px_rgba(0,0,0,0.06)] overflow-hidden ${isCancelled ? 'border-red-200' : 'border-slate-100'}`}>
-
-            {/* Top barber-pole strip */}
+            {/* Animated barber-pole strip */}
             <div
-              className="h-2.5 w-full"
+              className="h-2 w-full"
               style={{
-                backgroundImage: 'repeating-linear-gradient(-45deg,#ef4444,#ef4444 10px,#ffffff 10px,#ffffff 20px,#3b82f6 20px,#3b82f6 30px,#ffffff 30px,#ffffff 40px)',
-                backgroundSize: '57px 100%',
+                background: 'linear-gradient(45deg,#3b82f6 25%,#ef4444 25%,#ef4444 50%,#fff 50%,#fff 75%,#3b82f6 75%)',
+                backgroundSize: '40px 40px',
+                animation: 'subtle-slide 2s linear infinite',
               }}
             />
 
-            {/* Shop identity */}
-            <div className="flex flex-col items-center gap-2 pt-5 pb-4">
-              <div className="relative flex-shrink-0" style={{ width: 56, height: 56 }}>
-                {/* Spinning ring */}
-                <div
-                  className="absolute inset-0 rounded-full"
-                  style={{
-                    background: 'conic-gradient(#ef4444 0deg,#ef4444 110deg,#f8fafc 135deg,#3b82f6 160deg,#3b82f6 290deg,#f8fafc 315deg,#ef4444 360deg)',
-                    animation: 'ringRotate 4s linear infinite',
-                  }}
-                />
-                {/* White gap ring */}
-                <div
-                  className="absolute rounded-full bg-white"
-                  style={{ inset: '2.5px' }}
-                />
-                {/* Logo image — plain <img> with explicit px size for html2canvas */}
-                <div
-                  className="absolute rounded-full bg-slate-100"
-                  style={{ inset: '4.5px', overflow: 'hidden' }}
-                >
-                  {logoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={logoUrl}
-                      alt={shopName}
-                      crossOrigin="anonymous"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-blue-50">
-                      <Scissors className="w-5 h-5 text-blue-500" />
-                    </div>
-                  )}
-                </div>
-              </div>
-              <p className="text-slate-800 font-bold text-sm tracking-wide">{shopName}</p>
-            </div>
-
-            {/* Tear line — before customer */}
-            <div className="border-t-2 border-dashed border-slate-900 mx-4 my-0" />
-
-            {/* Customer identity — centered, avatar top */}
-            <div className="flex flex-col items-center gap-2 px-5 pt-5 pb-4">
-
-              {/* Customer avatar — centered, larger */}
-              <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-slate-200 bg-slate-100 shadow-sm">
+            {/* Customer profile */}
+            <div className="flex flex-col items-center pt-6 pb-5 px-6 gap-1.5">
+              {/* Avatar */}
+              <div className="w-24 h-24 rounded-full ring-4 ring-blue-500/10 p-1 bg-white shadow-md overflow-hidden">
                 {appointment.customers.photo_url ? (
-                  <img src={appointment.customers.photo_url} alt="" crossOrigin="anonymous" className="w-full h-full object-cover" />
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={appointment.customers.photo_url}
+                    alt=""
+                    crossOrigin="anonymous"
+                    className="w-full h-full object-cover rounded-full"
+                  />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-blue-50 text-blue-600 font-bold text-2xl">
+                  <div className="w-full h-full rounded-full flex items-center justify-center bg-blue-50 text-blue-600 font-bold text-3xl">
                     {appointment.customers.full_name.charAt(0)}
                   </div>
                 )}
               </div>
 
-              <div className="flex flex-col items-center gap-1 text-center">
-                <p className="text-slate-900 font-bold text-base leading-tight">{appointment.customers.full_name}</p>
-                <p className="text-slate-400 text-xs" dir="ltr">{appointment.customers.phone_number}</p>
-                {fbUrl && (
-                  <a
-                    href={fbUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 mt-1 text-[0.65rem] font-semibold text-[#1877F2] bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-lg touch-manipulation"
-                  >
-                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-2.5 h-2.5 flex-shrink-0"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                    پرۆفایلی فەیسبووک
-                  </a>
-                )}
+              <h3 className="text-xl font-bold text-gray-800 mt-2">{appointment.customers.full_name}</h3>
+              <p className="text-sm text-gray-500 font-medium" dir="ltr">{appointment.customers.phone_number}</p>
+
+              {fbUrl && (
+                <a
+                  href={fbUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-2 flex items-center gap-1.5 px-4 py-1.5 bg-blue-50 text-blue-600 rounded-full text-xs font-semibold border border-blue-100/50 touch-manipulation active:bg-blue-100 transition-colors"
+                >
+                  <span>بینینی پرۆفایلی فەیسبووک</span>
+                  <ExternalLink size={12} />
+                </a>
+              )}
+
+              {/* Booking ID + status badge */}
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-blue-600 font-mono text-xs font-bold tracking-wider">{sid}</span>
+                <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${statusStyle.bg} ${statusStyle.text} border ${statusStyle.border}`}>
+                  {STATUS_LABEL[appointment.status] ?? appointment.status}
+                </span>
               </div>
             </div>
 
-            {/* Booking code + status row */}
-            <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100">
-              <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${STATUS_STYLE[appointment.status] ?? 'bg-slate-100 text-slate-600'}`}>
-                {STATUS_LABEL[appointment.status] ?? appointment.status}
-              </span>
-              <span className="text-blue-600 font-mono text-sm font-bold tracking-wider">{sid}</span>
-            </div>
+            {/* Tear line */}
+            <div className="border-t-2 border-dashed border-gray-200 mx-4" />
 
-            {/* Submitted at */}
-            <div className="flex items-center justify-between px-5 py-2.5 border-t border-slate-100 bg-slate-50/60" dir="rtl">
-              <p className="text-[10px] font-bold text-slate-400 tracking-wider">کاتی تۆمارکردن</p>
-              <p className="text-[11px] font-semibold text-slate-500 font-mono" dir="ltr">{formatCreatedAt(appointment.created_at)}</p>
-            </div>
+            {/* 2×2 Details grid */}
+            <div className="grid grid-cols-2 gap-3 p-4" dir="rtl">
 
-            {/* Date + Time cards */}
-            <div className="grid grid-cols-2 gap-3 px-4 py-4 border-t border-slate-100" dir="rtl">
               {/* Date */}
-              <div className="flex flex-col items-center gap-2 bg-blue-50 border border-blue-100 rounded-2xl py-4 px-3">
-                <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center">
-                  <Calendar className="w-4 h-4 text-blue-600" />
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl border border-gray-100">
+                <div className="p-2 bg-blue-500/10 text-blue-600 rounded-xl flex-shrink-0">
+                  <Calendar size={18} />
                 </div>
-                <p className="text-[10px] font-bold text-blue-400 tracking-wider">بەروار</p>
-                <p className="text-base font-extrabold text-slate-800 leading-tight">{formattedDate}</p>
+                <div className="min-w-0">
+                  <p className="text-[10px] text-gray-400 font-medium">بەروار</p>
+                  <p className="text-sm font-bold text-gray-700 mt-0.5 leading-tight">{formattedDate}</p>
+                </div>
               </div>
+
               {/* Time */}
-              <div className="flex flex-col items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-2xl py-4 px-3">
-                <div className="w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center">
-                  <Clock className="w-4 h-4 text-emerald-600" />
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl border border-gray-100">
+                <div className="p-2 bg-emerald-500/10 text-emerald-600 rounded-xl flex-shrink-0">
+                  <Clock size={18} />
                 </div>
-                <p className="text-[10px] font-bold text-emerald-400 tracking-wider">کات</p>
-                <p className="text-base font-extrabold text-slate-800 leading-tight">{formattedTime}</p>
+                <div className="min-w-0">
+                  <p className="text-[10px] text-gray-400 font-medium">کات</p>
+                  <p className="text-sm font-bold text-gray-700 mt-0.5 leading-tight">{formattedTime}</p>
+                </div>
               </div>
+
+              {/* Barber / shop */}
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl border border-gray-100">
+                <div className="p-2 bg-amber-500/10 text-amber-600 rounded-xl flex-shrink-0">
+                  {logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={logoUrl}
+                      alt=""
+                      crossOrigin="anonymous"
+                      className="w-[18px] h-[18px] object-cover rounded-md"
+                    />
+                  ) : (
+                    <Scissors size={18} />
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] text-gray-400 font-medium">سەرتاش</p>
+                  <p className="text-sm font-bold text-gray-700 mt-0.5 leading-tight truncate">{shopName}</p>
+                </div>
+              </div>
+
+              {/* Status */}
+              <div className={`flex items-center gap-3 p-3 rounded-2xl border ${statusStyle.bg} ${statusStyle.border}`}>
+                <div className={`p-2 rounded-xl flex-shrink-0 ${statusStyle.iconBg}`}>
+                  <CheckCircle size={18} className={statusStyle.text} />
+                </div>
+                <div className="min-w-0">
+                  <p className={`text-[10px] font-medium opacity-70 ${statusStyle.text}`}>دۆخ</p>
+                  <p className={`text-sm font-bold mt-0.5 leading-tight ${statusStyle.text}`}>
+                    {STATUS_LABEL[appointment.status] ?? appointment.status}
+                  </p>
+                </div>
+              </div>
+
             </div>
 
-            {/* QR code */}
-            {origin && !isCancelled && (
-              <div className="flex flex-col items-center gap-2 px-5 pb-4">
-                <div className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-100 shadow-inner">
-                  <QRCodeCanvas value={apptUrl} size={148} bgColor="#f8fafc" fgColor="#0f172a" level="M" />
+            {/* Tear line 2 */}
+            <div className="border-t-2 border-dashed border-gray-200 mx-4" />
+
+            {/* QR + barcode footer */}
+            {!isCancelled && origin && (
+              <div className="flex flex-col items-center gap-3 py-5 px-6">
+                <div className="bg-slate-50/80 p-3 rounded-2xl border border-slate-100 shadow-inner">
+                  <QRCodeCanvas value={apptUrl} size={120} bgColor="#f8fafc" fgColor="#0f172a" level="M" />
                 </div>
-                <p className="text-slate-400 text-[0.58rem] tracking-wider text-center">کۆدی تایبەت بە کاتی سەردانیکردن</p>
+                {/* Decorative barcode */}
+                <div
+                  className="w-48 h-8 opacity-60 rounded-sm"
+                  style={{
+                    background: 'repeating-linear-gradient(90deg,#1e293b 0px,#1e293b 2px,transparent 2px,transparent 4px,#1e293b 4px,#1e293b 5px,transparent 5px,transparent 8px,#1e293b 8px,#1e293b 9px,transparent 9px,transparent 12px)',
+                  }}
+                />
+                <p className="text-xs font-mono text-gray-400 tracking-[0.25em]">{shopName}</p>
               </div>
             )}
 
@@ -381,13 +357,12 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl 
               </div>
             )}
 
-
           </div>
         </div>
       </div>
 
       {/* Action buttons */}
-      <div className={`w-full max-w-sm mt-4 space-y-3 ${fadeClass}`} style={{ transitionDelay: '300ms' }}>
+      <div className={`w-full max-w-md mt-4 space-y-3 ${fadeClass}`} style={{ transitionDelay: '300ms' }}>
         <Link
           href="/my-bookings"
           className="flex items-center justify-center gap-2.5 w-full h-14 rounded-2xl bg-red-500 text-white font-bold text-base active:bg-red-600 active:scale-[0.98] transition-all touch-manipulation select-none shadow-sm"

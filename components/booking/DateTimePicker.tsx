@@ -233,7 +233,7 @@ export default function DateTimePicker({
           </div>
           <p className="text-slate-500 text-[0.6rem] tracking-widest text-right">
             {!selectedDate
-              ? 'پێشتر ڕۆژێک هەڵبژێرە'
+              ? 'سەرەتا ڕۆژێک هەڵبژێرە'
               : !daySchedule?.is_active
                 ? 'ئەم ڕۆژە داخراوە'
                 : 'کاتە بەردەستەکان'}
