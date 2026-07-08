@@ -55,6 +55,7 @@ export interface BarberProfile {
   maps_url: string | null;
   address: string | null;
   face_scan_enabled: boolean;
+  facebook_required: boolean;
   updated_at: string;
 }
 

@@ -55,7 +55,8 @@ export default function CustomerRegistration({ onComplete }: Props) {
   const [showCamera, setShowCamera]     = useState(false);
   const [notes, setNotes]               = useState('');
   const [logoUrl, setLogoUrl]           = useState<string | null>(null);
-  const [faceScanEnabled, setFaceScanEnabled] = useState(true);
+  const [faceScanEnabled, setFaceScanEnabled]   = useState(true);
+  const [facebookRequired, setFacebookRequired] = useState(true);
 
   useEffect(() => {
     fetch('/api/auth/facebook/profile')
@@ -68,10 +69,11 @@ export default function CustomerRegistration({ onComplete }: Props) {
       })
       .catch(() => {});
 
-    supabase.from('barber_profile').select('logo_url, face_scan_enabled').single()
+    supabase.from('barber_profile').select('logo_url, face_scan_enabled, facebook_required').single()
       .then(({ data }) => {
         if (data?.logo_url) setLogoUrl(data.logo_url);
         if (typeof data?.face_scan_enabled === 'boolean') setFaceScanEnabled(data.face_scan_enabled);
+        if (typeof data?.facebook_required === 'boolean') setFacebookRequired(data.facebook_required);
       });
   }, []);
 
@@ -129,7 +131,7 @@ export default function CustomerRegistration({ onComplete }: Props) {
     if (name.trim().length > 60)       { setError('ناو زۆر درێژە (زیاتر لە ٦٠ پیت)');             return; }
     if (!phone.trim())                 { setError('تکایە ژمارەی مۆبایلت بنووسە');               return; }
     if (!/^\+?[0-9\s\-]{7,20}$/.test(phone.trim())) { setError('ژمارەی تەلەفۆن دروست نییە');      return; }
-    if (!messengerUrl.trim()) {
+    if (facebookRequired && !messengerUrl.trim()) {
       setAlertMsg('بۆ پێشەکەش کردنی داواکاری پێویستە لینکی فەیسبووک یاخود مێسینجەر هاوپێج بکەیت');
       return;
     }
@@ -317,7 +319,10 @@ export default function CustomerRegistration({ onComplete }: Props) {
                 چۆن بدۆزمەوە؟
               </button>
               <span className="text-slate-700 text-xs font-medium">
-                فەیسبووک <span className="text-red-500">*</span>
+                فەیسبووک{' '}
+                {facebookRequired
+                  ? <span className="text-red-500">*</span>
+                  : <span className="text-slate-400">(ئارەزوومەند)</span>}
               </span>
             </div>
             <div className="flex gap-2 items-stretch">

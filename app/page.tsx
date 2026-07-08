@@ -21,6 +21,7 @@ const DEFAULT_PROFILE: BarberProfile = {
   maps_url: null,
   address: null,
   face_scan_enabled: true,
+  facebook_required: true,
   updated_at: '',
 };
 
