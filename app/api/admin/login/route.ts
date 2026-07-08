@@ -18,23 +18,35 @@ function getIp(req: NextRequest): string {
   );
 }
 
-// Distributed rate limit: 5 attempts per 60 seconds per IP across all instances
-const ratelimit = new Ratelimit({
-  redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(5, '60s'),
-  prefix: 'rl:admin-login',
-});
+// Lazy singleton — only created when the route is actually invoked,
+// so a missing Upstash URL doesn't crash the build.
+let _ratelimit: Ratelimit | null = null;
+function getRatelimit(): Ratelimit | null {
+  if (_ratelimit) return _ratelimit;
+  const url   = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !url.startsWith('https') || !token) return null;
+  _ratelimit = new Ratelimit({
+    redis: new Redis({ url, token }),
+    limiter: Ratelimit.slidingWindow(5, '60s'),
+    prefix: 'rl:admin-login',
+  });
+  return _ratelimit;
+}
 
 export async function POST(request: NextRequest) {
-  const ip = getIp(request);
-  const { success, reset, remaining } = await ratelimit.limit(ip);
+  const ratelimit = getRatelimit();
 
-  if (!success) {
-    const secondsLeft = Math.max(1, Math.ceil((reset - Date.now()) / 1000));
-    return NextResponse.json(
-      { error: 'rate_limited', secondsLeft, remaining },
-      { status: 429 },
-    );
+  if (ratelimit) {
+    const ip = getIp(request);
+    const { success, reset, remaining } = await ratelimit.limit(ip);
+    if (!success) {
+      const secondsLeft = Math.max(1, Math.ceil((reset - Date.now()) / 1000));
+      return NextResponse.json(
+        { error: 'rate_limited', secondsLeft, remaining },
+        { status: 429 },
+      );
+    }
   }
 
   const { password } = await request.json();
