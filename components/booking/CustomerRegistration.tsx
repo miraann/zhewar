@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Camera, User, Phone, Loader2, HelpCircle, AlertCircle, CheckCircle2, Home, ScanFace, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
@@ -58,6 +58,7 @@ export default function CustomerRegistration({ onComplete }: Props) {
   const [faceScanEnabled, setFaceScanEnabled]   = useState(true);
   const [facebookRequired, setFacebookRequired] = useState(true);
   const [regStep, setRegStep]           = useState<'scan' | 'form'>('form');
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetch('/api/auth/facebook/profile')
@@ -127,6 +128,30 @@ export default function CustomerRegistration({ onComplete }: Props) {
       setPhotoUrl(data.publicUrl);
     }
     setUploading(false);
+  }
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    setUploading(true);
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const dataUrl = ev.target?.result as string;
+      const compressed = await compressDataUrl(dataUrl);
+      setPhotoUrl(compressed);
+      const blob = dataUrlToBlob(compressed);
+      const path = `customer-${Date.now()}.jpg`;
+      const { error: uploadErr } = await supabase.storage
+        .from('customer_photos')
+        .upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
+      if (!uploadErr) {
+        const { data } = supabase.storage.from('customer_photos').getPublicUrl(path);
+        setPhotoUrl(data.publicUrl);
+      }
+      setUploading(false);
+    };
+    reader.readAsDataURL(file);
   }
 
   async function handleSubmit() {
@@ -268,20 +293,15 @@ export default function CustomerRegistration({ onComplete }: Props) {
                 <ScanFace className="w-5 h-5" />
                 {uploading ? 'بارکردن...' : 'سکانی ڕووخسار'}
               </button>
-              <button
-                onClick={() => setRegStep('form')}
-                className="text-slate-400 text-xs underline touch-manipulation active:text-slate-600"
-              >
-                بەبێ وێنە بەردەوام بە
-              </button>
             </div>
           </>
         ) : (
           <>
             {/* ── STEP 2: Form ──────────────────────────────────────────── */}
 
-            {/* Captured photo avatar + retake button */}
-            {faceScanEnabled && (
+            {/* Photo section */}
+            {faceScanEnabled ? (
+              /* After face scan: read-only avatar with retake */
               <div className="flex flex-col items-center">
                 <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-blue-200 shadow-sm bg-blue-50 flex items-center justify-center">
                   {photoUrl ? (
@@ -302,6 +322,40 @@ export default function CustomerRegistration({ onComplete }: Props) {
                   <RefreshCw className="w-3 h-3" />
                   گۆڕینی وێنە
                 </button>
+              </div>
+            ) : (
+              /* Face scan off: optional file/camera upload */
+              <div className="flex flex-col items-center">
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  capture="user"
+                  className="hidden"
+                  onChange={handleFileUpload}
+                />
+                <button
+                  onClick={() => fileRef.current?.click()}
+                  disabled={uploading}
+                  className="relative w-20 h-20 rounded-full border-2 border-dashed border-blue-300 bg-blue-50/40 flex items-center justify-center overflow-hidden touch-manipulation active:scale-[0.96] transition-transform"
+                >
+                  {photoUrl ? (
+                    <>
+                      <img src={photoUrl} alt="" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/30 flex items-end justify-center pb-1.5">
+                        <Camera className="w-4 h-4 text-white drop-shadow" />
+                      </div>
+                    </>
+                  ) : uploading ? (
+                    <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+                  ) : (
+                    <div className="flex flex-col items-center gap-1">
+                      <Camera className="w-5 h-5 text-blue-400" />
+                      <span className="text-blue-400 text-[0.55rem] font-semibold">وێنەی خۆت</span>
+                    </div>
+                  )}
+                </button>
+                <p className="text-slate-400 text-xs mt-1.5">وێنەی ڕووخسارت زیاد بکە (ئارەزوومەند)</p>
               </div>
             )}
 
