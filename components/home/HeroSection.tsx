@@ -4,19 +4,17 @@ import type { BarberProfile } from '@/lib/types';
 
 export default function HeroSection({ profile }: { profile: BarberProfile }) {
   return (
-    <div className="relative h-full flex flex-col items-center justify-center px-5 overflow-hidden pb-28 sm:pb-44">
+    <div className="relative h-full flex flex-col items-center px-5 overflow-hidden">
 
       <style>{`
         @keyframes ringRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       `}</style>
 
-      {/* ── Content ── */}
-      <div className="relative z-[3] flex flex-col items-center text-center gap-3 sm:gap-5 max-w-xs mx-auto w-full pt-20 sm:pt-24">
+      {/* ── Main content — grows to fill available space, centered ── */}
+      <div className="flex-1 flex flex-col items-center justify-center text-center gap-3 sm:gap-5 max-w-xs mx-auto w-full pt-20 sm:pt-24">
 
         {/* Avatar with rotating red/blue conic ring */}
         <div className="relative w-52 h-52 sm:w-72 sm:h-72 flex-shrink-0">
-
-          {/* Spinning border only — image is NOT a child of this element */}
           <div
             className="absolute inset-0 rounded-full"
             style={{
@@ -25,17 +23,10 @@ export default function HeroSection({ profile }: { profile: BarberProfile }) {
               animation: 'ringRotate 3.5s linear infinite',
             }}
           />
-
-          {/* White gap ring — static */}
           <div className="absolute inset-[3px] rounded-full bg-white">
-            {/* Image — static, centered, always upright */}
             <div className="absolute inset-[2px] rounded-full overflow-hidden bg-neutral-100">
               {profile.logo_url ? (
-                <img
-                  src={profile.logo_url}
-                  alt={profile.name}
-                  className="w-full h-full object-cover"
-                />
+                <img src={profile.logo_url} alt={profile.name} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full bg-neutral-100 flex items-center justify-center">
                   <span className="text-blue-500 text-5xl">✂</span>
@@ -43,7 +34,6 @@ export default function HeroSection({ profile }: { profile: BarberProfile }) {
               )}
             </div>
           </div>
-
         </div>
 
         {/* Name */}
@@ -53,15 +43,9 @@ export default function HeroSection({ profile }: { profile: BarberProfile }) {
 
         {/* Barber pole ornament divider */}
         <div className="flex items-center gap-3 w-full justify-center">
-          <div
-            className="flex-1 max-w-[80px] h-[2px] rounded-full"
-            style={{ background: 'linear-gradient(to right, transparent, #ef4444)' }}
-          />
+          <div className="flex-1 max-w-[80px] h-[2px] rounded-full" style={{ background: 'linear-gradient(to right, transparent, #ef4444)' }} />
           <span className="text-neutral-400 text-xs">✦</span>
-          <div
-            className="flex-1 max-w-[80px] h-[2px] rounded-full"
-            style={{ background: 'linear-gradient(to left, transparent, #3b82f6)' }}
-          />
+          <div className="flex-1 max-w-[80px] h-[2px] rounded-full" style={{ background: 'linear-gradient(to left, transparent, #3b82f6)' }} />
         </div>
 
         {/* Tagline */}
@@ -87,8 +71,8 @@ export default function HeroSection({ profile }: { profile: BarberProfile }) {
         )}
       </div>
 
-      {/* ── Bottom: check bookings ── */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[3] flex flex-col items-center gap-2 w-full px-5">
+      {/* ── Bottom: check bookings — sits at the bottom in flow, always visible ── */}
+      <div className="flex-shrink-0 flex flex-col items-center gap-2 w-full pb-5 pt-3">
         <p className="text-neutral-400 text-[0.65rem] tracking-wide text-center">
           کلیک بکە بۆ بیبنی کاتی سەردانیکردن
         </p>
@@ -104,6 +88,7 @@ export default function HeroSection({ profile }: { profile: BarberProfile }) {
           <div className="w-px h-4 bg-gradient-to-b from-neutral-300 to-transparent" />
         </div>
       </div>
+
     </div>
   );
 }
