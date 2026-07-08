@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import type { BarberProfile } from '@/lib/types';
 import { Save, Loader2, Instagram, Facebook, MessageCircle, Music2, MapPin, Map, User, Upload, X } from 'lucide-react';
 
-type EditableFields = Omit<BarberProfile, 'id' | 'updated_at'>;
+type EditableFields = Omit<BarberProfile, 'id' | 'updated_at' | 'face_scan_enabled'>;
 
 const SOCIAL_FIELDS: { key: keyof EditableFields; label: string; icon: React.ElementType; iconColor: string; placeholder: string }[] = [
   { key: 'instagram_url',   label: 'بەستەری ئینستاگرام', icon: Instagram,     iconColor: 'text-pink-500',    placeholder: 'https://instagram.com/yourhandle' },
