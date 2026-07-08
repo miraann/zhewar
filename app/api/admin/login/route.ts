@@ -1,4 +1,6 @@
 import { timingSafeEqual } from 'crypto';
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
 import { NextRequest, NextResponse } from 'next/server';
 
 function safeCompare(a: string, b: string): boolean {
@@ -16,35 +18,26 @@ function getIp(req: NextRequest): string {
   );
 }
 
-// In-memory rate limit: 1 attempt per 60 seconds per IP
-const RATE_MS = 60_000;
-const lastAttempt = new Map<string, number>();
+// Distributed rate limit: 5 attempts per 60 seconds per IP across all instances
+const ratelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(5, '60s'),
+  prefix: 'rl:admin-login',
+});
 
 export async function POST(request: NextRequest) {
-  const ip  = getIp(request);
-  const now = Date.now();
-  const last = lastAttempt.get(ip) ?? 0;
-  const waitMs = last + RATE_MS - now;
+  const ip = getIp(request);
+  const { success, reset, remaining } = await ratelimit.limit(ip);
 
-  if (waitMs > 0) {
+  if (!success) {
+    const secondsLeft = Math.max(1, Math.ceil((reset - Date.now()) / 1000));
     return NextResponse.json(
-      { error: 'rate_limited', secondsLeft: Math.ceil(waitMs / 1000) },
+      { error: 'rate_limited', secondsLeft, remaining },
       { status: 429 },
     );
   }
 
   const { password } = await request.json();
-
-  // Record attempt before password check to prevent parallel brute-force
-  lastAttempt.set(ip, now);
-
-  // Prevent unbounded memory growth
-  if (lastAttempt.size > 500) {
-    const cutoff = now - RATE_MS;
-    lastAttempt.forEach((t, key) => {
-      if (t < cutoff) lastAttempt.delete(key);
-    });
-  }
 
   if (!password || !safeCompare(password, process.env.ADMIN_PASSWORD ?? '')) {
     return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
@@ -55,7 +48,7 @@ export async function POST(request: NextRequest) {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
-    maxAge: 60 * 60 * 24 * 30,
+    maxAge: 60 * 60 * 8,
     path: '/',
   });
   return res;
