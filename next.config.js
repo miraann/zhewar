@@ -38,7 +38,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://slzwrleegalwijdsvcwy.supabase.co",
               "font-src 'self'",
-              "connect-src 'self' https://slzwrleegalwijdsvcwy.supabase.co wss://slzwrleegalwijdsvcwy.supabase.co https://graph.facebook.com",
+              "connect-src 'self' https://slzwrleegalwijdsvcwy.supabase.co wss://slzwrleegalwijdsvcwy.supabase.co https://graph.facebook.com https://cdn.jsdelivr.net",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",
