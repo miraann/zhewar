@@ -175,15 +175,15 @@ export default function BookingSummary({ customer, date, time, confirming, onBac
             {/* Decorative barcode + shop name */}
             <div className="flex flex-col items-center gap-2 py-5 px-6">
               <div
-                className="w-48 h-8 opacity-60 rounded-sm"
+                className="w-48 h-8 rounded-sm"
                 style={{
-                  background: 'repeating-linear-gradient(90deg,#1e293b 0px,#1e293b 2px,transparent 2px,transparent 4px,#1e293b 4px,#1e293b 5px,transparent 5px,transparent 8px,#1e293b 8px,#1e293b 9px,transparent 9px,transparent 12px)',
+                  background: 'repeating-linear-gradient(90deg,#0f172a 0px,#0f172a 2px,transparent 2px,transparent 4px,#0f172a 4px,#0f172a 5px,transparent 5px,transparent 8px,#0f172a 8px,#0f172a 9px,transparent 9px,transparent 12px)',
                 }}
               />
               <div className="flex items-center gap-2">
-                <Scissors className="w-2.5 h-2.5 text-slate-300" />
-                <p className="text-slate-400 text-sm tracking-[0.2em] font-bold">{shopName}</p>
-                <Scissors className="w-2.5 h-2.5 text-slate-300 scale-x-[-1]" />
+                <Scissors className="w-2.5 h-2.5 text-slate-500" />
+                <p className="text-slate-700 text-sm tracking-[0.2em] font-bold">{shopName}</p>
+                <Scissors className="w-2.5 h-2.5 text-slate-500 scale-x-[-1]" />
               </div>
             </div>
 
