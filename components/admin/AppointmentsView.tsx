@@ -223,31 +223,37 @@ export default function AppointmentsView() {
       {/* ── Metric cards ─────────────────────────────────────────────────── */}
       <div className="px-4 pt-5 grid grid-cols-3 gap-3">
 
-        <div
-          className="rounded-2xl p-3.5 flex flex-col items-center gap-1.5 border-2 border-amber-400"
-          style={{ background: '#f59e0b', boxShadow: '0 4px 16px rgba(245,158,11,0.3)' }}
-        >
-          <AlertCircle className="w-4 h-4 text-white" />
-          <span className="text-2xl font-black leading-none text-white">{pendingCount}</span>
-          <span className="text-[0.58rem] font-medium tracking-widest text-white/90">چاوەڕوان</span>
+        {/* Pending */}
+        <div className="relative bg-white rounded-2xl border border-slate-100 p-3.5 flex flex-col items-start gap-2 overflow-hidden"
+          style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+          <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center">
+            <AlertCircle className="w-4 h-4 text-amber-500" />
+          </div>
+          <span className="text-[1.75rem] font-black text-slate-900 leading-none">{pendingCount}</span>
+          <span className="text-[0.58rem] font-semibold text-slate-400 tracking-widest">چاوەڕوان</span>
+          <div className="absolute bottom-0 inset-x-0 h-[3px] bg-amber-400 rounded-b-2xl" />
         </div>
 
-        <div
-          className="rounded-2xl p-3.5 flex flex-col items-center gap-1.5 border-2 border-emerald-500"
-          style={{ background: '#10b981', boxShadow: '0 4px 16px rgba(16,185,129,0.3)' }}
-        >
-          <ShieldCheck className="w-4 h-4 text-white" />
-          <span className="text-2xl font-black leading-none text-white">{confirmedCount}</span>
-          <span className="text-[0.58rem] font-medium tracking-widest text-white/90">پەسەند</span>
+        {/* Confirmed */}
+        <div className="relative bg-white rounded-2xl border border-slate-100 p-3.5 flex flex-col items-start gap-2 overflow-hidden"
+          style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+          <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center">
+            <ShieldCheck className="w-4 h-4 text-emerald-500" />
+          </div>
+          <span className="text-[1.75rem] font-black text-slate-900 leading-none">{confirmedCount}</span>
+          <span className="text-[0.58rem] font-semibold text-slate-400 tracking-widest">پەسەند</span>
+          <div className="absolute bottom-0 inset-x-0 h-[3px] bg-emerald-400 rounded-b-2xl" />
         </div>
 
-        <div
-          className="rounded-2xl p-3.5 flex flex-col items-center gap-1.5 border-2 border-blue-500"
-          style={{ background: '#2563eb', boxShadow: '0 4px 16px rgba(37,99,235,0.25)' }}
-        >
-          <Calendar className="w-4 h-4 text-white" />
-          <span className="text-2xl font-black text-white leading-none">{todayCount}</span>
-          <span className="text-[0.58rem] text-white/80 font-medium tracking-widest">ئەمڕۆ</span>
+        {/* Today */}
+        <div className="relative bg-white rounded-2xl border border-slate-100 p-3.5 flex flex-col items-start gap-2 overflow-hidden"
+          style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+          <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center">
+            <Calendar className="w-4 h-4 text-blue-500" />
+          </div>
+          <span className="text-[1.75rem] font-black text-slate-900 leading-none">{todayCount}</span>
+          <span className="text-[0.58rem] font-semibold text-slate-400 tracking-widest">ئەمڕۆ</span>
+          <div className="absolute bottom-0 inset-x-0 h-[3px] bg-blue-400 rounded-b-2xl" />
         </div>
       </div>
 
@@ -271,49 +277,54 @@ export default function AppointmentsView() {
         </div>
       </div>
 
-      {/* ── Filter chips + refresh ────────────────────────────────────────── */}
+      {/* ── Filter tabs + refresh ────────────────────────────────────────── */}
       <div className="px-4 pt-3 flex items-center gap-2">
 
-        {/* Time-range chips */}
-        {(['upcoming', 'today', 'all'] as Filter[]).map(f => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={[
-              'px-4 py-1.5 rounded-full text-xs font-semibold touch-manipulation transition-all duration-200 border',
-              filter === f
-                ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                : 'bg-white text-slate-600 border-slate-200',
-            ].join(' ')}
-          >
-            {FILTER_LABELS[f]}
-          </button>
-        ))}
+        {/* Segmented control — داهاتوو / ئەمڕۆ / هەموو */}
+        <div className="flex-1 bg-slate-100/80 p-1 rounded-2xl flex items-center gap-1">
+          {(['upcoming', 'today', 'all'] as Filter[]).map(f => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={[
+                'flex-1 py-[7px] rounded-xl text-[0.68rem] font-semibold touch-manipulation transition-all duration-200 leading-none',
+                filter === f
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-slate-500 active:text-slate-700',
+              ].join(' ')}
+              style={filter === f ? { boxShadow: '0 1px 4px rgba(0,0,0,0.08)' } : undefined}
+            >
+              {FILTER_LABELS[f]}
+            </button>
+          ))}
+        </div>
 
-        {/* Pending notifications chip */}
+        {/* Pending bell capsule */}
         <button
           onClick={() => setFilter(filter === 'pending' ? 'upcoming' : 'pending')}
           className={[
-            'relative flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold touch-manipulation transition-all duration-200 border',
+            'relative flex items-center gap-1 px-3 py-[7px] rounded-xl text-[0.68rem] font-semibold touch-manipulation transition-all duration-200 leading-none flex-shrink-0',
             filter === 'pending'
-              ? 'bg-amber-500 text-white border-amber-500 shadow-sm shadow-amber-200/60'
-              : 'bg-white text-slate-600 border-slate-200',
+              ? 'bg-amber-500 text-white'
+              : 'bg-slate-100/80 text-slate-500 active:text-slate-700',
           ].join(' ')}
+          style={filter === 'pending' ? { boxShadow: '0 2px 8px rgba(245,158,11,0.25)' } : undefined}
         >
           <Bell className="w-3 h-3 flex-shrink-0" />
-          {FILTER_LABELS['pending']}
+          <span>{FILTER_LABELS['pending']}</span>
           {allPendingCount > 0 && (
             <span
-              className="absolute -top-[5px] -right-[5px] min-w-[16px] h-[16px] rounded-full bg-red-500 text-white flex items-center justify-center font-bold leading-none px-1"
-              style={{ fontSize: '9px' }}
+              className="absolute -top-[5px] -right-[5px] min-w-[15px] h-[15px] rounded-full bg-red-500 text-white flex items-center justify-center font-bold leading-none px-[2.5px]"
+              style={{ fontSize: '8.5px' }}
             >
-              {allPendingCount}
+              {allPendingCount > 9 ? '9+' : allPendingCount}
             </span>
           )}
         </button>
 
-        <button onClick={load} className="ml-auto text-slate-400 active:text-slate-700 touch-manipulation">
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+        {/* Refresh */}
+        <button onClick={load} className="p-1.5 text-slate-400 active:text-slate-700 touch-manipulation rounded-xl active:bg-slate-100 transition-colors">
+          <RefreshCw className={`w-[15px] h-[15px] ${loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
 
@@ -330,11 +341,18 @@ export default function AppointmentsView() {
 
       {/* ── Empty ────────────────────────────────────────────────────────── */}
       {!loading && filtered.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-20 gap-3">
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-slate-50 border border-slate-200">
-            <Calendar className="w-6 h-6 text-slate-300" />
+        <div className="flex flex-col items-center justify-center py-14 gap-3 px-8 text-center">
+          <div className="w-11 h-11 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center">
+            <Calendar className="w-4 h-4 text-slate-300" />
           </div>
-          <p className="text-sm text-slate-400">هیچ کاتی سەردانیکردنێک نەدۆزرایەوە</p>
+          <div className="space-y-1">
+            <p className="text-[0.82rem] font-semibold text-slate-400">
+              {search ? 'هیچ ئەنجامێک نەدۆزرایەوە' : 'هیچ کاتی سەردانیکردنێک نییە'}
+            </p>
+            <p className="text-[0.7rem] text-slate-300">
+              {search ? 'ناو یان ژمارەی دیکە تەماشا بکە' : 'کاتەکانی نوێ لێرە دەردەکەون'}
+            </p>
+          </div>
         </div>
       )}
 
