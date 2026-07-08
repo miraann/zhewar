@@ -445,12 +445,12 @@ export default function AppointmentsView() {
                       {/* Date + Time — two structured chips */}
                       <div className="flex items-center gap-3 mt-1.5">
                         <div className="flex items-center gap-1">
-                          <Calendar className="w-[10px] h-[10px] text-slate-400 flex-shrink-0" />
-                          <span className="text-[0.67rem] text-slate-500 font-medium leading-none">{dayName} · {date}</span>
+                          <Calendar className="w-[11px] h-[11px] text-slate-400 flex-shrink-0" />
+                          <span className="text-[0.78rem] text-slate-900 font-bold leading-none">{dayName} · {date}</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Clock className="w-[10px] h-[10px] text-slate-400 flex-shrink-0" />
-                          <span className="text-[0.67rem] text-slate-500 font-medium leading-none">{time}</span>
+                          <Clock className="w-[11px] h-[11px] text-slate-400 flex-shrink-0" />
+                          <span className="text-[0.78rem] text-slate-900 font-bold leading-none">{time}</span>
                         </div>
                       </div>
 
