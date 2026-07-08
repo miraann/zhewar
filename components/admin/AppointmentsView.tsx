@@ -90,19 +90,14 @@ const FILTER_LABELS: Record<Filter, string> = { upcoming: 'داهاتوو', toda
 
 // ── Brand icon SVGs (18 px, inline-only, no className so they inherit color) ──
 
-const WA_ICON = (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+const WA_ICON_SM = (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
   </svg>
 );
-const FB_ICON = (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+const FB_ICON_SM = (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-  </svg>
-);
-const MSG_ICON = (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-    <path d="M12 0C5.373 0 0 4.975 0 11.111c0 3.497 1.745 6.616 4.472 8.652V24l4.086-2.242c1.09.301 2.246.464 3.442.464 6.627 0 12-4.975 12-11.111S18.627 0 12 0zm1.193 14.963l-3.056-3.26-5.963 3.26L10.986 8.4l3.13 3.26L20.013 8.4l-6.82 6.563z" />
   </svg>
 );
 
@@ -382,29 +377,28 @@ export default function AppointmentsView() {
                 key={appt.id}
                 className="w-full max-w-md mx-auto bg-white rounded-2xl border border-slate-100 overflow-hidden relative"
                 style={{
-                  boxShadow: '0 8px 30px rgb(0 0 0 / 0.04)',
-                  opacity: isCancelled ? 0.6 : 1,
+                  boxShadow: '0 2px 10px rgba(0,0,0,0.04)',
+                  opacity: isCancelled ? 0.55 : 1,
                   transition: 'opacity 0.2s',
                 }}
               >
-                {/* Status accent strip — left edge */}
+                {/* Thin soft left accent */}
                 <div
-                  className="absolute inset-y-0 left-0 w-[3px] rounded-l-2xl"
-                  style={{ background: accentColor }}
+                  className="absolute inset-y-0 left-0 w-[2px]"
+                  style={{ background: accentColor, opacity: 0.6 }}
                 />
 
                 <div className="p-4 pl-5 space-y-3">
 
-                  {/* ── Row 1: Avatar · Meta · Badge ──────────────────────── */}
-                  <div className="flex items-center gap-3">
+                  {/* ── Header: Avatar + Name/Status + Date/Time + Phone/Icons ── */}
+                  <div className="flex items-start gap-3">
 
-                    {/* Avatar */}
-                    <div className="relative w-14 h-14 flex-shrink-0">
-                      {/* Spinning gold ring */}
+                    {/* Avatar — w-12 */}
+                    <div className="relative w-12 h-12 flex-shrink-0">
                       <div
                         className="absolute inset-0 rounded-full"
                         style={{
-                          background: 'conic-gradient(#f59e0b 0deg,#fde68a 60deg,#ffffff 90deg,#fde68a 120deg,#f59e0b 180deg,#d97706 240deg,#ffffff 270deg,#d97706 300deg,#f59e0b 360deg)',
+                          background: 'conic-gradient(#f59e0b 0deg,#fde68a 60deg,#fff 90deg,#fde68a 120deg,#f59e0b 180deg,#d97706 240deg,#fff 270deg,#d97706 300deg,#f59e0b 360deg)',
                           animation: 'ringRotate 3s linear infinite',
                         }}
                       />
@@ -412,7 +406,7 @@ export default function AppointmentsView() {
                         <button
                           type="button"
                           onClick={() => setPreview(appt.customers.photo_url)}
-                          className="absolute inset-[2.5px] rounded-full overflow-hidden touch-manipulation active:opacity-70 transition-opacity"
+                          className="absolute inset-[2px] rounded-full overflow-hidden touch-manipulation active:opacity-70 transition-opacity"
                         >
                           <img
                             src={appt.customers.photo_url}
@@ -423,98 +417,103 @@ export default function AppointmentsView() {
                         </button>
                       ) : (
                         <div
-                          className="absolute inset-[2.5px] rounded-full flex items-center justify-center font-semibold text-sm select-none"
-                          style={{ background: `${dotColor}12`, color: dotColor }}
+                          className="absolute inset-[2px] rounded-full flex items-center justify-center font-bold text-sm select-none"
+                          style={{ background: `${dotColor}18`, color: dotColor }}
                         >
                           {appt.customers.full_name.charAt(0)}
                         </div>
                       )}
-                      {/* Presence dot */}
                       <span
-                        className="absolute -bottom-0.5 -right-0.5 w-[11px] h-[11px] rounded-full border-2 border-white z-10"
+                        className="absolute -bottom-0.5 -right-0.5 w-[9px] h-[9px] rounded-full border-[1.5px] border-white z-10"
                         style={{ background: dotColor }}
                       />
                     </div>
 
-                    {/* Name + datetime + phone */}
+                    {/* Right column */}
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-[0.88rem] text-slate-900 leading-snug truncate">
-                        {appt.customers.full_name}
-                      </p>
-                      <div className="flex items-center gap-1 mt-[3px]">
-                        <Calendar className="w-[11px] h-[11px] text-slate-700 flex-shrink-0" />
-                        <span className="text-[0.7rem] text-slate-900 font-medium">{dayName} · {date}</span>
-                        <span className="text-slate-400 mx-0.5 text-[0.6rem]">|</span>
-                        <Clock className="w-[11px] h-[11px] text-slate-700 flex-shrink-0" />
-                        <span className="text-[0.7rem] text-slate-900 font-medium">{time}</span>
+
+                      {/* Name + status badge */}
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-bold text-[0.95rem] text-slate-900 leading-tight truncate">
+                          {appt.customers.full_name}
+                        </p>
+                        <span className={`flex-shrink-0 px-2 py-[3px] text-[10px] font-semibold rounded-full ${badgeCls}`}>
+                          {STATUS_LABEL[appt.status]}
+                        </span>
                       </div>
-                      <p className="text-[0.67rem] text-slate-400 mt-[3px] font-mono tracking-wide" dir="ltr">
-                        {appt.customers.phone_number}
-                      </p>
-                      <p className="text-[0.62rem] text-slate-300 mt-[2px] font-mono" dir="ltr">
+
+                      {/* Date + Time — two structured chips */}
+                      <div className="flex items-center gap-3 mt-1.5">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-[10px] h-[10px] text-slate-400 flex-shrink-0" />
+                          <span className="text-[0.67rem] text-slate-500 font-medium leading-none">{dayName} · {date}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-[10px] h-[10px] text-slate-400 flex-shrink-0" />
+                          <span className="text-[0.67rem] text-slate-500 font-medium leading-none">{time}</span>
+                        </div>
+                      </div>
+
+                      {/* Phone + circular contact buttons */}
+                      <div className="flex items-center justify-between gap-2 mt-2">
+                        <p className="text-[0.67rem] text-slate-400 font-mono tracking-wide leading-none" dir="ltr">
+                          {appt.customers.phone_number}
+                        </p>
+                        <div className="flex items-center gap-1.5">
+                          <a
+                            href={`tel:${appt.customers.phone_number}`}
+                            className="w-7 h-7 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-500 active:bg-slate-100 touch-manipulation transition-colors"
+                          >
+                            <Phone className="w-[13px] h-[13px]" />
+                          </a>
+                          <a
+                            href={`https://wa.me/${toWaNumber(appt.customers.phone_number)}`}
+                            target="_blank" rel="noopener noreferrer"
+                            className="w-7 h-7 rounded-full flex items-center justify-center text-white active:opacity-75 touch-manipulation"
+                            style={{ background: '#25d366' }}
+                          >
+                            {WA_ICON_SM}
+                          </a>
+                          {fbLinks && (
+                            <a
+                              href={fbLinks.fbUrl}
+                              target="_blank" rel="noopener noreferrer"
+                              className="w-7 h-7 rounded-full flex items-center justify-center text-white active:opacity-75 touch-manipulation"
+                              style={{ background: '#1877f2' }}
+                            >
+                              {FB_ICON_SM}
+                            </a>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Booked-at timestamp */}
+                      <p className="text-[0.58rem] text-slate-300 mt-1.5 font-mono leading-none" dir="ltr">
                         ⏱ {formatCreatedAt(appt.created_at)}
                       </p>
                     </div>
-
-                    {/* Micro status pill */}
-                    <span className={`flex-shrink-0 px-2.5 py-0.5 text-[11px] font-medium tracking-wide rounded-full ${badgeCls}`}>
-                      {STATUS_LABEL[appt.status]}
-                    </span>
                   </div>
 
-                  {/* ── Row 2: Icon comms strip ────────────────────────────── */}
-                  <div className="flex items-center gap-2">
+                  {/* ── Divider ─────────────────────────────────────────────── */}
+                  <div className="h-px bg-slate-100 mx-0.5" />
 
-                    {/* Phone */}
-                    <a
-                      href={`tel:${appt.customers.phone_number}`}
-                      className="flex-1 h-11 rounded-xl flex items-center justify-center touch-manipulation transition-all duration-200 active:scale-95 bg-slate-50 border border-slate-200/80 text-slate-600 active:bg-slate-100"
-                    >
-                      <Phone className="w-[17px] h-[17px]" />
-                    </a>
-
-                    {/* WhatsApp */}
-                    <a
-                      href={`https://wa.me/${toWaNumber(appt.customers.phone_number)}`}
-                      target="_blank" rel="noopener noreferrer"
-                      className="flex-1 h-11 rounded-xl flex items-center justify-center touch-manipulation transition-all duration-200 active:scale-95 active:opacity-80"
-                      style={{ background: '#25d366' }}
-                    >
-                      <span className="text-white">{WA_ICON}</span>
-                    </a>
-
-                    {fbLinks && (
-                      <a
-                        href={fbLinks.fbUrl}
-                        target="_blank" rel="noopener noreferrer"
-                        className="flex-1 h-11 rounded-xl flex items-center justify-center touch-manipulation transition-all duration-200 active:scale-95 active:opacity-80"
-                        style={{ background: '#1877f2' }}
-                      >
-                        <span className="text-white">{FB_ICON}</span>
-                      </a>
-                    )}
-                  </div>
-
-                  {/* ── Row 3: Action footer (conditional) ────────────────── */}
+                  {/* ── Action footer ────────────────────────────────────────── */}
                   {isPending && (
-                    <div className="flex gap-2 pt-0.5">
+                    <div className="flex gap-2">
                       <button
                         onClick={() => updateStatus(appt.id, 'confirmed')}
-                        className="flex-1 h-11 rounded-xl font-medium text-sm text-white flex items-center justify-center gap-2 touch-manipulation transition-all duration-200 active:scale-[0.98] shadow-md shadow-blue-500/10"
-                        style={{ background: 'linear-gradient(135deg, #2563eb, #1d4ed8)' }}
+                        className="flex-1 h-9 rounded-xl font-semibold text-[0.8rem] text-white flex items-center justify-center gap-1.5 touch-manipulation transition-all active:scale-[0.98] bg-blue-600 active:bg-blue-700"
                       >
-                        <CheckCircle2 className="w-[15px] h-[15px]" />
+                        <CheckCircle2 className="w-[13px] h-[13px]" />
                         پەسەندکردن
                       </button>
-                      {filter === 'all' && (
-                        <button
-                          onClick={() => updateStatus(appt.id, 'cancelled')}
-                          className="w-11 h-11 rounded-xl flex items-center justify-center touch-manipulation transition-all duration-200 active:scale-[0.98] text-white shadow-md shadow-red-500/20"
-                          style={{ background: 'linear-gradient(135deg, #ef4444, #dc2626)' }}
-                        >
-                          <XCircle className="w-[17px] h-[17px]" />
-                        </button>
-                      )}
+                      <button
+                        onClick={() => updateStatus(appt.id, 'cancelled')}
+                        className="px-4 h-9 rounded-xl font-semibold text-[0.8rem] flex items-center justify-center gap-1.5 touch-manipulation transition-all active:scale-[0.98] bg-red-50 text-red-400 border border-red-100 active:bg-red-100"
+                      >
+                        <XCircle className="w-[13px] h-[13px]" />
+                        هەڵوەشاندن
+                      </button>
                     </div>
                   )}
 
@@ -523,20 +522,19 @@ export default function AppointmentsView() {
                       ? <Countdown appointmentTime={appt.appointment_time} />
                       : filter === 'all'
                         ? (
-                          <div className="flex gap-2 pt-0.5">
+                          <div className="flex gap-2">
                             <button
                               onClick={() => updateStatus(appt.id, 'cancelled')}
-                              className="flex-1 h-11 rounded-xl flex items-center justify-center gap-2 font-medium text-sm touch-manipulation transition-all duration-200 active:scale-[0.98] text-white shadow-md shadow-red-500/20"
-                              style={{ background: 'linear-gradient(135deg, #ef4444, #dc2626)' }}
+                              className="flex-1 h-9 rounded-xl font-semibold text-[0.8rem] flex items-center justify-center gap-1.5 touch-manipulation transition-all active:scale-[0.98] bg-red-50 text-red-400 border border-red-100 active:bg-red-100"
                             >
-                              <XCircle className="w-[15px] h-[15px]" />
+                              <XCircle className="w-[13px] h-[13px]" />
                               هەڵوەشاندنەوە
                             </button>
                             <button
                               onClick={() => updateStatus(appt.id, 'pending')}
-                              className="w-11 h-11 rounded-xl flex items-center justify-center touch-manipulation transition-all duration-200 active:scale-95 bg-slate-50 border border-slate-200/80 text-slate-400 active:bg-slate-100"
+                              className="w-9 h-9 rounded-xl flex items-center justify-center touch-manipulation transition-all active:scale-95 bg-slate-50 border border-slate-200 text-slate-400 active:bg-slate-100"
                             >
-                              <RefreshCw className="w-[15px] h-[15px]" />
+                              <RefreshCw className="w-[13px] h-[13px]" />
                             </button>
                           </div>
                         )
@@ -546,9 +544,9 @@ export default function AppointmentsView() {
                   {isCancelled && (
                     <button
                       onClick={() => updateStatus(appt.id, 'pending')}
-                      className="w-full h-10 rounded-xl flex items-center justify-center gap-2 font-medium text-sm touch-manipulation transition-all duration-200 active:scale-[0.99] bg-slate-50 border border-slate-200/80 text-slate-500 active:bg-slate-100"
+                      className="w-full h-9 rounded-xl flex items-center justify-center gap-2 font-semibold text-[0.8rem] touch-manipulation transition-all active:scale-[0.99] bg-slate-50 border border-slate-100 text-slate-400 active:bg-slate-100"
                     >
-                      <RefreshCw className="w-[14px] h-[14px]" />
+                      <RefreshCw className="w-[13px] h-[13px]" />
                       گەڕاندنەوە بۆ چاوەڕوان
                     </button>
                   )}
