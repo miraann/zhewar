@@ -6,7 +6,7 @@ export function GET() {
   const state   = randomBytes(16).toString('hex');
 
   const params = new URLSearchParams({
-    client_id:     process.env.NEXT_PUBLIC_FACEBOOK_APP_ID!,
+    client_id:     process.env.FACEBOOK_APP_ID!,
     redirect_uri:  `${siteUrl}/api/auth/facebook/callback`,
     scope:         'public_profile',
     response_type: 'code',

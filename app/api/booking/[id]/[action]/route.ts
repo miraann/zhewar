@@ -3,7 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
 
 function expectedToken(appointmentId: string, action: string): string {
-  return createHmac('sha256', process.env.ADMIN_TOKEN!)
+  return createHmac('sha256', process.env.BOOKING_HMAC_SECRET!)
     .update(`${appointmentId}:${action}`)
     .digest('hex');
 }

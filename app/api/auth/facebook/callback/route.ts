@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
   try {
     const tokenRes = await fetch(
       `https://graph.facebook.com/v19.0/oauth/access_token?${new URLSearchParams({
-        client_id:     process.env.NEXT_PUBLIC_FACEBOOK_APP_ID!,
+        client_id:     process.env.FACEBOOK_APP_ID!,
         client_secret: process.env.FACEBOOK_APP_SECRET!,
         redirect_uri:  `${siteUrl}/api/auth/facebook/callback`,
         code,
