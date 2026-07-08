@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Camera, User, Phone, Loader2, HelpCircle, AlertCircle, CheckCircle2, Home } from 'lucide-react';
+import { Camera, User, Phone, Loader2, HelpCircle, AlertCircle, CheckCircle2, Home, ScanFace, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import type { Customer } from '@/lib/types';
@@ -57,6 +57,7 @@ export default function CustomerRegistration({ onComplete }: Props) {
   const [logoUrl, setLogoUrl]           = useState<string | null>(null);
   const [faceScanEnabled, setFaceScanEnabled]   = useState(true);
   const [facebookRequired, setFacebookRequired] = useState(true);
+  const [regStep, setRegStep]           = useState<'scan' | 'form'>('form');
 
   useEffect(() => {
     fetch('/api/auth/facebook/profile')
@@ -72,7 +73,10 @@ export default function CustomerRegistration({ onComplete }: Props) {
     supabase.from('barber_profile').select('logo_url, face_scan_enabled, facebook_required').single()
       .then(({ data }) => {
         if (data?.logo_url) setLogoUrl(data.logo_url);
-        if (typeof data?.face_scan_enabled === 'boolean') setFaceScanEnabled(data.face_scan_enabled);
+        if (typeof data?.face_scan_enabled === 'boolean') {
+          setFaceScanEnabled(data.face_scan_enabled);
+          if (data.face_scan_enabled) setRegStep('scan');
+        }
         if (typeof data?.facebook_required === 'boolean') setFacebookRequired(data.facebook_required);
       });
   }, []);
@@ -111,15 +115,14 @@ export default function CustomerRegistration({ onComplete }: Props) {
     setShowCamera(false);
     setUploading(true);
     const compressed = await compressDataUrl(dataUrl);
-    // Show the photo immediately — don't wait for storage upload
     setPhotoUrl(compressed);
+    setRegStep('form');
     const blob = dataUrlToBlob(compressed);
     const path = `customer-${Date.now()}.jpg`;
     const { error: uploadErr } = await supabase.storage
       .from('customer_photos')
       .upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
     if (!uploadErr) {
-      // Swap to permanent public URL once upload succeeds
       const { data } = supabase.storage.from('customer_photos').getPublicUrl(path);
       setPhotoUrl(data.publicUrl);
     }
@@ -234,208 +237,239 @@ export default function CustomerRegistration({ onComplete }: Props) {
           </p>
         </div>
 
-        {/* Live camera capture */}
-        {faceScanEnabled && showCamera && (
-          <LiveCameraCapture
-            onCapture={handleCameraCapture}
-            onCancel={() => setShowCamera(false)}
-          />
-        )}
+        {/* ── STEP 1: Face scan ─────────────────────────────────────── */}
+        {regStep === 'scan' ? (
+          <>
+            {showCamera && (
+              <LiveCameraCapture
+                onCapture={handleCameraCapture}
+                onCancel={() => setShowCamera(false)}
+              />
+            )}
 
-        {/* Photo trigger — only shown when face scan is enabled */}
-        {faceScanEnabled && (
-          <div className="flex flex-col items-center">
-            <button
-              onClick={() => setShowCamera(true)}
-              disabled={uploading}
-              className="relative w-28 h-28 rounded-full border-2 border-dashed border-blue-300 bg-blue-50/40 flex items-center justify-center overflow-hidden touch-manipulation active:scale-[0.96] transition-transform"
-            >
-              {photoUrl ? (
-                <>
-                  <img src={photoUrl} alt="" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/30 flex items-end justify-center pb-1.5">
-                    <Camera className="w-4 h-4 text-white drop-shadow" />
-                  </div>
-                  <div className="absolute top-0 right-0 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shadow-md">
-                    <CheckCircle2 className="w-3 h-3 text-white" />
-                  </div>
-                </>
-              ) : uploading ? (
-                <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
-              ) : (
-                <div className="flex flex-col items-center gap-1">
-                  <Camera className="w-5 h-5 text-blue-400" />
-                  <span className="text-blue-400 text-[0.55rem] font-semibold">وێنەی خۆت</span>
-                </div>
-              )}
-            </button>
-            <p className="text-slate-400 text-xs mt-1.5">وێنەی ڕوخسارت تۆمار بکە</p>
-          </div>
-        )}
-
-        {/* Form fields */}
-        <div className="space-y-3.5">
-
-          {/* Name */}
-          <div className="relative">
-            <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-              <User className="w-4 h-4 text-slate-400" />
-            </div>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-              placeholder="ناوی تەواو"
-              className="w-full h-14 bg-slate-50/50 border border-slate-200 rounded-2xl pr-12 pl-4 text-slate-900 text-sm placeholder-slate-400 outline-none focus:border-blue-500/60 focus:bg-white transition-all"
-            />
-          </div>
-
-          {/* Phone */}
-          <div className="relative">
-            <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-              <Phone className="w-4 h-4 text-slate-400" />
-            </div>
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-              placeholder="+964 7XX XXX XXXX"
-              dir="ltr"
-              className="w-full h-14 bg-slate-50/50 border border-slate-200 rounded-2xl pr-12 pl-4 text-slate-900 text-sm placeholder-slate-400 outline-none focus:border-blue-500/60 focus:bg-white transition-all text-right"
-            />
-          </div>
-
-          {/* Facebook / Messenger */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <button
-                type="button"
-                onClick={() => setShowHelp(true)}
-                className="flex items-center gap-1 text-blue-600 text-xs font-medium"
-              >
-                <HelpCircle className="w-3.5 h-3.5" />
-                چۆن بدۆزمەوە؟
-              </button>
-              <span className="text-slate-700 text-xs font-medium">
-                فەیسبووک{' '}
-                {facebookRequired
-                  ? <span className="text-red-500">*</span>
-                  : <span className="text-slate-400">(ئارەزوومەند)</span>}
-              </span>
-            </div>
-            <div className="flex gap-2 items-stretch">
-              <div className="relative flex-1">
-                <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                  <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-[#1877F2]/50">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                  </svg>
-                </div>
-                <input
-                  type="url"
-                  value={messengerUrl}
-                  onChange={(e) => { setMessengerUrl(e.target.value); setPasted(false); setFbFetched(false); }}
-                  onBlur={(e) => {
-                    const raw = e.target.value.trim();
-                    if (!raw) return;
-                    const normalized = toFbUrl(raw);
-                    if (!normalized) {
-                      setError('تکایە لینکی تەواوی فەیسبووک یان مێسینجەر پەیست بکە');
-                      setMessengerUrl('');
-                      return;
-                    }
-                    if (normalized !== raw) setMessengerUrl(normalized);
-                    fetchFromFb(normalized);
-                  }}
-                  placeholder="https://facebook.com/username"
-                  dir="ltr"
-                  className={[
-                    'w-full h-14 rounded-2xl pr-12 pl-8 text-sm outline-none transition-all',
-                    fbFetched
-                      ? 'bg-emerald-50 border border-emerald-300 text-slate-900 placeholder-slate-400'
-                      : 'bg-slate-50/50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:border-[#1877F2]/60 focus:bg-white',
-                  ].join(' ')}
-                />
-                {fetchingFb && (
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2">
-                    <Loader2 className="w-3.5 h-3.5 text-blue-500 animate-spin" />
-                  </span>
-                )}
-                {fbFetched && !fetchingFb && (
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-600 text-[0.65rem] font-bold">✓</span>
-                )}
+            <div className="flex flex-col items-center gap-5 py-4">
+              <div className="w-28 h-28 rounded-full bg-blue-50 border-2 border-dashed border-blue-300 flex items-center justify-center">
+                {uploading
+                  ? <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+                  : <ScanFace className="w-12 h-12 text-blue-400" />
+                }
+              </div>
+              <div className="text-center space-y-1.5">
+                <p className="text-slate-900 font-semibold text-base">سکانی ڕووخسارت تۆمار بکە</p>
+                <p className="text-slate-400 text-xs leading-relaxed">
+                  پێش داخڵکردنی زانیاریەکانت، تکایە وێنەی ڕووخسارت تۆمار بکە
+                </p>
               </div>
               <button
-                type="button"
-                onClick={async () => {
-                  try {
-                    const text = await navigator.clipboard.readText();
-                    const url  = toFbUrl(text.trim());
-                    if (!url) {
-                      setError('تکایە لینکی تەواوی فەیسبووک یان مێسینجەر پەیست بکە');
-                      return;
-                    }
-                    setMessengerUrl(url);
-                    setPasted(true);
-                    await fetchFromFb(url);
-                  } catch {
-                    setShowHelp(true);
-                  }
-                }}
-                className="px-5 h-14 rounded-2xl bg-[#1877F2] text-white text-sm font-bold touch-manipulation active:scale-[0.97] transition-transform shadow-md shadow-blue-200/60 whitespace-nowrap flex-shrink-0"
+                onClick={() => setShowCamera(true)}
+                disabled={uploading}
+                className="w-full h-14 rounded-2xl bg-blue-600 text-white font-bold text-sm touch-manipulation active:bg-blue-700 active:scale-[0.98] transition-all shadow-md shadow-blue-200/70 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                پەیست
+                <ScanFace className="w-5 h-5" />
+                {uploading ? 'بارکردن...' : 'سکانی ڕووخسار'}
+              </button>
+              <button
+                onClick={() => setRegStep('form')}
+                className="text-slate-400 text-xs underline touch-manipulation active:text-slate-600"
+              >
+                بەبێ وێنە بەردەوام بە
               </button>
             </div>
-          </div>
+          </>
+        ) : (
+          <>
+            {/* ── STEP 2: Form ──────────────────────────────────────────── */}
 
-          {/* Notes */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-slate-400 text-xs">ئارەزوومەند</span>
-              <span className="text-slate-700 text-xs font-medium">تێبینی</span>
-            </div>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              maxLength={100}
-              rows={3}
-              placeholder="ئایا تێبینییەکت هەیە؟ وەک جۆری مووی، خواستەکانت…"
-              className="w-full bg-slate-50/50 border border-slate-200 rounded-2xl px-4 py-3.5 text-slate-900 text-sm placeholder-slate-400 outline-none focus:border-blue-500/60 focus:bg-white transition-all resize-none leading-relaxed"
-              dir="rtl"
-            />
-            {notes.length > 70 && (
-              <p className="text-slate-400 text-[0.65rem] text-left mt-1">{notes.length}/100</p>
+            {/* Captured photo avatar + retake button */}
+            {faceScanEnabled && (
+              <div className="flex flex-col items-center">
+                <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-blue-200 shadow-sm bg-blue-50 flex items-center justify-center">
+                  {photoUrl ? (
+                    <>
+                      <img src={photoUrl} alt="" className="w-full h-full object-cover" />
+                      <div className="absolute top-0 right-0 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shadow-md">
+                        <CheckCircle2 className="w-3 h-3 text-white" />
+                      </div>
+                    </>
+                  ) : (
+                    <Camera className="w-6 h-6 text-blue-300" />
+                  )}
+                </div>
+                <button
+                  onClick={() => setRegStep('scan')}
+                  className="mt-1.5 flex items-center gap-1 text-blue-500 text-xs font-medium touch-manipulation active:text-blue-700"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  گۆڕینی وێنە
+                </button>
+              </div>
             )}
-          </div>
 
-          {/* Error */}
-          {error && (
-            <p className="text-red-500 text-xs text-right px-1 flex items-center justify-end gap-1.5">
-              ⚠ {error}
-            </p>
-          )}
-        </div>
+            {/* Form fields */}
+            <div className="space-y-3.5">
 
-        {/* Submit */}
-        <button
-          onClick={handleSubmit}
-          disabled={saving}
-          className={[
-            'w-full h-14 rounded-2xl font-bold text-base transition-all touch-manipulation select-none',
-            saving
-              ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-              : 'bg-blue-600 text-white shadow-md shadow-blue-200/70 active:bg-blue-700 active:scale-[0.98]',
-          ].join(' ')}
-        >
-          <span className="flex items-center justify-center gap-2">
-            {saving
-              ? <><Loader2 className="w-5 h-5 animate-spin" /> چاوەڕوانبە...</>
-              : 'دەستپێبکە ←'
-            }
-          </span>
-        </button>
+              {/* Name */}
+              <div className="relative">
+                <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                  <User className="w-4 h-4 text-slate-400" />
+                </div>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+                  placeholder="ناوی تەواو"
+                  className="w-full h-14 bg-slate-50/50 border border-slate-200 rounded-2xl pr-12 pl-4 text-slate-900 text-sm placeholder-slate-400 outline-none focus:border-blue-500/60 focus:bg-white transition-all"
+                />
+              </div>
+
+              {/* Phone */}
+              <div className="relative">
+                <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                  <Phone className="w-4 h-4 text-slate-400" />
+                </div>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+                  placeholder="+964 7XX XXX XXXX"
+                  dir="ltr"
+                  className="w-full h-14 bg-slate-50/50 border border-slate-200 rounded-2xl pr-12 pl-4 text-slate-900 text-sm placeholder-slate-400 outline-none focus:border-blue-500/60 focus:bg-white transition-all text-right"
+                />
+              </div>
+
+              {/* Facebook / Messenger */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowHelp(true)}
+                    className="flex items-center gap-1 text-blue-600 text-xs font-medium"
+                  >
+                    <HelpCircle className="w-3.5 h-3.5" />
+                    چۆن بدۆزمەوە؟
+                  </button>
+                  <span className="text-slate-700 text-xs font-medium">
+                    فەیسبووک{' '}
+                    {facebookRequired
+                      ? <span className="text-red-500">*</span>
+                      : <span className="text-slate-400">(ئارەزوومەند)</span>}
+                  </span>
+                </div>
+                <div className="flex gap-2 items-stretch">
+                  <div className="relative flex-1">
+                    <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                      <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-[#1877F2]/50">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                      </svg>
+                    </div>
+                    <input
+                      type="url"
+                      value={messengerUrl}
+                      onChange={(e) => { setMessengerUrl(e.target.value); setPasted(false); setFbFetched(false); }}
+                      onBlur={(e) => {
+                        const raw = e.target.value.trim();
+                        if (!raw) return;
+                        const normalized = toFbUrl(raw);
+                        if (!normalized) {
+                          setError('تکایە لینکی تەواوی فەیسبووک یان مێسینجەر پەیست بکە');
+                          setMessengerUrl('');
+                          return;
+                        }
+                        if (normalized !== raw) setMessengerUrl(normalized);
+                        fetchFromFb(normalized);
+                      }}
+                      placeholder="https://facebook.com/username"
+                      dir="ltr"
+                      className={[
+                        'w-full h-14 rounded-2xl pr-12 pl-8 text-sm outline-none transition-all',
+                        fbFetched
+                          ? 'bg-emerald-50 border border-emerald-300 text-slate-900 placeholder-slate-400'
+                          : 'bg-slate-50/50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:border-[#1877F2]/60 focus:bg-white',
+                      ].join(' ')}
+                    />
+                    {fetchingFb && (
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2">
+                        <Loader2 className="w-3.5 h-3.5 text-blue-500 animate-spin" />
+                      </span>
+                    )}
+                    {fbFetched && !fetchingFb && (
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-600 text-[0.65rem] font-bold">✓</span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const text = await navigator.clipboard.readText();
+                        const url  = toFbUrl(text.trim());
+                        if (!url) {
+                          setError('تکایە لینکی تەواوی فەیسبووک یان مێسینجەر پەیست بکە');
+                          return;
+                        }
+                        setMessengerUrl(url);
+                        setPasted(true);
+                        await fetchFromFb(url);
+                      } catch {
+                        setShowHelp(true);
+                      }
+                    }}
+                    className="px-5 h-14 rounded-2xl bg-[#1877F2] text-white text-sm font-bold touch-manipulation active:scale-[0.97] transition-transform shadow-md shadow-blue-200/60 whitespace-nowrap flex-shrink-0"
+                  >
+                    پەیست
+                  </button>
+                </div>
+              </div>
+
+              {/* Notes */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-slate-400 text-xs">ئارەزوومەند</span>
+                  <span className="text-slate-700 text-xs font-medium">تێبینی</span>
+                </div>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  maxLength={100}
+                  rows={3}
+                  placeholder="ئایا تێبینییەکت هەیە؟ وەک جۆری مووی، خواستەکانت…"
+                  className="w-full bg-slate-50/50 border border-slate-200 rounded-2xl px-4 py-3.5 text-slate-900 text-sm placeholder-slate-400 outline-none focus:border-blue-500/60 focus:bg-white transition-all resize-none leading-relaxed"
+                  dir="rtl"
+                />
+                {notes.length > 70 && (
+                  <p className="text-slate-400 text-[0.65rem] text-left mt-1">{notes.length}/100</p>
+                )}
+              </div>
+
+              {/* Error */}
+              {error && (
+                <p className="text-red-500 text-xs text-right px-1 flex items-center justify-end gap-1.5">
+                  ⚠ {error}
+                </p>
+              )}
+            </div>
+
+            {/* Submit */}
+            <button
+              onClick={handleSubmit}
+              disabled={saving}
+              className={[
+                'w-full h-14 rounded-2xl font-bold text-base transition-all touch-manipulation select-none',
+                saving
+                  ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                  : 'bg-blue-600 text-white shadow-md shadow-blue-200/70 active:bg-blue-700 active:scale-[0.98]',
+              ].join(' ')}
+            >
+              <span className="flex items-center justify-center gap-2">
+                {saving
+                  ? <><Loader2 className="w-5 h-5 animate-spin" /> چاوەڕوانبە...</>
+                  : 'دەستپێبکە ←'
+                }
+              </span>
+            </button>
+          </>
+        )}
       </div>
 
       {/* Help bottom sheet */}
