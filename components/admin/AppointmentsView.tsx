@@ -393,8 +393,8 @@ export default function AppointmentsView() {
                   {/* ── Header: Avatar + Name/Status + Date/Time + Phone/Icons ── */}
                   <div className="flex items-start gap-3">
 
-                    {/* Avatar — w-12 */}
-                    <div className="relative w-12 h-12 flex-shrink-0">
+                    {/* Avatar — w-16 */}
+                    <div className="relative w-16 h-16 flex-shrink-0">
                       <div
                         className="absolute inset-0 rounded-full"
                         style={{
