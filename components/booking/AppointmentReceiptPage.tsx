@@ -151,7 +151,7 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl 
   return (
     <div className="flex flex-col items-center min-h-screen px-4 py-10 relative overflow-hidden">
       <style>{`
-        @keyframes subtle-slide { from { background-position: 0 0; } to { background-position: 40px 0; } }
+        @keyframes poleSlide { from { background-position: 0 0; } to { background-position: 113px 0; } }
       `}</style>
 
       {/* Status heading */}
@@ -194,13 +194,13 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl 
 
           <div ref={cardRef} className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
 
-            {/* Animated barber-pole strip */}
+            {/* Barber-pole strip — matches homepage ScrollNav */}
             <div
-              className="h-2 w-full"
+              className="h-2.5 w-full"
               style={{
-                background: 'linear-gradient(45deg,#3b82f6 25%,#ef4444 25%,#ef4444 50%,#fff 50%,#fff 75%,#3b82f6 75%)',
-                backgroundSize: '40px 40px',
-                animation: 'subtle-slide 2s linear infinite',
+                backgroundImage: 'repeating-linear-gradient(-45deg, #ef4444, #ef4444 20px, #ffffff 20px, #ffffff 40px, #3b82f6 40px, #3b82f6 60px, #ffffff 60px, #ffffff 80px)',
+                backgroundSize: '113px 100%',
+                animation: 'poleSlide 2.4s linear infinite',
               }}
             />
 
