@@ -83,6 +83,7 @@ export default function GallerySection({ photos }: { photos: GalleryPhoto[] }) {
       {/* Mobile carousel — transform-based, no scroll container */}
       <div className="md:hidden">
         <div
+          dir="ltr"
           className="relative overflow-hidden w-full"
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}

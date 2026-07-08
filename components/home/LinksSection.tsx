@@ -92,6 +92,7 @@ export default function LinksSection({ links }: { links: SocialLink[] }) {
       {/* Mobile carousel — transform-based, identical to GallerySection */}
       <div className="md:hidden">
         <div
+          dir="ltr"
           className="relative overflow-hidden w-full"
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
