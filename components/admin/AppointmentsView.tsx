@@ -161,12 +161,13 @@ export default function AppointmentsView() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from('appointments')
-      .select(`id, appointment_time, status, created_at,
-               customers(full_name, phone_number, photo_url, facebook_id)`)
-      .order('appointment_time', { ascending: true });
-    if (data) setAppointments(data as unknown as AppointmentFull[]);
+    try {
+      const res = await fetch('/api/admin/appointments');
+      if (res.ok) {
+        const data = await res.json();
+        setAppointments(data as AppointmentFull[]);
+      }
+    } catch {}
     setLoading(false);
   }, []);
 
@@ -491,6 +492,13 @@ export default function AppointmentsView() {
                       <p className="text-[0.58rem] text-slate-300 mt-1.5 font-mono leading-none" dir="ltr">
                         ⏱ {formatCreatedAt(appt.created_at)}
                       </p>
+
+                      {/* Customer notes */}
+                      {appt.customers.notes && (
+                        <p className="text-[0.68rem] text-slate-500 mt-1.5 bg-slate-50 rounded-lg px-2 py-1 border border-slate-100 leading-snug" dir="rtl">
+                          📝 {appt.customers.notes}
+                        </p>
+                      )}
                     </div>
                   </div>
 

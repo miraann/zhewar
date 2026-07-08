@@ -24,7 +24,7 @@ export interface Appointment {
 }
 
 export interface AppointmentFull extends Appointment {
-  customers: { full_name: string; phone_number: string; photo_url: string | null; facebook_id: string | null };
+  customers: { full_name: string; phone_number: string; photo_url: string | null; facebook_id: string | null; notes: string | null };
 }
 
 export interface WorkingSchedule {
