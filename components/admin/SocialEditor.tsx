@@ -91,14 +91,16 @@ export default function SocialEditor() {
     }
     setAdding(true);
     setAddError('');
-    const { data, error } = await supabase
-      .from('social_links')
-      .insert({ title: title.trim(), url: url.trim(), image_url: imageUrl || null, sort_order: nextOrder() })
-      .select()
-      .single();
-    if (error) {
-      setAddError(error.message);
-    } else if (data) {
+    const res = await fetch('/api/admin/social', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: title.trim(), url: url.trim(), image_url: imageUrl || null, sort_order: nextOrder() }),
+    });
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}));
+      setAddError(json.error ?? 'هەڵە ڕووی دا');
+    } else {
+      const data = await res.json();
       setLinks((prev) => [...prev, data]);
       setTitle('');
       setUrl('');
@@ -109,7 +111,7 @@ export default function SocialEditor() {
   }
 
   async function handleDelete(id: string) {
-    await supabase.from('social_links').delete().eq('id', id);
+    await fetch(`/api/admin/social/${id}`, { method: 'DELETE' });
     setLinks((prev) => prev.filter((l) => l.id !== id));
     await fetch('/api/revalidate', { method: 'POST' });
   }
@@ -121,11 +123,11 @@ export default function SocialEditor() {
       return;
     }
     setSaving(true);
-    await supabase.from('social_links').update({
-      title:     editing.title.trim(),
-      url:       editing.url.trim(),
-      image_url: editing.image_url || null,
-    }).eq('id', editing.id);
+    await fetch(`/api/admin/social/${editing.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: editing.title.trim(), url: editing.url.trim(), image_url: editing.image_url || null }),
+    });
     setLinks((prev) => prev.map((l) =>
       l.id === editing.id
         ? { ...l, title: editing.title.trim(), url: editing.url.trim(), image_url: editing.image_url || null }
@@ -137,11 +139,11 @@ export default function SocialEditor() {
   }
 
   async function persistOrder(ordered: SocialLink[]) {
-    await Promise.all(
-      ordered.map((l, i) =>
-        supabase.from('social_links').update({ sort_order: i }).eq('id', l.id)
-      )
-    );
+    await fetch('/api/admin/social', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: ordered.map((l, i) => ({ id: l.id, sort_order: i })) }),
+    });
     await fetch('/api/revalidate', { method: 'POST' });
   }
 

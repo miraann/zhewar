@@ -31,12 +31,11 @@ export default function ScheduleEditor() {
 
   async function handleSave() {
     setSaving(true);
-    for (const day of schedule) {
-      await supabase
-        .from('working_schedule')
-        .update({ is_active: day.is_active, start_time: day.start_time, end_time: day.end_time, slot_interval: day.slot_interval })
-        .eq('day_of_week', day.day_of_week);
-    }
+    await fetch('/api/admin/schedule', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(schedule),
+    });
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);

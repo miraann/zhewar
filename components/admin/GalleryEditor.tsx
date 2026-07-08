@@ -59,12 +59,15 @@ export default function GalleryEditor() {
   }
 
   async function insertPhoto(photoUrl: string) {
-    const { data } = await supabase
-      .from('gallery_photos')
-      .insert({ photo_url: photoUrl, caption: caption.trim() || null, sort_order: nextOrder() })
-      .select()
-      .single();
-    if (data) setPhotos((prev) => [...prev, data]);
+    const res = await fetch('/api/admin/gallery', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ photo_url: photoUrl, caption: caption.trim() || null, sort_order: nextOrder() }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setPhotos((prev) => [...prev, data]);
+    }
     setCaption('');
     await fetch('/api/revalidate', { method: 'POST' });
   }
@@ -87,7 +90,7 @@ export default function GalleryEditor() {
   }
 
   async function handleDelete(id: string) {
-    await supabase.from('gallery_photos').delete().eq('id', id);
+    await fetch(`/api/admin/gallery/${id}`, { method: 'DELETE' });
     setPhotos((prev) => prev.filter((p) => p.id !== id));
     await fetch('/api/revalidate', { method: 'POST' });
   }
@@ -114,10 +117,11 @@ export default function GalleryEditor() {
   async function handleSaveEdit() {
     if (!editing) return;
     setSaving(true);
-    await supabase.from('gallery_photos').update({
-      photo_url: editing.photo_url,
-      caption:   editing.caption.trim() || null,
-    }).eq('id', editing.id);
+    await fetch(`/api/admin/gallery/${editing.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ photo_url: editing.photo_url, caption: editing.caption.trim() || null }),
+    });
     setPhotos((prev) => prev.map((p) =>
       p.id === editing.id
         ? { ...p, photo_url: editing.photo_url, caption: editing.caption.trim() || null }
@@ -129,11 +133,11 @@ export default function GalleryEditor() {
   }
 
   async function persistOrder(ordered: GalleryPhoto[]) {
-    await Promise.all(
-      ordered.map((p, i) =>
-        supabase.from('gallery_photos').update({ sort_order: i }).eq('id', p.id)
-      )
-    );
+    await fetch('/api/admin/gallery', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: ordered.map((p, i) => ({ id: p.id, sort_order: i })) }),
+    });
     await fetch('/api/revalidate', { method: 'POST' });
   }
 
