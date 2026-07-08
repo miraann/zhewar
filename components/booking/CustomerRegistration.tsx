@@ -255,7 +255,7 @@ export default function CustomerRegistration({ onComplete }: Props) {
                 }
               </div>
               <div className="text-center space-y-1.5">
-                <p className="text-slate-900 font-semibold text-base">سکانی ڕووخسارت تۆمار بکە</p>
+                <p className="text-slate-900 font-semibold text-base">سکانی ڕووخسارت بکە</p>
                 <p className="text-slate-400 text-xs leading-relaxed">
                   پێش داخڵکردنی زانیاریەکانت، تکایە وێنەی ڕووخسارت تۆمار بکە
                 </p>
