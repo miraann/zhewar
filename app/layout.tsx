@@ -72,7 +72,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ckb" className={inter.variable} suppressHydrationWarning>
+    <html lang="ckb" dir="rtl" className={inter.variable} suppressHydrationWarning>
       <body className="text-neutral-900 antialiased min-h-screen bg-white overflow-x-hidden" suppressHydrationWarning>
         {/* ── Global background ── */}
         <div aria-hidden className="fixed inset-0 -z-10 overflow-hidden">

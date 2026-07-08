@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import type { SocialLink } from '@/lib/types';
 import { Share2 } from 'lucide-react';
 
@@ -73,7 +74,7 @@ export default function LinksSection({ links }: { links: SocialLink[] }) {
         {links.map((link, i) => (
           <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" className="rounded-3xl overflow-hidden relative shadow-md hover:shadow-xl transition-shadow duration-300 group border border-neutral-100" style={{ aspectRatio: '3/4' }}>
             {link.image_url ? (
-              <img src={link.image_url} alt={link.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading={i < 3 ? 'eager' : 'lazy'} />
+              <Image src={link.image_url} alt={link.title} fill sizes="(min-width: 768px) 280px, 78vw" className="object-cover group-hover:scale-105 transition-transform duration-500" priority={i < 3} />
             ) : (
               <div className="w-full h-full bg-neutral-100 flex items-center justify-center"><Share2 className="w-14 h-14 text-neutral-300" /></div>
             )}
@@ -121,7 +122,7 @@ export default function LinksSection({ links }: { links: SocialLink[] }) {
                 }}
               >
                 {link.image_url ? (
-                  <img src={link.image_url} alt={link.title} className="w-full h-full object-cover" loading={i < 2 ? 'eager' : 'lazy'} />
+                  <Image src={link.image_url} alt={link.title} fill sizes="78vw" className="object-cover" priority={i < 2} />
                 ) : (
                   <div className="w-full h-full bg-neutral-100 flex items-center justify-center"><Share2 className="w-16 h-16 text-neutral-300" /></div>
                 )}

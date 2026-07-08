@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import type { GalleryPhoto } from '@/lib/types';
 
 const CARD_VW  = 78;
@@ -67,7 +68,7 @@ export default function GallerySection({ photos }: { photos: GalleryPhoto[] }) {
       <div className="relative z-10 hidden md:grid md:grid-cols-3 gap-4 max-w-4xl mx-auto px-6">
         {photos.map((photo, i) => (
           <div key={photo.id} className="rounded-3xl overflow-hidden relative shadow-md hover:shadow-xl transition-shadow duration-300 group border border-neutral-100" style={{ aspectRatio: '3/4' }}>
-            <img src={photo.photo_url} alt={photo.caption ?? `وێنە ${i + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading={i < 3 ? 'eager' : 'lazy'} />
+            <Image src={photo.photo_url} alt={photo.caption ?? `وێنە ${i + 1}`} fill sizes="(min-width: 768px) 280px, 78vw" className="object-cover group-hover:scale-105 transition-transform duration-500" priority={i < 3} />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
             {photo.caption && (
               <div className="absolute bottom-4 right-4 left-4 text-right">
@@ -108,7 +109,7 @@ export default function GallerySection({ photos }: { photos: GalleryPhoto[] }) {
                   transition: 'opacity 450ms ease, transform 450ms ease',
                 }}
               >
-                <img src={photo.photo_url} alt={photo.caption ?? `وێنە ${i + 1}`} className="w-full h-full object-cover" loading={i < 2 ? 'eager' : 'lazy'} />
+                <Image src={photo.photo_url} alt={photo.caption ?? `وێنە ${i + 1}`} fill sizes="78vw" className="object-cover" priority={i < 2} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                 {i === idx && <div className="absolute inset-0 rounded-3xl border-2 border-blue-400/60 pointer-events-none" />}
                 {photo.caption && (
