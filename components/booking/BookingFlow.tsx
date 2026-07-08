@@ -57,19 +57,22 @@ export default function BookingFlow({ initialName, initialPhone }: Props) {
       }
 
       if (initialName && initialPhone) {
-        const { data: upserted } = await supabase
-          .from('customers')
-          .upsert({ full_name: initialName, phone_number: initialPhone }, { onConflict: 'phone_number' })
-          .select()
-          .single();
-        if (upserted) {
-          resolved = upserted;
-          try {
-            localStorage.setItem('luxe_customer', JSON.stringify(upserted));
-            localStorage.setItem('luxe_registered', '1');
-          } catch {}
-          setStep('datetime');
-        }
+        try {
+          const res = await fetch('/api/register-customer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ full_name: initialName, phone_number: initialPhone }),
+          });
+          const upserted = await res.json();
+          if (res.ok && upserted?.id) {
+            resolved = upserted;
+            try {
+              localStorage.setItem('luxe_customer', JSON.stringify(upserted));
+              localStorage.setItem('luxe_registered', '1');
+            } catch {}
+            setStep('datetime');
+          }
+        } catch {}
       }
 
       setCustomer(resolved);

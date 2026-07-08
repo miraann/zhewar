@@ -6,7 +6,9 @@ import { headers } from 'next/headers';
 import type { AppointmentFull } from '@/lib/types';
 
 function signAction(appointmentId: string, action: string): string {
-  return createHmac('sha256', process.env.BOOKING_HMAC_SECRET!)
+  const secret = process.env.BOOKING_HMAC_SECRET;
+  if (!secret) return '';
+  return createHmac('sha256', secret)
     .update(`${appointmentId}:${action}`)
     .digest('hex');
 }
