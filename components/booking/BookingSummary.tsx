@@ -1,7 +1,7 @@
 'use client';
 
 import type { Customer } from '@/lib/types';
-import { Calendar, ChevronRight, Clock, Facebook, Loader2, Phone, Scissors } from 'lucide-react';
+import { Calendar, CheckCircle, ChevronRight, Clock, ExternalLink, Loader2, Scissors } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { formatTimeFull } from './DateTimePicker';
@@ -27,17 +27,24 @@ interface Props {
 }
 
 export default function BookingSummary({ customer, date, time, confirming, onBack, onConfirm }: Props) {
-  const fbUrl = normalizeFbUrl(customer?.facebook_id ?? null);
-  const [shopName, setShopName] = useState('');
+  const fbUrl   = normalizeFbUrl(customer?.facebook_id ?? null);
+  const [shopName, setShopName]     = useState('');
+  const [logoUrl,  setLogoUrl]      = useState<string | null>(null);
+
   useEffect(() => {
-    supabase.from('barber_profile').select('name').single()
-      .then(({ data }) => { if (data?.name) setShopName(data.name); });
+    supabase.from('barber_profile').select('name, logo_url').single()
+      .then(({ data }) => {
+        if (data?.name)     setShopName(data.name);
+        if (data?.logo_url) setLogoUrl(data.logo_url);
+      });
   }, []);
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-3px)] bg-transparent relative">
 
-      <style>{`@keyframes ringRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+      <style>{`
+        @keyframes subtle-slide { from { background-position: 0 0; } to { background-position: 40px 0; } }
+      `}</style>
 
       {/* Header */}
       <div className="px-4 pt-8 pb-6">
@@ -54,132 +61,125 @@ export default function BookingSummary({ customer, date, time, confirming, onBac
         </h2>
       </div>
 
-      <div className="flex-1 px-4 pb-48 space-y-4">
+      <div className="flex-1 px-4 pb-36">
 
-        {/* ── Boarding Pass Ticket ── */}
-        {/* Outer wrapper holds the notch circles so they sit outside overflow-hidden ticket */}
-        <div className="relative w-full max-w-sm mx-auto">
+        {/* Outer wrapper: notch circles sit outside overflow-hidden */}
+        <div className="relative w-full max-w-md mx-auto">
 
-          {/* Perforated notches — positioned at the info-grid divider (~55% down) */}
-          <div className="absolute -left-3 z-10 w-6 h-6 rounded-full bg-slate-100 border border-slate-200/60" style={{ top: '52%', transform: 'translateY(-50%)' }} />
-          <div className="absolute -right-3 z-10 w-6 h-6 rounded-full bg-slate-100 border border-slate-200/60" style={{ top: '52%', transform: 'translateY(-50%)' }} />
+          <div className="absolute -left-3 z-10 w-6 h-6 rounded-full bg-slate-100 border border-slate-200/60" style={{ top: '46%', transform: 'translateY(-50%)' }} />
+          <div className="absolute -right-3 z-10 w-6 h-6 rounded-full bg-slate-100 border border-slate-200/60" style={{ top: '46%', transform: 'translateY(-50%)' }} />
 
-          <div className="bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.06)] border border-slate-100 overflow-hidden">
+          <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
 
-            {/* Top barber-pole strip */}
+            {/* Animated barber-pole strip */}
             <div
-              className="h-2.5 w-full"
+              className="h-2 w-full"
               style={{
-                backgroundImage: 'repeating-linear-gradient(-45deg, #ef4444, #ef4444 10px, #ffffff 10px, #ffffff 20px, #3b82f6 20px, #3b82f6 30px, #ffffff 30px, #ffffff 40px)',
-                backgroundSize: '57px 100%',
+                background: 'linear-gradient(45deg,#3b82f6 25%,#ef4444 25%,#ef4444 50%,#fff 50%,#fff 75%,#3b82f6 75%)',
+                backgroundSize: '40px 40px',
+                animation: 'subtle-slide 2s linear infinite',
               }}
             />
 
-            {/* Identity section */}
-            <div className="px-5 pt-5 pb-4 flex items-center gap-3" dir="rtl">
+            {/* Customer profile — centered */}
+            <div className="flex flex-col items-center pt-6 pb-5 px-6 gap-1.5">
 
-              {/* Customer avatar */}
-              <div className="w-[58px] h-[58px] rounded-full overflow-hidden border-2 border-slate-200 bg-slate-100 flex-shrink-0">
+              {/* Avatar */}
+              <div className="w-24 h-24 rounded-full ring-4 ring-blue-500/10 p-1 bg-white shadow-md overflow-hidden">
                 {customer?.photo_url ? (
-                  <img src={customer.photo_url} alt="" className="w-full h-full object-cover" />
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={customer.photo_url} alt="" className="w-full h-full object-cover rounded-full" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-blue-50 text-blue-600 font-bold text-xl">
-                    {customer?.full_name.charAt(0) ?? '?'}
+                  <div className="w-full h-full rounded-full flex items-center justify-center bg-blue-50 text-blue-600 font-bold text-3xl">
+                    {customer?.full_name?.charAt(0) ?? '?'}
                   </div>
                 )}
               </div>
 
-              {/* Name + phone + Facebook */}
-              <div className="flex-1 min-w-0">
-                <p className="text-slate-900 font-bold text-[0.95rem] leading-tight truncate">
-                  {customer?.full_name}
-                </p>
-                <div className="flex items-center gap-1 mt-0.5">
-                  <Phone className="w-2.5 h-2.5 text-slate-400 flex-shrink-0" />
-                  <p className="text-slate-400 text-xs" dir="ltr">{customer?.phone_number}</p>
-                </div>
-                {fbUrl && (
-                  <a
-                    href={fbUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 mt-2 text-[0.68rem] font-semibold text-[#1877F2] bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-lg active:bg-blue-100 transition-colors touch-manipulation"
-                  >
-                    <Facebook className="w-3 h-3 flex-shrink-0" />
-                    بینینی پرۆفایلی فەیسبووک
-                  </a>
-                )}
-              </div>
+              <h3 className="text-xl font-bold text-gray-800 mt-2">{customer?.full_name}</h3>
+              <p className="text-sm text-gray-500 font-medium" dir="ltr">{customer?.phone_number}</p>
+
+              {fbUrl && (
+                <a
+                  href={fbUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-2 flex items-center gap-1.5 px-4 py-1.5 bg-blue-50 text-blue-600 rounded-full text-xs font-semibold border border-blue-100/50 touch-manipulation active:bg-blue-100 transition-colors"
+                >
+                  <span>بینینی پرۆفایلی فەیسبووک</span>
+                  <ExternalLink size={12} />
+                </a>
+              )}
             </div>
 
-            {/* Perforated divider line */}
-            <div className="border-t-2 border-dashed border-slate-100 mx-4 my-1" />
+            {/* Tear line */}
+            <div className="border-t-2 border-dashed border-gray-200 mx-4" />
 
-            {/* 2×2 Info Grid */}
-            <div className="px-5 py-5 grid grid-cols-2 gap-x-4 gap-y-5" dir="rtl">
+            {/* 2×2 Details grid */}
+            <div className="grid grid-cols-2 gap-3 p-4" dir="rtl">
 
-              {/* بەروار */}
-              <div className="flex items-start gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Calendar className="w-[15px] h-[15px] text-blue-600" />
+              {/* Date */}
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl border border-gray-100">
+                <div className="p-2 bg-blue-500/10 text-blue-600 rounded-xl flex-shrink-0">
+                  <Calendar size={18} />
                 </div>
-                <div>
-                  <p className="text-[11px] font-medium text-slate-400 tracking-wider">بەروار</p>
-                  <p className="text-sm font-bold text-slate-800 leading-tight mt-0.5">{formatDate(date)}</p>
+                <div className="min-w-0">
+                  <p className="text-[10px] text-gray-400 font-medium">بەروار</p>
+                  <p className="text-sm font-bold text-gray-700 mt-0.5 leading-tight">{formatDate(date)}</p>
                 </div>
               </div>
 
-              {/* کات */}
-              <div className="flex items-start gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Clock className="w-[15px] h-[15px] text-emerald-600" />
+              {/* Time */}
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl border border-gray-100">
+                <div className="p-2 bg-emerald-500/10 text-emerald-600 rounded-xl flex-shrink-0">
+                  <Clock size={18} />
                 </div>
-                <div>
-                  <p className="text-[11px] font-medium text-slate-400 tracking-wider">کات</p>
-                  <p className="text-sm font-bold text-slate-800 leading-tight mt-0.5">{formatTimeFull(time)}</p>
-                </div>
-              </div>
-
-              {/* ناوی کڕیار */}
-              <div className="flex items-start gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-amber-500 text-base font-bold leading-none">✂</span>
-                </div>
-                <div>
-                  <p className="text-[11px] font-medium text-slate-400 tracking-wider">کڕیار</p>
-                  <p className="text-sm font-bold text-slate-800 leading-tight mt-0.5 truncate max-w-[90px]">
-                    {customer?.full_name ?? '—'}
-                  </p>
+                <div className="min-w-0">
+                  <p className="text-[10px] text-gray-400 font-medium">کات</p>
+                  <p className="text-sm font-bold text-gray-700 mt-0.5 leading-tight">{formatTimeFull(time)}</p>
                 </div>
               </div>
 
-              {/* بارودۆخ */}
-              <div className="flex items-start gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <div className="w-2 h-2 rounded-full bg-amber-400" />
+              {/* Barber / shop */}
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl border border-gray-100">
+                <div className="p-2 bg-amber-500/10 text-amber-600 rounded-xl flex-shrink-0">
+                  {logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={logoUrl} alt="" className="w-[18px] h-[18px] object-cover rounded-md" />
+                  ) : (
+                    <Scissors size={18} />
+                  )}
                 </div>
-                <div>
-                  <p className="text-[11px] font-medium text-slate-400 tracking-wider">دۆخی داواکاری</p>
-                  <p className="text-sm font-bold text-amber-600 leading-tight mt-0.5">چاوەڕوان</p>
+                <div className="min-w-0">
+                  <p className="text-[10px] text-gray-400 font-medium">سەرتاش</p>
+                  <p className="text-sm font-bold text-gray-700 mt-0.5 leading-tight truncate">{shopName || 'ژێوار محمد'}</p>
+                </div>
+              </div>
+
+              {/* Status */}
+              <div className="flex items-center gap-3 p-3 bg-amber-50/60 rounded-2xl border border-amber-100">
+                <div className="p-2 bg-amber-500/10 rounded-xl flex-shrink-0">
+                  <CheckCircle size={18} className="text-amber-600" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] text-amber-600/70 font-medium">دۆخ</p>
+                  <p className="text-sm font-bold text-amber-600 mt-0.5 leading-tight">چاوەڕوان</p>
                 </div>
               </div>
 
             </div>
 
-            {/* Perforated divider */}
-            <div className="border-t-2 border-dashed border-slate-100 mx-4 my-1" />
+            {/* Tear line 2 */}
+            <div className="border-t-2 border-dashed border-gray-200 mx-4" />
 
-            {/* Barcode + label */}
-            <div className="px-5 pt-4 pb-2 flex flex-col items-center gap-2">
-              <div className="flex items-center justify-center gap-px">
-                {[3,1,4,1,5,2,3,1,4,2,1,3,2,4,1,3,2,1,4,3,1,2,3,1,4,2,3,1,2,4,1,3,2].map((w, i) => (
-                  <div
-                    key={i}
-                    className={i % 5 === 0 ? 'bg-slate-700' : i % 3 === 0 ? 'bg-slate-500' : 'bg-slate-200'}
-                    style={{ width: w, height: 32, borderRadius: 1 }}
-                  />
-                ))}
-              </div>
+            {/* Decorative barcode + shop name */}
+            <div className="flex flex-col items-center gap-2 py-5 px-6">
+              <div
+                className="w-48 h-8 opacity-60 rounded-sm"
+                style={{
+                  background: 'repeating-linear-gradient(90deg,#1e293b 0px,#1e293b 2px,transparent 2px,transparent 4px,#1e293b 4px,#1e293b 5px,transparent 5px,transparent 8px,#1e293b 8px,#1e293b 9px,transparent 9px,transparent 12px)',
+                }}
+              />
               <div className="flex items-center gap-2">
                 <Scissors className="w-2.5 h-2.5 text-slate-300" />
                 <p className="text-slate-400 text-sm tracking-[0.2em] font-bold">{shopName}</p>
@@ -190,7 +190,7 @@ export default function BookingSummary({ customer, date, time, confirming, onBac
           </div>
         </div>
 
-        <p className="text-slate-400 text-xs text-center px-4 leading-relaxed">
+        <p className="text-slate-400 text-xs text-center px-4 mt-4 leading-relaxed">
           تکایە ٥ خولەک زووتر ئامادەبە
         </p>
       </div>
@@ -215,6 +215,7 @@ export default function BookingSummary({ customer, date, time, confirming, onBac
           </span>
         </button>
       </div>
+
     </div>
   );
 }
