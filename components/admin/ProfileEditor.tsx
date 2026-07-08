@@ -128,14 +128,16 @@ function LogoUpload({ value, onChange }: { value: string; onChange: (url: string
     if (!file) return;
     setError('');
     setUploading(true);
-    const ext  = file.name.split('.').pop();
-    const path = `logo-${Date.now()}.${ext}`;
-    const { error: uploadErr } = await supabase.storage.from('uploads').upload(path, file, { upsert: true });
-    if (uploadErr) {
-      setError(uploadErr.message);
+    const form = new FormData();
+    form.append('file', file);
+    form.append('bucket', 'uploads');
+    const res = await fetch('/api/admin/upload', { method: 'POST', body: form });
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      setError(j.error ?? 'هەڵەی بارکردن');
     } else {
-      const { data } = supabase.storage.from('uploads').getPublicUrl(path);
-      onChange(data.publicUrl);
+      const { url } = await res.json();
+      onChange(url);
     }
     setUploading(false);
     e.target.value = '';

@@ -72,18 +72,25 @@ export default function GalleryEditor() {
     await fetch('/api/revalidate', { method: 'POST' });
   }
 
+  async function uploadToStorage(file: File): Promise<string | null> {
+    const form = new FormData();
+    form.append('file', file);
+    form.append('bucket', 'gallery_photos');
+    const res = await fetch('/api/admin/upload', { method: 'POST', body: form });
+    if (!res.ok) { const j = await res.json().catch(() => ({})); setAddError(j.error ?? 'هەڵەی بارکردن'); return null; }
+    const { url } = await res.json();
+    return url;
+  }
+
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
     setAddError('');
     setAdding(true);
     for (const file of files) {
-      const ext  = file.name.split('.').pop();
-      const path = `gallery-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error: uploadErr } = await supabase.storage.from('gallery_photos').upload(path, file, { upsert: true });
-      if (uploadErr) { setAddError(uploadErr.message); break; }
-      const { data } = supabase.storage.from('gallery_photos').getPublicUrl(path);
-      await insertPhoto(data.publicUrl);
+      const url = await uploadToStorage(file);
+      if (!url) break;
+      await insertPhoto(url);
     }
     setAdding(false);
     e.target.value = '';
@@ -101,14 +108,16 @@ export default function GalleryEditor() {
     if (!file) return;
     setEditError('');
     setReplacing(true);
-    const ext  = file.name.split('.').pop();
-    const path = `gallery-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const { error: uploadErr } = await supabase.storage.from('gallery_photos').upload(path, file, { upsert: true });
-    if (uploadErr) {
-      setEditError(uploadErr.message);
+    const form = new FormData();
+    form.append('file', file);
+    form.append('bucket', 'gallery_photos');
+    const res = await fetch('/api/admin/upload', { method: 'POST', body: form });
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      setEditError(j.error ?? 'هەڵەی بارکردن');
     } else {
-      const { data } = supabase.storage.from('gallery_photos').getPublicUrl(path);
-      setEditing((prev) => prev ? { ...prev, photo_url: data.publicUrl } : prev);
+      const { url } = await res.json();
+      setEditing((prev) => prev ? { ...prev, photo_url: url } : prev);
     }
     setReplacing(false);
     e.target.value = '';

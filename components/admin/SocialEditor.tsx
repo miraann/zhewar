@@ -64,12 +64,13 @@ export default function SocialEditor() {
 
   async function uploadImage(file: File, onDone: (url: string) => void, onLoading: (v: boolean) => void) {
     onLoading(true);
-    const ext  = file.name.split('.').pop();
-    const path = `social-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const { error: uploadErr } = await supabase.storage.from('social_posts').upload(path, file, { upsert: true });
-    if (!uploadErr) {
-      const { data } = supabase.storage.from('social_posts').getPublicUrl(path);
-      onDone(data.publicUrl);
+    const form = new FormData();
+    form.append('file', file);
+    form.append('bucket', 'social_posts');
+    const res = await fetch('/api/admin/upload', { method: 'POST', body: form });
+    if (res.ok) {
+      const { url } = await res.json();
+      onDone(url);
     }
     onLoading(false);
   }
