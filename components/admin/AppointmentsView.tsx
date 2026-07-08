@@ -129,6 +129,7 @@ function Countdown({ appointmentTime }: { appointmentTime: string }) {
 
   return (
     <div
+      dir="ltr"
       className="flex items-center justify-center gap-1.5 px-3 h-14 rounded-xl"
       style={{ background: '#10b981' }}
     >
