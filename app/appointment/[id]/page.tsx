@@ -1,6 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
 import { createHmac } from 'crypto';
 import AppointmentReceiptPage from '@/components/booking/AppointmentReceiptPage';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { notFound } from 'next/navigation';
 import { headers } from 'next/headers';
 import type { AppointmentFull } from '@/lib/types';
@@ -13,16 +13,9 @@ function signAction(appointmentId: string, action: string): string {
 
 export const dynamic = 'force-dynamic';
 
-function freshClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { global: { fetch: (url, opts) => fetch(url, { ...opts, cache: 'no-store' }) } }
-  );
-}
-
 export default async function AppointmentPage({ params }: { params: { id: string } }) {
-  const supabase = freshClient();
+  // Service role required — anon SELECT is blocked on customers table for privacy
+  const supabase = getSupabaseAdmin();
 
   const [{ data }, { data: profile }] = await Promise.all([
     supabase
