@@ -53,6 +53,7 @@ export default function CustomerRegistration({ onComplete }: Props) {
   const [error, setError]               = useState('');
   const [alertMsg, setAlertMsg]         = useState('');
   const [showCamera, setShowCamera]     = useState(false);
+  const [notes, setNotes]               = useState('');
   const [logoUrl, setLogoUrl]           = useState<string | null>(null);
 
   useEffect(() => {
@@ -140,6 +141,7 @@ export default function CustomerRegistration({ onComplete }: Props) {
           phone_number: phone.trim(),
           photo_url:    photoUrl || null,
           facebook_id:  fbId || messengerUrl.trim() || null,
+          notes:        notes.trim() || null,
         }),
       });
       const json = await res.json();
@@ -375,6 +377,26 @@ export default function CustomerRegistration({ onComplete }: Props) {
                 پەیست
               </button>
             </div>
+          </div>
+
+          {/* Notes */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-slate-400 text-xs">ئارەزوومەند</span>
+              <span className="text-slate-700 text-xs font-medium">تێبینی</span>
+            </div>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              maxLength={500}
+              rows={3}
+              placeholder="ئایا تێبینییەکت هەیە؟ وەک جۆری مووی، خواستەکانت…"
+              className="w-full bg-slate-50/50 border border-slate-200 rounded-2xl px-4 py-3.5 text-slate-900 text-sm placeholder-slate-400 outline-none focus:border-blue-500/60 focus:bg-white transition-all resize-none leading-relaxed"
+              dir="rtl"
+            />
+            {notes.length > 400 && (
+              <p className="text-slate-400 text-[0.65rem] text-left mt-1">{notes.length}/500</p>
+            )}
           </div>
 
           {/* Error */}

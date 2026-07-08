@@ -4,6 +4,7 @@ export interface Customer {
   phone_number: string;
   photo_url: string | null;
   facebook_id: string | null;
+  notes: string | null;
   created_at: string;
 }
 

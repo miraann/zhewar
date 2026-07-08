@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const { full_name, phone_number, photo_url, facebook_id } = body as Record<string, unknown>;
+  const { full_name, phone_number, photo_url, facebook_id, notes } = body as Record<string, unknown>;
 
   if (typeof full_name !== 'string' || !full_name.trim()) {
     return NextResponse.json({ error: 'full_name required' }, { status: 400 });
@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
         phone_number: phone_number.trim(),
         photo_url:    typeof photo_url === 'string' && photo_url ? photo_url : null,
         facebook_id:  typeof facebook_id === 'string' && facebook_id ? facebook_id : null,
+        notes:        typeof notes === 'string' && notes.trim() ? notes.trim().slice(0, 500) : null,
       },
       { onConflict: 'phone_number' },
     )
