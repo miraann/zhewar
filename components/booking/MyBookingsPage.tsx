@@ -88,18 +88,24 @@ export default function MyBookingsPage() {
     setLoading(true);
     setSearched(false);
 
-    const { data, error: dbErr } = await supabase
-      .from('appointments')
-      .select(`id, appointment_time, status, customers!inner(full_name, phone_number, photo_url)`)
-      .eq('customers.phone_number', p)
-      .gte('appointment_time', new Date().toISOString())
-      .order('appointment_time', { ascending: true });
+    let data: Booking[] = [];
+    let fetchErr = false;
+    try {
+      const res = await fetch('/api/my-bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: p }),
+      });
+      const json = await res.json();
+      if (!res.ok) fetchErr = true;
+      else data = json as Booking[];
+    } catch { fetchErr = true; }
 
     setLoading(false);
     setSearched(true);
 
-    if (dbErr) { setError('کێشەیەک ڕوویدا، تکایە دووبارە هەوڵبدە'); return; }
-    setBookings((data ?? []) as unknown as Booking[]);
+    if (fetchErr) { setError('کێشەیەک ڕوویدا، تکایە دووبارە هەوڵبدە'); return; }
+    setBookings(data);
   }
 
   const customer = bookings?.[0]?.customers ?? null;
