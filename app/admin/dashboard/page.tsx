@@ -3,15 +3,16 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import { useWakeLock } from '@/hooks/useWakeLock';
-import { Clock, ImageIcon, User, LayoutDashboard, LogOut, Share2 } from 'lucide-react';
+import { Clock, ImageIcon, User, LayoutDashboard, LogOut, Share2, Settings } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import ScheduleEditor   from '@/components/admin/ScheduleEditor';
 import AppointmentsView from '@/components/admin/AppointmentsView';
 import ProfileEditor    from '@/components/admin/ProfileEditor';
 import GalleryEditor    from '@/components/admin/GalleryEditor';
 import SocialEditor     from '@/components/admin/SocialEditor';
+import SettingsEditor   from '@/components/admin/SettingsEditor';
 
-type Tab = 'appointments' | 'schedule' | 'profile' | 'gallery' | 'social';
+type Tab = 'appointments' | 'schedule' | 'profile' | 'gallery' | 'social' | 'settings';
 
 const TABS: { id: Tab; label: string; short: string; icon: React.ElementType }[] = [
   { id: 'appointments', label: 'کاتەکانی سەردانیکردن', short: 'سەردان',  icon: LayoutDashboard },
@@ -19,9 +20,10 @@ const TABS: { id: Tab; label: string; short: string; icon: React.ElementType }[]
   { id: 'profile',      label: 'پرۆفایل',               short: 'پرۆفایل', icon: User           },
   { id: 'gallery',      label: 'گەلەری',                short: 'گەلەری', icon: ImageIcon       },
   { id: 'social',       label: 'پۆستەکانی سۆشیاڵ',     short: 'سۆشیاڵ', icon: Share2          },
+  { id: 'settings',     label: 'ڕێکخستنەکان',           short: 'ڕێکخستن', icon: Settings       },
 ];
 
-const VALID_TABS = new Set<Tab>(['appointments', 'schedule', 'profile', 'gallery', 'social']);
+const VALID_TABS = new Set<Tab>(['appointments', 'schedule', 'profile', 'gallery', 'social', 'settings']);
 
 export default function AdminDashboard() {
   return <Suspense><Dashboard /></Suspense>;
@@ -188,6 +190,7 @@ function Dashboard() {
         {tab === 'profile'      && <ProfileEditor />}
         {tab === 'gallery'      && <GalleryEditor />}
         {tab === 'social'       && <SocialEditor />}
+        {tab === 'settings'     && <SettingsEditor />}
       </main>
     </div>
   );

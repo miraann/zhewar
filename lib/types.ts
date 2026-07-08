@@ -54,6 +54,7 @@ export interface BarberProfile {
   tiktok_url: string | null;
   maps_url: string | null;
   address: string | null;
+  face_scan_enabled: boolean;
   updated_at: string;
 }
 

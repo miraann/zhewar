@@ -55,6 +55,7 @@ export default function CustomerRegistration({ onComplete }: Props) {
   const [showCamera, setShowCamera]     = useState(false);
   const [notes, setNotes]               = useState('');
   const [logoUrl, setLogoUrl]           = useState<string | null>(null);
+  const [faceScanEnabled, setFaceScanEnabled] = useState(true);
 
   useEffect(() => {
     fetch('/api/auth/facebook/profile')
@@ -67,8 +68,11 @@ export default function CustomerRegistration({ onComplete }: Props) {
       })
       .catch(() => {});
 
-    supabase.from('barber_profile').select('logo_url').single()
-      .then(({ data }) => { if (data?.logo_url) setLogoUrl(data.logo_url); });
+    supabase.from('barber_profile').select('logo_url, face_scan_enabled').single()
+      .then(({ data }) => {
+        if (data?.logo_url) setLogoUrl(data.logo_url);
+        if (typeof data?.face_scan_enabled === 'boolean') setFaceScanEnabled(data.face_scan_enabled);
+      });
   }, []);
 
   function toFbUrl(raw: string): string {
@@ -229,41 +233,43 @@ export default function CustomerRegistration({ onComplete }: Props) {
         </div>
 
         {/* Live camera capture */}
-        {showCamera && (
+        {faceScanEnabled && showCamera && (
           <LiveCameraCapture
             onCapture={handleCameraCapture}
             onCancel={() => setShowCamera(false)}
           />
         )}
 
-        {/* Photo trigger */}
-        <div className="flex flex-col items-center">
-          <button
-            onClick={() => setShowCamera(true)}
-            disabled={uploading}
-            className="relative w-28 h-28 rounded-full border-2 border-dashed border-blue-300 bg-blue-50/40 flex items-center justify-center overflow-hidden touch-manipulation active:scale-[0.96] transition-transform"
-          >
-            {photoUrl ? (
-              <>
-                <img src={photoUrl} alt="" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-black/30 flex items-end justify-center pb-1.5">
-                  <Camera className="w-4 h-4 text-white drop-shadow" />
+        {/* Photo trigger — only shown when face scan is enabled */}
+        {faceScanEnabled && (
+          <div className="flex flex-col items-center">
+            <button
+              onClick={() => setShowCamera(true)}
+              disabled={uploading}
+              className="relative w-28 h-28 rounded-full border-2 border-dashed border-blue-300 bg-blue-50/40 flex items-center justify-center overflow-hidden touch-manipulation active:scale-[0.96] transition-transform"
+            >
+              {photoUrl ? (
+                <>
+                  <img src={photoUrl} alt="" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/30 flex items-end justify-center pb-1.5">
+                    <Camera className="w-4 h-4 text-white drop-shadow" />
+                  </div>
+                  <div className="absolute top-0 right-0 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shadow-md">
+                    <CheckCircle2 className="w-3 h-3 text-white" />
+                  </div>
+                </>
+              ) : uploading ? (
+                <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
+              ) : (
+                <div className="flex flex-col items-center gap-1">
+                  <Camera className="w-5 h-5 text-blue-400" />
+                  <span className="text-blue-400 text-[0.55rem] font-semibold">وێنەی خۆت</span>
                 </div>
-                <div className="absolute top-0 right-0 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shadow-md">
-                  <CheckCircle2 className="w-3 h-3 text-white" />
-                </div>
-              </>
-            ) : uploading ? (
-              <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
-            ) : (
-              <div className="flex flex-col items-center gap-1">
-                <Camera className="w-5 h-5 text-blue-400" />
-                <span className="text-blue-400 text-[0.55rem] font-semibold">وێنەی خۆت</span>
-              </div>
-            )}
-          </button>
-          <p className="text-slate-400 text-xs mt-1.5">وێنەی ڕوخسارت تۆمار بکە</p>
-        </div>
+              )}
+            </button>
+            <p className="text-slate-400 text-xs mt-1.5">وێنەی ڕوخسارت تۆمار بکە</p>
+          </div>
+        )}
 
         {/* Form fields */}
         <div className="space-y-3.5">
