@@ -303,16 +303,18 @@ export default function CustomerRegistration({ onComplete }: Props) {
             {faceScanEnabled ? (
               /* After face scan: read-only avatar with retake */
               <div className="flex flex-col items-center">
-                <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-blue-200 shadow-sm bg-blue-50 flex items-center justify-center">
-                  {photoUrl ? (
-                    <>
+                <div className="relative w-20 h-20">
+                  <div className="w-full h-full rounded-full overflow-hidden border-2 border-blue-200 shadow-sm bg-blue-50 flex items-center justify-center">
+                    {photoUrl ? (
                       <img src={photoUrl} alt="" className="w-full h-full object-cover" />
-                      <div className="absolute top-0 right-0 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shadow-md">
-                        <CheckCircle2 className="w-3 h-3 text-white" />
-                      </div>
-                    </>
-                  ) : (
-                    <Camera className="w-6 h-6 text-blue-300" />
+                    ) : (
+                      <Camera className="w-6 h-6 text-blue-300" />
+                    )}
+                  </div>
+                  {photoUrl && (
+                    <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shadow-md border-2 border-white">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                    </div>
                   )}
                 </div>
                 <button
