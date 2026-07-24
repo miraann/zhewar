@@ -136,20 +136,23 @@ export default function BookingFlow({ initialName, initialPhone }: Props) {
     const [h, m] = selectedTime.split(':').map(Number);
     const dt = new Date(selectedDate);
     dt.setHours(h, m, 0, 0);
-    const { data, error } = await supabase
-      .from('appointments')
-      .insert({ customer_id: customer?.id ?? null, appointment_time: dt.toISOString(), status: 'pending' })
-      .select()
-      .single();
+    let data: { id: string } | null = null;
+    try {
+      const res = await fetch('/api/book-appointment', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ customer_id: customer?.id ?? null, appointment_time: dt.toISOString() }),
+      });
+      const json = await res.json();
+      if (res.ok && json?.id) data = json;
+    } catch {}
     setConfirming(false);
-    if (error) {
+    if (!data) {
       setBookingError('کاتی سەردانیکردن تۆمار نەکرا. تکایە دووبارە هەوڵ بدەرەوە.');
       return;
     }
-    if (data) {
-      try { sessionStorage.removeItem('book_date'); sessionStorage.removeItem('book_time'); } catch {}
-      router.push(`/appointment/${data.id}`);
-    }
+    try { sessionStorage.removeItem('book_date'); sessionStorage.removeItem('book_time'); } catch {}
+    router.push(`/appointment/${data.id}`);
   }, [customer, selectedDate, selectedTime, router]);
 
   const errorModal = bookingError && (

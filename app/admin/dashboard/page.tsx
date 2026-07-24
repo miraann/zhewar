@@ -10,7 +10,8 @@ import AppointmentsView from '@/components/admin/AppointmentsView';
 import ProfileEditor    from '@/components/admin/ProfileEditor';
 import GalleryEditor    from '@/components/admin/GalleryEditor';
 import SocialEditor     from '@/components/admin/SocialEditor';
-import SettingsEditor   from '@/components/admin/SettingsEditor';
+import SettingsEditor          from '@/components/admin/SettingsEditor';
+import PushNotificationInit    from '@/components/admin/PushNotificationInit';
 
 type Tab = 'appointments' | 'schedule' | 'profile' | 'gallery' | 'social' | 'settings';
 
@@ -74,6 +75,9 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen flex flex-col">
+
+      {/* Registers FCM token when running inside the Capacitor APK */}
+      <PushNotificationInit />
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 bg-white/92 backdrop-blur-lg border-b border-slate-100/80"
