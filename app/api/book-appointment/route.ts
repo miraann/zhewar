@@ -3,16 +3,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendPushToAdmins } from '@/lib/firebaseAdmin';
 
 const KURDISH_DAYS = ['یەکشەممە','دووشەممە','سێشەممە','چوارشەممە','پێنجشەممە','هەینی','شەممە'];
-const KURDISH_MONTHS = ['کانوونی دووەم','شوبات','ئازار','نیسان','ئایار','حوزەیران','تەممووز','ئاب','ئەیلوول','تشرینی یەکەم','تشرینی دووەم','کانوونی یەکەم'];
 
 function formatDateTime(iso: string) {
   const d = new Date(iso);
-  const day   = KURDISH_DAYS[d.getDay()];
-  const month = KURDISH_MONTHS[d.getMonth()];
-  const date  = d.getDate();
-  const h     = String(d.getHours()).padStart(2, '0');
-  const m     = String(d.getMinutes()).padStart(2, '0');
-  return `${day} ${date} ${month} — ${h}:${m}`;
+  const day  = KURDISH_DAYS[d.getDay()];
+  const date = d.getDate();
+  const mon  = d.getMonth() + 1;
+  const h    = String(d.getHours()).padStart(2, '0');
+  const m    = String(d.getMinutes()).padStart(2, '0');
+  return `${day} ${date}/${mon} — ${h}:${m}`;
 }
 
 export async function POST(req: NextRequest) {
@@ -54,7 +53,7 @@ export async function POST(req: NextRequest) {
   if (tokens.length && process.env.FIREBASE_SERVICE_ACCOUNT) {
     sendPushToAdmins(
       tokens,
-      'بوکینگی نوێ 📅',
+      'داواکاری نوێ 📅',
       `${customer?.full_name ?? 'کڕیار'} — ${formatDateTime(body.appointment_time)}`,
       { appointmentId: data.id, tab: 'appointments' },
     ).catch(console.error);
