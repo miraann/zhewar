@@ -17,11 +17,15 @@ export default function PushNotificationInit() {
 
         await PushNotifications.register();
 
-        PushNotifications.addListener('registration', async ({ value: token }) => {
-          await fetch('/api/admin/fcm-token', {
+        PushNotifications.addListener('registration', async ({ value: fcmToken }) => {
+          const adminToken = localStorage.getItem('admin_token') ?? '';
+          await fetch('https://zhewar.shop/api/admin/fcm-token', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token }),
+            headers: {
+              'Content-Type': 'application/json',
+              ...(adminToken ? { 'X-Admin-Token': adminToken } : {}),
+            },
+            body: JSON.stringify({ token: fcmToken }),
           });
         });
 

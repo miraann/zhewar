@@ -1,7 +1,7 @@
 import { timingSafeEqual } from 'crypto';
 import { cookies } from 'next/headers';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 function safeEqual(a: string, b: string): boolean {
   const bufA = Buffer.from(a);
@@ -10,9 +10,16 @@ function safeEqual(a: string, b: string): boolean {
   return timingSafeEqual(bufA, bufB);
 }
 
-export async function GET() {
-  const session = cookies().get('admin_session');
-  if (!session?.value || !safeEqual(session.value, process.env.ADMIN_TOKEN ?? '')) {
+function isAdmin(req: NextRequest): boolean {
+  const token = process.env.ADMIN_TOKEN ?? '';
+  if (!token) return false;
+  const cookie = cookies().get('admin_session')?.value ?? '';
+  const header = req.headers.get('X-Admin-Token') ?? '';
+  return safeEqual(cookie, token) || safeEqual(header, token);
+}
+
+export async function GET(req: NextRequest) {
+  if (!isAdmin(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

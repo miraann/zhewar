@@ -81,7 +81,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid password' }, { status: 401, headers: corsHeaders(origin) });
   }
 
-  const res = NextResponse.json({ success: true }, { headers: corsHeaders(origin) });
+  // Return token in body so Capacitor WebView can store it in localStorage
+  // and use it as X-Admin-Token header for subsequent API calls (cookies are
+  // not sent with JS fetch() in the WebView even for same-URL origins).
+  const res = NextResponse.json({ success: true, token: process.env.ADMIN_TOKEN! }, { headers: corsHeaders(origin) });
   res.cookies.set('admin_session', process.env.ADMIN_TOKEN!, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',

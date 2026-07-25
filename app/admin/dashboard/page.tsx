@@ -67,8 +67,13 @@ function Dashboard() {
   }
 
   async function handleLogout() {
-    await fetch('/api/admin/logout', { method: 'POST' });
-    router.push('/admin');
+    const token = typeof window !== 'undefined' ? (localStorage.getItem('admin_token') ?? '') : '';
+    await fetch('/api/admin/logout', {
+      method: 'POST',
+      headers: token ? { 'X-Admin-Token': token } : {},
+    });
+    localStorage.removeItem('admin_token');
+    window.location.href = '/admin';
   }
 
   const activeTab = TABS.find(t => t.id === tab)!;

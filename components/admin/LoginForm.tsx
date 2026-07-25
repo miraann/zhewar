@@ -48,6 +48,8 @@ export default function AdminLoginForm() {
       setLoading(false);
 
       if (res.ok) {
+        const data = await res.json().catch(() => ({}));
+        if (data.token) localStorage.setItem('admin_token', data.token);
         window.location.href = '/admin/dashboard';
       } else if (res.status === 429) {
         const data = await res.json();

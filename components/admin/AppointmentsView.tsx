@@ -163,7 +163,10 @@ export default function AppointmentsView() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/appointments');
+      const token = typeof window !== 'undefined' ? (localStorage.getItem('admin_token') ?? '') : '';
+      const res = await fetch('/api/admin/appointments', {
+        headers: token ? { 'X-Admin-Token': token } : {},
+      });
       if (res.ok) {
         const data = await res.json();
         setAppointments(data as AppointmentFull[]);
@@ -183,9 +186,10 @@ export default function AppointmentsView() {
   }, [load]);
 
   async function updateStatus(id: string, status: 'confirmed' | 'cancelled' | 'pending') {
+    const token = typeof window !== 'undefined' ? (localStorage.getItem('admin_token') ?? '') : '';
     await fetch(`/api/admin/appointments/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...(token ? { 'X-Admin-Token': token } : {}) },
       body: JSON.stringify({ status }),
     });
     setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a));

@@ -13,10 +13,15 @@ function safeEqual(a: string, b: string): boolean {
 }
 
 export function middleware(request: NextRequest) {
-  const session = request.cookies.get('admin_session');
-  const token   = process.env.ADMIN_TOKEN ?? '';
+  const token = process.env.ADMIN_TOKEN ?? '';
 
-  if (!token || !session?.value || !safeEqual(session.value, token)) {
+  // Accept auth from cookie (web browser) or X-Admin-Token header (Capacitor
+  // WebView — JS fetch() doesn't send httpOnly cookies across origins).
+  const cookieVal = request.cookies.get('admin_session')?.value ?? '';
+  const headerVal = request.headers.get('X-Admin-Token') ?? '';
+  const authed = token && (safeEqual(cookieVal, token) || safeEqual(headerVal, token));
+
+  if (!authed) {
     if (request.nextUrl.pathname.startsWith('/api/')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

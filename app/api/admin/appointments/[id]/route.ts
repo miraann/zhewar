@@ -16,8 +16,10 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } },
 ) {
-  const session = cookies().get('admin_session');
-  if (!session?.value || !safeEqual(session.value, process.env.ADMIN_TOKEN ?? '')) {
+  const token  = process.env.ADMIN_TOKEN ?? '';
+  const cookie = cookies().get('admin_session')?.value ?? '';
+  const header = req.headers.get('X-Admin-Token') ?? '';
+  if (!token || (!safeEqual(cookie, token) && !safeEqual(header, token))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
