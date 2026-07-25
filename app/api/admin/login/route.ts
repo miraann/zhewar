@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
   res.cookies.set('admin_session', process.env.ADMIN_TOKEN!, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: 'none',
     maxAge: 60 * 60 * 8,
     path: '/',
   });

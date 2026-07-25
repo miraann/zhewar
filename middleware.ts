@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Edge-runtime-safe timing-safe string comparison (no Node.js crypto needed)
 function safeEqual(a: string, b: string): boolean {
   const enc = new TextEncoder();
   const bufA = enc.encode(a);
@@ -12,26 +11,49 @@ function safeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
-export function middleware(request: NextRequest) {
-  const token = process.env.ADMIN_TOKEN ?? '';
+// Origins the Capacitor WebView may use when making JS fetch() calls.
+const CORS_ORIGINS = ['https://zhewar.shop', 'capacitor://localhost', 'https://localhost', 'http://localhost'];
 
-  // Accept auth from cookie (web browser) or X-Admin-Token header (Capacitor
-  // WebView — JS fetch() doesn't send httpOnly cookies across origins).
+function buildCorsHeaders(origin: string | null) {
+  const allowed = origin && CORS_ORIGINS.includes(origin) ? origin : null;
+  if (!allowed) return {} as Record<string, string>;
+  return {
+    'Access-Control-Allow-Origin':      allowed,
+    'Access-Control-Allow-Credentials': 'true',
+    'Access-Control-Allow-Headers':     'Content-Type, X-Admin-Token',
+    'Access-Control-Allow-Methods':     'GET, POST, PATCH, DELETE, OPTIONS',
+  };
+}
+
+export function middleware(request: NextRequest) {
+  const origin = request.headers.get('origin');
+  const cors   = buildCorsHeaders(origin);
+  const isApi  = request.nextUrl.pathname.startsWith('/api/');
+
+  // Answer CORS preflights immediately (no auth needed for OPTIONS).
+  if (request.method === 'OPTIONS') {
+    return new NextResponse(null, { status: 204, headers: cors });
+  }
+
+  const token     = process.env.ADMIN_TOKEN ?? '';
   const cookieVal = request.cookies.get('admin_session')?.value ?? '';
   const headerVal = request.headers.get('X-Admin-Token') ?? '';
-  const authed = token && (safeEqual(cookieVal, token) || safeEqual(headerVal, token));
+  const authed    = token && (safeEqual(cookieVal, token) || safeEqual(headerVal, token));
 
   if (!authed) {
-    if (request.nextUrl.pathname.startsWith('/api/')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (isApi) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: cors });
     }
     return NextResponse.redirect(new URL('/admin', request.url));
   }
 
-  return NextResponse.next();
+  // Attach CORS headers to every authenticated response so the WebView
+  // can read the body of cross-origin API calls.
+  const response = NextResponse.next();
+  Object.entries(cors).forEach(([k, v]) => response.headers.set(k, v));
+  return response;
 }
 
 export const config = {
-  // Protect all admin routes EXCEPT the login endpoint itself
   matcher: ['/admin/dashboard/:path*', '/api/admin/((?!login|logout).*)'],
 };

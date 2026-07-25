@@ -164,7 +164,8 @@ export default function AppointmentsView() {
     setLoading(true);
     try {
       const token = typeof window !== 'undefined' ? (localStorage.getItem('admin_token') ?? '') : '';
-      const res = await fetch('/api/admin/appointments', {
+      const res = await fetch('https://zhewar.shop/api/admin/appointments', {
+        credentials: 'include',
         headers: token ? { 'X-Admin-Token': token } : {},
       });
       if (res.ok) {
@@ -187,8 +188,9 @@ export default function AppointmentsView() {
 
   async function updateStatus(id: string, status: 'confirmed' | 'cancelled' | 'pending') {
     const token = typeof window !== 'undefined' ? (localStorage.getItem('admin_token') ?? '') : '';
-    await fetch(`/api/admin/appointments/${id}`, {
+    await fetch(`https://zhewar.shop/api/admin/appointments/${id}`, {
       method: 'PATCH',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json', ...(token ? { 'X-Admin-Token': token } : {}) },
       body: JSON.stringify({ status }),
     });

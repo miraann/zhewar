@@ -18,6 +18,7 @@ export default function PushNotificationInit() {
           const adminToken = localStorage.getItem('admin_token') ?? '';
           await fetch('https://zhewar.shop/api/admin/fcm-token', {
             method: 'POST',
+            credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
               ...(adminToken ? { 'X-Admin-Token': adminToken } : {}),
