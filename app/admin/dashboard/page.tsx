@@ -66,14 +66,12 @@ function Dashboard() {
     router.push(`/admin/dashboard?tab=${t}`, { scroll: false });
   }
 
-  async function handleLogout() {
-    const token = typeof window !== 'undefined' ? (localStorage.getItem('admin_token') ?? '') : '';
-    await fetch('/api/admin/logout', {
-      method: 'POST',
-      headers: token ? { 'X-Admin-Token': token } : {},
-    });
+  function handleLogout() {
     localStorage.removeItem('admin_token');
-    window.location.href = '/admin';
+    // Navigate instead of fetch so the cookie is sent with the request
+    // (Capacitor WebView doesn't send cookies in JS fetch() calls).
+    // The GET handler on /api/admin/logout clears the cookie and redirects.
+    window.location.href = '/api/admin/logout';
   }
 
   const activeTab = TABS.find(t => t.id === tab)!;
