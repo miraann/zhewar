@@ -38,24 +38,30 @@ export default function AdminLoginForm() {
     setError('');
     setLoading(true);
 
-    const res = await fetch('/api/admin/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password }),
-    });
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+        credentials: 'include',
+      });
 
-    setLoading(false);
+      setLoading(false);
 
-    if (res.ok) {
-      router.push('/admin/dashboard');
-    } else if (res.status === 429) {
-      const data = await res.json();
-      startCountdown(data.secondsLeft ?? 60);
-      setPassword('');
-    } else {
-      setError('ووشەی نهێنی هەڵەیە.');
-      startCountdown(60);
-      setPassword('');
+      if (res.ok) {
+        window.location.href = '/admin/dashboard';
+      } else if (res.status === 429) {
+        const data = await res.json();
+        startCountdown(data.secondsLeft ?? 60);
+        setPassword('');
+      } else {
+        setError('ووشەی نهێنی هەڵەیە.');
+        startCountdown(60);
+        setPassword('');
+      }
+    } catch {
+      setLoading(false);
+      setError('کێشەی تۆڕ. دووبارە هەوڵبدەرەوە.');
     }
   }
 

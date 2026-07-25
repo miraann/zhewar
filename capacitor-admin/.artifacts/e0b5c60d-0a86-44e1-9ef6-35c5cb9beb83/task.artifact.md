@@ -1,0 +1,3 @@
+- [ ] Sync Capacitor assets `npx cap sync android`
+- [ ] Build debug APK `cd android && ./gradlew assembleDebug`
+- [ ] Verify APK existence
