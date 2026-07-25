@@ -9,7 +9,7 @@ import { formatTimeFull } from './DateTimePicker';
 import html2canvas from 'html2canvas';
 
 const STATUS_LABEL: Record<string, string> = {
-  confirmed: 'دڵنیاکراوە',
+  confirmed: 'بەسەندکراوە',
   pending:   'چاوەڕوان',
   cancelled: 'هەڵوەشاوە',
 };
