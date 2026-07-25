@@ -12,11 +12,8 @@ export default function PushNotificationInit() {
       try {
         const { PushNotifications } = await import('@capacitor/push-notifications');
 
-        const perm = await PushNotifications.requestPermissions();
-        if (perm.receive !== 'granted') return;
-
-        await PushNotifications.register();
-
+        // Add listeners BEFORE calling register() to avoid the race condition
+        // where the registration event fires before the listener is attached.
         PushNotifications.addListener('registration', async ({ value: fcmToken }) => {
           const adminToken = localStorage.getItem('admin_token') ?? '';
           await fetch('https://zhewar.shop/api/admin/fcm-token', {
@@ -37,6 +34,22 @@ export default function PushNotificationInit() {
         PushNotifications.addListener('pushNotificationActionPerformed', () => {
           window.location.href = '/admin/dashboard?tab=appointments';
         });
+
+        // Android 8+ requires a notification channel to exist or notifications
+        // are silently dropped. The channelId must match what the server sends.
+        await PushNotifications.createChannel({
+          id: 'bookings',
+          name: 'بوکینگی نوێ',
+          importance: 5,
+          sound: 'default',
+          vibration: true,
+          visibility: 1,
+        });
+
+        const perm = await PushNotifications.requestPermissions();
+        if (perm.receive !== 'granted') return;
+
+        await PushNotifications.register();
       } catch (e) {
         console.error('Push init error', e);
       }
