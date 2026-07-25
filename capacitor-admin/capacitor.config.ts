@@ -2,7 +2,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.zhewar.admin',
-  appName: 'ژێوار ئەدمین',
+  appName: 'ژێوار عزیز ئەدمین',
   webDir: 'www',
   server: {
     // Loads the live admin dashboard — no separate web build needed

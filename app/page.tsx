@@ -11,7 +11,7 @@ export const revalidate = 30;
 
 const DEFAULT_PROFILE: BarberProfile = {
   id: '',
-  name: 'ژێوار محمود',
+  name: 'ژێوار عزیز',
   tagline: 'شێوازی تۆ، ناسنامەی تۆیە. لێرە کوالێتی و وردەکاری کۆدەبنەوە',
   logo_url: null,
   instagram_url: null,

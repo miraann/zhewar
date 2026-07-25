@@ -89,7 +89,7 @@ export default function Error({ error, reset }: Props) {
 
         {/* Branding */}
         <p className="text-slate-300 text-xs tracking-widest mt-2">
-          ژێوار محمد
+          ژێوار عزیز
         </p>
       </div>
     </div>

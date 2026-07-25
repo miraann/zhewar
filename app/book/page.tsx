@@ -101,7 +101,7 @@ function SplashFallback() {
         />
       </div>
       <div className="text-center space-y-1">
-        <h1 className="font-display text-2xl font-bold text-slate-900">ژێوار محمد</h1>
+        <h1 className="font-display text-2xl font-bold text-slate-900">ژێوار عزیز</h1>
         <p className="text-blue-600/50 text-sm tracking-widest">چاکسازی بەرز</p>
       </div>
     </div>

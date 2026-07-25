@@ -34,7 +34,7 @@ export default function SuccessReceipt({ customer, date, time, appointment, onBo
   const firstName     = customer?.full_name.split(' ')[0];
 
   const wa = encodeURIComponent(
-    `✂️ژێوار محمد – کاتی سەردانیکردن بەسەندکراوە!*\n\n` +
+    `✂️ژێوار عزیز – کاتی سەردانیکردن بەسەندکراوە!*\n\n` +
     `📅 *رووژ:* ${formattedDate}\n` +
     `⏰ *کات:* ${formattedTime}\n\n` +
     `ژمارەی کاتی سەردانیکردن: ${shortId(appointment.id)}`

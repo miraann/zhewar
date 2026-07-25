@@ -152,7 +152,7 @@ export default function BookingSummary({ customer, date, time, confirming, onBac
                 </div>
                 <div className="min-w-0">
                   <p className="text-[10px] text-gray-400 font-medium">سەرتاش</p>
-                  <p className="text-sm font-bold text-gray-700 mt-0.5 leading-tight truncate">{shopName || 'ژێوار محمد'}</p>
+                  <p className="text-sm font-bold text-gray-700 mt-0.5 leading-tight truncate">{shopName || 'ژێوار عزیز'}</p>
                 </div>
               </div>
 

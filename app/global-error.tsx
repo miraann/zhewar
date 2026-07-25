@@ -20,7 +20,7 @@ export default function GlobalError({ error, reset }: Props) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>کێشەیەک ڕوویدا — ژێوار محمد</title>
+        <title>کێشەیەک ڕوویدا — ژێوار عزیز</title>
         <style>{`
           *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
           body {
@@ -125,7 +125,7 @@ export default function GlobalError({ error, reset }: Props) {
               سەرەتا
             </a>
           </div>
-          <p className="brand">ژێوار محمد</p>
+          <p className="brand">ژێوار عزیز</p>
         </div>
       </body>
     </html>

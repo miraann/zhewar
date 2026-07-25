@@ -43,7 +43,7 @@ export default async function AppointmentPage({ params }: { params: { id: string
   return (
     <AppointmentReceiptPage
       appointment={data as unknown as AppointmentFull}
-      shopName={(profile as any)?.name ?? 'ژێوار محمد '}
+      shopName={(profile as any)?.name ?? 'ژێوار عزیز'}
       logoUrl={(profile as any)?.logo_url ?? null}
       confirmUrl={confirmUrl}
       cancelUrl={cancelUrl}
