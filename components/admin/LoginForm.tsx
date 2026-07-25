@@ -43,6 +43,7 @@ export default function AdminLoginForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),
+        credentials: 'include',
       });
 
       setLoading(false);
