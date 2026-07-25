@@ -163,11 +163,15 @@ export default function AppointmentsView() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const token = typeof window !== 'undefined' ? (localStorage.getItem('admin_token') ?? '') : '';
-      const res = await fetch('https://zhewar.shop/api/admin/appointments', {
-        credentials: 'include',
-        headers: token ? { 'X-Admin-Token': token } : {},
-      });
+      const isCapacitor = !!(window as any).Capacitor?.isNativePlatform?.();
+      const token = localStorage.getItem('admin_token') ?? '';
+      const res = await fetch(
+        isCapacitor ? 'https://zhewar.shop/api/admin/appointments' : '/api/admin/appointments',
+        {
+          ...(isCapacitor ? { credentials: 'include' } : {}),
+          headers: token ? { 'X-Admin-Token': token } : {},
+        },
+      );
       if (res.ok) {
         const data = await res.json();
         setAppointments(data as AppointmentFull[]);
@@ -187,13 +191,17 @@ export default function AppointmentsView() {
   }, [load]);
 
   async function updateStatus(id: string, status: 'confirmed' | 'cancelled' | 'pending') {
-    const token = typeof window !== 'undefined' ? (localStorage.getItem('admin_token') ?? '') : '';
-    await fetch(`https://zhewar.shop/api/admin/appointments/${id}`, {
-      method: 'PATCH',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json', ...(token ? { 'X-Admin-Token': token } : {}) },
-      body: JSON.stringify({ status }),
-    });
+    const isCapacitor = !!(window as any).Capacitor?.isNativePlatform?.();
+    const token = localStorage.getItem('admin_token') ?? '';
+    await fetch(
+      isCapacitor ? `https://zhewar.shop/api/admin/appointments/${id}` : `/api/admin/appointments/${id}`,
+      {
+        method: 'PATCH',
+        ...(isCapacitor ? { credentials: 'include' } : {}),
+        headers: { 'Content-Type': 'application/json', ...(token ? { 'X-Admin-Token': token } : {}) },
+        body: JSON.stringify({ status }),
+      },
+    );
     setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a));
   }
 
