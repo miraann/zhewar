@@ -14,6 +14,7 @@ import SettingsEditor          from '@/components/admin/SettingsEditor';
 import PushNotificationInit    from '@/components/admin/PushNotificationInit';
 
 type Tab = 'appointments' | 'schedule' | 'profile' | 'gallery' | 'social' | 'settings';
+type AppFilter = 'upcoming' | 'today' | 'all' | 'pending';
 
 const TABS: { id: Tab; label: string; short: string; icon: React.ElementType }[] = [
   { id: 'appointments', label: 'کاتەکانی سەردانیکردن', short: 'سەردان',  icon: LayoutDashboard },
@@ -24,7 +25,8 @@ const TABS: { id: Tab; label: string; short: string; icon: React.ElementType }[]
   { id: 'settings',     label: 'ڕێکخستنەکان',           short: 'ڕێکخستن', icon: Settings       },
 ];
 
-const VALID_TABS = new Set<Tab>(['appointments', 'schedule', 'profile', 'gallery', 'social', 'settings']);
+const VALID_TABS    = new Set<Tab>(['appointments', 'schedule', 'profile', 'gallery', 'social', 'settings']);
+const APP_FILTER_MAP: Record<string, AppFilter> = { upcoming: 'upcoming', today: 'today', all: 'all', pending: 'pending' };
 
 export default function AdminDashboard() {
   return <Suspense><Dashboard /></Suspense>;
@@ -34,8 +36,17 @@ function Dashboard() {
   useWakeLock();
   const router       = useRouter();
   const searchParams = useSearchParams();
-  const raw          = searchParams.get('tab') as Tab | null;
-  const tab: Tab     = raw && VALID_TABS.has(raw) ? raw : 'appointments';
+  const raw          = searchParams.get('tab') ?? '';
+
+  // Support deep-link sub-tabs: appointments-pending, appointments-today, etc.
+  let tab: Tab;
+  let appFilter: AppFilter = 'upcoming';
+  if (raw.startsWith('appointments-')) {
+    tab = 'appointments';
+    appFilter = APP_FILTER_MAP[raw.slice('appointments-'.length)] ?? 'upcoming';
+  } else {
+    tab = (VALID_TABS.has(raw as Tab) ? raw : 'appointments') as Tab;
+  }
 
   const [pendingCount, setPendingCount] = useState(0);
   const [logoUrl, setLogoUrl]           = useState<string | null>(null);
@@ -192,7 +203,7 @@ function Dashboard() {
 
       {/* ── Tab content ────────────────────────────────────────────────── */}
       <main className="flex-1 max-w-lg mx-auto w-full">
-        {tab === 'appointments' && <AppointmentsView />}
+        {tab === 'appointments' && <AppointmentsView initialFilter={appFilter} />}
         {tab === 'schedule'     && <ScheduleEditor />}
         {tab === 'profile'      && <ProfileEditor />}
         {tab === 'gallery'      && <GalleryEditor />}

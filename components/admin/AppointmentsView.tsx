@@ -88,6 +88,8 @@ const STATUS_LABEL: Record<string, string> = {
 type Filter = 'upcoming' | 'today' | 'all' | 'pending';
 const FILTER_LABELS: Record<Filter, string> = { upcoming: 'داهاتوو', today: 'ئەمڕۆ', all: 'هەموو', pending: 'چاوەڕوان' };
 
+export type AppFilter = Filter;
+
 // ── Brand icon SVGs (18 px, inline-only, no className so they inherit color) ──
 
 const WA_ICON_SM = (
@@ -152,11 +154,14 @@ function Countdown({ appointmentTime }: { appointmentTime: string }) {
 
 // ── Component ──────────────────────────────────────────────────────────────────
 
-export default function AppointmentsView() {
+export default function AppointmentsView({ initialFilter = 'upcoming' }: { initialFilter?: Filter }) {
   const [appointments, setAppointments] = useState<AppointmentFull[]>([]);
   const [loading, setLoading]           = useState(true);
-  const [filter, setFilter]             = useState<Filter>('upcoming');
+  const [filter, setFilter]             = useState<Filter>(initialFilter);
   const [search, setSearch]             = useState('');
+
+  // Sync when the URL changes (e.g. tapping a second notification)
+  useEffect(() => { setFilter(initialFilter); }, [initialFilter]);
   const [preview, setPreview]           = useState<string | null>(null);
   const [failedPhotos, setFailedPhotos] = useState<Set<string>>(new Set());
 

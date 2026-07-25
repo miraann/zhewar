@@ -31,9 +31,9 @@ export default function PushNotificationInit() {
           console.error('FCM registration error', err);
         });
 
-        // Tapping a notification while app is open — navigate to appointments tab
+        // Tapping a notification opens the pending appointments tab directly
         PushNotifications.addListener('pushNotificationActionPerformed', () => {
-          window.location.href = '/admin/dashboard?tab=appointments';
+          window.location.href = '/admin/dashboard?tab=appointments-pending';
         });
 
         // Android 8+ requires a notification channel to exist or notifications
