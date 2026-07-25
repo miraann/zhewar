@@ -79,7 +79,7 @@ export default function AdminLoginForm() {
           placeholder="ووشەی نهێنی ئەدمین بنووسە"
           required
           disabled={isBlocked}
-          dir="rtl"
+          dir="ltr"
           className="w-full h-14 bg-slate-50/50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-900 placeholder-slate-400 text-base outline-none focus:border-blue-500/60 focus:bg-white transition-all pr-12 disabled:opacity-50 disabled:cursor-not-allowed"
         />
         <button
