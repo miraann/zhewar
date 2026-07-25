@@ -39,11 +39,10 @@ export default function AdminLoginForm() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/admin/login', {
+      const res = await fetch('https://zhewar.shop/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),
-        credentials: 'include',
       });
 
       setLoading(false);
