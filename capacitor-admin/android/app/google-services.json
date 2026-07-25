@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "136672779569",
+    "project_id": "zhewar-admin",
+    "storage_bucket": "zhewar-admin.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:136672779569:android:7578f2df3a48e757446410",
+        "android_client_info": {
+          "package_name": "com.zhewar.admin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCWu8gBsiqViktc7y_WHVPqFQQVENLueiU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
