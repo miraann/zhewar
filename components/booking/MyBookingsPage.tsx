@@ -145,7 +145,7 @@ export default function MyBookingsPage() {
                 onChange={(e) => setPhone(normalizeDigits(e.target.value))}
                 placeholder="٠٧٧٠١٢٣٤٥٦٧"
                 dir="ltr"
-                className="w-full h-14 bg-slate-50/50 border border-slate-200 rounded-2xl py-3.5 pr-10 pl-4 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:border-blue-500/60 focus:bg-white transition-colors text-right"
+                className="w-full h-14 bg-slate-50/50 border border-slate-200 rounded-2xl py-3.5 pr-10 pl-4 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:border-blue-500/60 focus:bg-white transition-colors"
               />
             </div>
             {error && <p className="text-red-500 text-xs text-center">{error}</p>}
