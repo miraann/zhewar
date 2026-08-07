@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Search } from 'lucide-react';
+import { CalendarPlus, Search } from 'lucide-react';
 import type { BarberProfile } from '@/lib/types';
 import PWAInstallButton from '@/components/PWAInstallButton';
 
@@ -54,9 +54,18 @@ export default function HeroSection({ profile }: { profile: BarberProfile }) {
           {profile.tagline}
         </p>
 
-        {/* Primary CTA — PWA install (hidden when already installed or unsupported) */}
-        <PWAInstallButton
+        {/* Booking CTA — always visible */}
+        <Link
+          href="/book"
           className="flex items-center justify-center gap-2.5 w-full py-4 rounded-2xl font-bold text-base text-white bg-blue-600 active:bg-blue-700 active:scale-[0.98] transition-all touch-manipulation shadow-md shadow-blue-200/70"
+        >
+          <CalendarPlus className="w-5 h-5" />
+          <span>ناو تۆمار کردن</span>
+        </Link>
+
+        {/* PWA install — only shown when browser supports it and app isn't installed */}
+        <PWAInstallButton
+          className="flex items-center justify-center gap-2.5 w-full py-3 rounded-2xl font-bold text-sm text-blue-600 bg-blue-50 border border-blue-100 active:bg-blue-100 active:scale-[0.98] transition-all touch-manipulation"
         />
 
         {/* Address */}
