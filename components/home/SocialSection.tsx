@@ -86,6 +86,31 @@ export default function SocialSection({ profile }: { profile: BarberProfile }) {
               ? `https://wa.me/${value.replace(/\D/g, '')}`
               : value;
 
+            // Location card — bigger, centred icon + label stacked below
+            if (key === 'maps_url') {
+              return (
+                <a
+                  key={key}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-white border transition-all duration-200 touch-manipulation active:scale-[0.98] cursor-pointer w-full"
+                  style={{ borderColor, boxShadow: activeShadow }}
+                >
+                  <div
+                    className="w-20 h-20 rounded-2xl flex items-center justify-center"
+                    style={{ background: iconBg }}
+                  >
+                    <Icon className="w-10 h-10" style={{ color: iconColor }} />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-neutral-900 font-bold text-xl">{label}</p>
+                    <p className="text-neutral-400 text-xs mt-1">گوگڵ مەپس — گرتە بکە بۆ نەخشە</p>
+                  </div>
+                </a>
+              );
+            }
+
             return (
               <a
                 key={key}
@@ -107,9 +132,7 @@ export default function SocialSection({ profile }: { profile: BarberProfile }) {
                 <div className="flex-1 min-w-0 text-right">
                   <p className="text-neutral-900 font-bold text-base">{label}</p>
                   <p className="text-neutral-400 text-xs mt-0.5 truncate">
-                    {key === 'maps_url'
-                      ? 'گوگڵ مەپس — گرتە بکە بۆ نەخشە'
-                      : (value.startsWith('http') ? value.replace(/https?:\/\/(www\.)?/, '') : value)}
+                    {value.startsWith('http') ? value.replace(/https?:\/\/(www\.)?/, '') : value}
                   </p>
                 </div>
 
