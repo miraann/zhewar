@@ -53,13 +53,25 @@ export default function HeroSection({ profile }: { profile: BarberProfile }) {
           {profile.tagline}
         </p>
 
-        {/* Booking CTA — always visible */}
+        {/* Booking CTA */}
         <Link
           href="/book"
           className="flex items-center justify-center gap-2.5 w-full py-4 rounded-2xl font-bold text-base text-white bg-blue-600 active:bg-blue-700 active:scale-[0.98] transition-all touch-manipulation shadow-md shadow-blue-200/70"
         >
           <CalendarPlus className="w-5 h-5" />
           <span>ناو تۆمار کردن</span>
+        </Link>
+
+        {/* Check bookings */}
+        <p className="text-neutral-400 text-[0.65rem] tracking-wide text-center">
+          کلیک بکە بۆ بیبنی کاتی سەردانیکردن
+        </p>
+        <Link
+          href="/my-bookings"
+          className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl font-bold text-base text-white bg-red-500 active:bg-red-600 touch-manipulation transition-colors"
+        >
+          <Search className="w-4 h-4 flex-shrink-0" />
+          <span>بینین و دڵنیاکردنەوەی کاتی سەردانیکردن</span>
         </Link>
 
         {/* Address */}
@@ -69,24 +81,6 @@ export default function HeroSection({ profile }: { profile: BarberProfile }) {
             {profile.address}
           </p>
         )}
-      </div>
-
-      {/* ── Bottom: check bookings — sits at the bottom in flow, always visible ── */}
-      <div className="flex-shrink-0 flex flex-col items-center gap-2 w-full pb-5 pt-3">
-        <p className="text-neutral-400 text-[0.65rem] tracking-wide text-center">
-          کلیک بکە بۆ بیبنی کاتی سەردانیکردن
-        </p>
-        <Link
-          href="/my-bookings"
-          className="flex items-center justify-center gap-2 w-full max-w-[300px] py-3.5 rounded-2xl font-bold text-base text-white bg-red-500 active:bg-red-600 touch-manipulation transition-colors"
-        >
-          <Search className="w-4 h-4 flex-shrink-0" />
-          <span>بینین و دڵنیاکردنەوەی کاتی سەردانیکردن</span>
-        </Link>
-        <div className="flex flex-col items-center gap-1">
-          <span className="text-neutral-400 text-[0.6rem] tracking-[0.25em]">سەرەتا</span>
-          <div className="w-px h-4 bg-gradient-to-b from-neutral-300 to-transparent" />
-        </div>
       </div>
 
     </div>
