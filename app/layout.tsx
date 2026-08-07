@@ -34,6 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const icon     = logoUrl ?? '/icons/icon.svg';
 
   return {
+    manifest:          '/manifest.json',
     title:             `${shopName} | Zhewar Muhamad`,
     description:       'Book your premium barber experience in seconds. Luxury grooming for the modern gentleman.',
     applicationName:   shopName,

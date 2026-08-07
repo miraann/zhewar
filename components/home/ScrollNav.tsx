@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { CalendarPlus } from 'lucide-react';
 import type { BarberProfile } from '@/lib/types';
+import PWAInstallButton from '@/components/PWAInstallButton';
 
 const SECTIONS = [
   { id: 'home',    label: 'سەرەتا'     },
@@ -117,14 +117,11 @@ export default function ScrollNav({ profile }: { profile: BarberProfile }) {
           ))}
         </nav>
 
-        {/* Book CTA */}
-        <Link
-          href="/book"
+        {/* Install CTA */}
+        <PWAInstallButton
           className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-sm text-white bg-blue-600 active:bg-blue-700 active:scale-[0.97] transition-all touch-manipulation shadow-sm"
-        >
-          <CalendarPlus className="w-4 h-4" />
-          <span>ناو تۆمار کردن</span>
-        </Link>
+          iconSize="w-4 h-4"
+        />
       </div>
     </header>
   );
