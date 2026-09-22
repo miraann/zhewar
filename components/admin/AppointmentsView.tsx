@@ -165,8 +165,8 @@ export default function AppointmentsView({ initialFilter = 'upcoming' }: { initi
   const [preview, setPreview]           = useState<string | null>(null);
   const [failedPhotos, setFailedPhotos] = useState<Set<string>>(new Set());
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (opts: { silent?: boolean } = {}) => {
+    if (!opts.silent) setLoading(true);
     try {
       const isCapacitor = !!(window as any).Capacitor?.isNativePlatform?.();
       const token = localStorage.getItem('admin_token') ?? '';
@@ -182,15 +182,17 @@ export default function AppointmentsView({ initialFilter = 'upcoming' }: { initi
         setAppointments(data as AppointmentFull[]);
       }
     } catch {}
-    setLoading(false);
+    if (!opts.silent) setLoading(false);
   }, []);
 
   useEffect(() => { load(); }, [load]);
 
+  // Background sync: refetch quietly so a DB change (including our own PATCH)
+  // never swaps the list for loading skeletons or resets scroll position.
   useEffect(() => {
     const channel = supabase
       .channel('realtime:appointments:admin')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, () => { load(); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, () => { load({ silent: true }); })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [load]);
