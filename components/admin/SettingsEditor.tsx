@@ -85,12 +85,13 @@ export default function SettingsEditor() {
         icon={Facebook}
         label="فەیسبووک / مێسینجەر"
         descOn="داخڵکردنی بەستەری فەیسبووک پێویستە بۆ تۆمارکردنی کاتی سەردانیکردن"
-        descOff="بەستەری فەیسبووک ئارەزوومەندە — کڕیار دەتوانێت بەبێ تۆمارکردنیشی پێشبکەوێت"
+        descOff="بەشی بەستەری فەیسبووک شاراوەتەوە لە فۆرمی تۆمارکردن"
         value={settings.facebook_required}
         saving={savingKey === 'facebook_required'}
         saved={savedKey  === 'facebook_required'}
         error={savingKey === null && savedKey === null ? error : ''}
         onToggle={() => handleToggle('facebook_required')}
+        offLabel="شاراوەتەوە"
       />
 
       <NotificationStatusCard />
@@ -99,11 +100,11 @@ export default function SettingsEditor() {
 }
 
 function ToggleCard({
-  icon: Icon, label, descOn, descOff, value, saving, saved, error, onToggle,
+  icon: Icon, label, descOn, descOff, value, saving, saved, error, onToggle, offLabel,
 }: {
   icon: React.ElementType; label: string; descOn: string; descOff: string;
   value: boolean; saving: boolean; saved: boolean; error: string;
-  onToggle: () => void;
+  onToggle: () => void; offLabel?: string;
 }) {
   return (
     <div className={[
@@ -157,7 +158,7 @@ function ToggleCard({
               : 'bg-slate-100 text-slate-500 border border-slate-200',
           ].join(' ')}>
             <span className={`w-1.5 h-1.5 rounded-full ${value ? 'bg-emerald-500' : 'bg-slate-400'}`} />
-            {value ? 'پێویستە' : 'ئارەزوومەندە'}
+            {value ? 'پێویستە' : (offLabel ?? 'ئارەزوومەندە')}
           </span>
         )}
       </div>
