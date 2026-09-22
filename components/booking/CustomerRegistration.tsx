@@ -166,7 +166,11 @@ export default function CustomerRegistration({ onComplete }: Props) {
     setError('');
     setSaving(true);
     let saved: Customer | null = null;
+    let savedToken: string | null = null;
     try {
+      let storedToken: string | null = null;
+      try { storedToken = localStorage.getItem('luxe_customer_token'); } catch {}
+
       const res = await fetch('/api/register-customer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -176,16 +180,24 @@ export default function CustomerRegistration({ onComplete }: Props) {
           photo_url:    photoUrl || null,
           facebook_id:  fbId || messengerUrl.trim() || null,
           notes:        notes.trim() || null,
+          access_token: storedToken || undefined,
         }),
       });
       const json = await res.json();
-      if (res.ok && json?.id) saved = json as Customer;
+      if (res.ok && json?.id) {
+        saved = json as Customer;
+        savedToken = typeof json.access_token === 'string' ? json.access_token : null;
+      }
     } catch {}
     setSaving(false);
     if (saved) {
       try {
         localStorage.setItem('luxe_customer', JSON.stringify(saved));
         localStorage.setItem('luxe_registered', '1');
+        // Only present on first registration/an already-recognized update —
+        // keep the existing stored token otherwise so this device stays
+        // "recognized" for the phone number it originally registered.
+        if (savedToken) localStorage.setItem('luxe_customer_token', savedToken);
       } catch {}
       onComplete(saved);
     } else {

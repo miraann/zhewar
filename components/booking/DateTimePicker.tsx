@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { Clock, BanIcon, Pencil } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
 import type { WorkingSchedule, Customer } from '@/lib/types';
 
 const DAY_SHORT = ['یەکشەممە','دووشەممە','سێشەممە','چوارشەممە','پێنجشەممە','هەینی','شەممە'];
@@ -62,14 +61,13 @@ export default function DateTimePicker({
   const [loadingSlots,   setLoadingSlots]   = useState(false);
   const [slotRefreshKey, setSlotRefreshKey] = useState(0);
 
+  // Used to be a Supabase Realtime subscription with the anon key, which
+  // required `appointments` (customer PII incl. names/phones) to be
+  // readable by anon — a data exposure hole now closed by RLS. Poll the
+  // scoped, PII-free /api/available-slots endpoint instead.
   useEffect(() => {
-    const channel = supabase
-      .channel('realtime:appointments:slots')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, () => {
-        setSlotRefreshKey(k => k + 1);
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    const interval = setInterval(() => setSlotRefreshKey(k => k + 1), 15000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -79,11 +77,10 @@ export default function DateTimePicker({
       setLoadingSlots(true);
       const start = new Date(selectedDate!); start.setHours(0,0,0,0);
       const end   = new Date(selectedDate!); end.setHours(23,59,59,999);
-      const { data } = await supabase
-        .from('appointments').select('appointment_time, status')
-        .gte('appointment_time', start.toISOString())
-        .lte('appointment_time', end.toISOString())
-        .neq('status', 'cancelled');
+      const res = await fetch(
+        `/api/available-slots?start=${encodeURIComponent(start.toISOString())}&end=${encodeURIComponent(end.toISOString())}`,
+      );
+      const data: { appointment_time: string; status: string }[] | null = res.ok ? await res.json() : null;
       if (!dead && data) {
         const p = new Set<string>();
         const c = new Set<string>();

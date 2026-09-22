@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Phone, Calendar, Clock, Search, ChevronRight } from 'lucide-react';
 
@@ -64,21 +63,32 @@ export default function MyBookingsPage() {
   const [loading, setLoading]   = useState(false);
   const [searched, setSearched] = useState(false);
   const [error, setError]       = useState('');
+  const searchedPhoneRef = useRef('');
 
+  // Status updates (e.g. pending -> confirmed) used to arrive via a Supabase
+  // Realtime subscription with the public anon key. That relied on
+  // `appointments` being readable by anon, which is a data-exposure hole
+  // (anyone could subscribe and watch every customer's appointment changes)
+  // — RLS now locks that table to the server only, so we poll our own
+  // phone-gated API instead.
   useEffect(() => {
     if (!bookings?.length) return;
-    const ids = bookings.map(b => b.id);
-    const channel = supabase
-      .channel('realtime:appointments:customer')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'appointments' }, (payload) => {
-        const updated = payload.new as { id: string; status: string };
-        if (ids.includes(updated.id)) {
-          setBookings(prev => prev?.map(b => b.id === updated.id ? { ...b, status: updated.status } : b) ?? prev);
-        }
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [bookings]);
+    const phoneToPoll = searchedPhoneRef.current;
+    if (!phoneToPoll) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch('/api/my-bookings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: phoneToPoll }),
+        });
+        if (res.ok) setBookings(await res.json());
+      } catch {}
+    }, 20000);
+
+    return () => clearInterval(interval);
+  }, [bookings?.length]);
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -105,6 +115,7 @@ export default function MyBookingsPage() {
     setSearched(true);
 
     if (fetchErr) { setError('کێشەیەک ڕوویدا، تکایە دووبارە هەوڵبدە'); return; }
+    searchedPhoneRef.current = p;
     setBookings(data);
   }
 

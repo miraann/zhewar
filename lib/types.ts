@@ -8,13 +8,6 @@ export interface Customer {
   created_at: string;
 }
 
-export interface Service {
-  id: string;
-  name: string;
-  duration: number;
-  price: number;
-}
-
 export interface Appointment {
   id: string;
   customer_id: string;
@@ -80,7 +73,6 @@ export type Database = {
   public: {
     Tables: {
       customers:        { Row: Customer;       Insert: Omit<Customer, 'id'|'created_at'>;       Update: Partial<Omit<Customer, 'id'|'created_at'>>       };
-      services:         { Row: Service;        Insert: Omit<Service, 'id'>;                     Update: Partial<Omit<Service, 'id'>>                     };
       appointments:     { Row: Appointment;    Insert: Omit<Appointment, 'id'|'created_at'>;    Update: Partial<Omit<Appointment, 'id'|'created_at'>>    };
       working_schedule: { Row: WorkingSchedule;Insert: Omit<WorkingSchedule, 'id'>;             Update: Partial<Omit<WorkingSchedule, 'id'>>             };
       blocked_dates:    { Row: BlockedDate;    Insert: Omit<BlockedDate, 'id'|'created_at'>;    Update: Partial<Omit<BlockedDate, 'id'|'created_at'>>    };

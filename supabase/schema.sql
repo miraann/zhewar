@@ -8,23 +8,16 @@ CREATE TABLE IF NOT EXISTS customers (
   id           UUID         DEFAULT gen_random_uuid() PRIMARY KEY,
   full_name    TEXT         NOT NULL,
   phone_number TEXT         NOT NULL UNIQUE,
+  photo_url    TEXT,
   facebook_id  TEXT,
+  notes        TEXT,
   created_at   TIMESTAMPTZ  DEFAULT NOW()
-);
-
--- ── خشتەی خزمەتگوزارییەکان ─────────────────
-CREATE TABLE IF NOT EXISTS services (
-  id       UUID          DEFAULT gen_random_uuid() PRIMARY KEY,
-  name     TEXT          NOT NULL,
-  duration INTEGER       NOT NULL,
-  price    NUMERIC(10,2) NOT NULL
 );
 
 -- ── خشتەی نەوبەتەکان ───────────────────────
 CREATE TABLE IF NOT EXISTS appointments (
   id               UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
   customer_id      UUID        NOT NULL REFERENCES customers(id)  ON DELETE CASCADE,
-  service_id       UUID        NOT NULL REFERENCES services(id)   ON DELETE CASCADE,
   appointment_time TIMESTAMPTZ NOT NULL,
   status           TEXT        NOT NULL DEFAULT 'pending'
                    CHECK (status IN ('pending', 'confirmed', 'cancelled')),
@@ -72,15 +65,26 @@ CREATE TABLE IF NOT EXISTS gallery_photos (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- ── داتای دەستپێک ──────────────────────────
+-- ── خشتەی بەستەرە کۆمەڵایەتییەکان ──────────
+CREATE TABLE IF NOT EXISTS social_links (
+  id         UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
+  title      TEXT        NOT NULL DEFAULT '',
+  url        TEXT        NOT NULL,
+  image_url  TEXT,
+  sort_order INTEGER     NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
 
-INSERT INTO services (name, duration, price) VALUES
-  ('بریندنی موی کلاسیکی',       30,  35.00),
-  ('رووتراشی بە دەسمالی گەرم',  45,  50.00),
-  ('بریندنی مو و چاکسازی ریش',  60,  65.00),
-  ('چاکسازی شاهانە',            90,  95.00),
-  ('بریندنی موی منداڵ',         25,  28.00)
-ON CONFLICT DO NOTHING;
+-- ── تۆکنەکانی ئاگادارکردنەوەی ئەدمین (FCM) ─
+-- Server-only: written/read exclusively via the service-role key from
+-- /api/admin/fcm-token — never exposed to the anon role.
+CREATE TABLE IF NOT EXISTS admin_fcm_tokens (
+  id         UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
+  token      TEXT        NOT NULL UNIQUE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ── داتای دەستپێک ──────────────────────────
 
 INSERT INTO working_schedule (day_of_week, is_active, start_time, end_time, slot_interval) VALUES
   (0, false, '10:00', '17:00', 60),
@@ -106,18 +110,30 @@ INSERT INTO gallery_photos (photo_url, caption, sort_order) VALUES
 ON CONFLICT DO NOTHING;
 
 -- ── سیاسەتی RLS ────────────────────────────
+-- `customers` and `appointments` hold customer PII (name, phone, photo,
+-- Facebook id, notes) and are never queried with the anon key — every
+-- read/write goes through Next.js API routes using the service-role key,
+-- which bypasses RLS entirely. So the anon/authenticated roles get NO
+-- policy on these two tables at all (RLS default-denies with no matching
+-- policy). `admin_fcm_tokens` is the same: server-only, no anon access.
+--
+-- The remaining tables back public, read-only storefront content (working
+-- hours, blocked dates, shop profile, gallery, social links) that the
+-- client legitimately reads directly with the anon key — those stay
+-- SELECT-only for anon; all writes to them go through the admin-authenticated
+-- API routes with the service-role key.
 ALTER TABLE customers        ENABLE ROW LEVEL SECURITY;
-ALTER TABLE services         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE appointments     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE working_schedule ENABLE ROW LEVEL SECURITY;
 ALTER TABLE blocked_dates    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE barber_profile   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE gallery_photos   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE social_links     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE admin_fcm_tokens ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "public_all_services"         ON services          FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "public_all_customers"        ON customers         FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "public_all_appointments"     ON appointments      FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "public_read_schedule"        ON working_schedule  FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "public_read_blocked"         ON blocked_dates     FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "public_all_profile"          ON barber_profile    FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "public_all_gallery"          ON gallery_photos    FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "public_read_schedule" ON working_schedule   FOR SELECT USING (true);
+CREATE POLICY "public_read_blocked"  ON blocked_dates      FOR SELECT USING (true);
+CREATE POLICY "public_read_profile"  ON barber_profile     FOR SELECT USING (true);
+CREATE POLICY "public_read_gallery"  ON gallery_photos     FOR SELECT USING (true);
+CREATE POLICY "public_read_social"   ON social_links       FOR SELECT USING (true);
+-- customers, appointments, admin_fcm_tokens: intentionally no anon policy.

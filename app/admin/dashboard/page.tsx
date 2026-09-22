@@ -77,21 +77,35 @@ function Dashboard() {
     return () => cancel(id);
   }, []);
 
+  // Used to query `appointments` directly with the anon key, which
+  // required that table to be readable by anon — a data exposure hole now
+  // closed by RLS (customers/appointments only readable via the
+  // admin-authenticated API with the service-role key). Poll that route
+  // and derive the count client-side instead of subscribing to Realtime.
   useEffect(() => {
     function fetchPending() {
-      supabase
-        .from('appointments')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'pending')
-        .gte('appointment_time', new Date().toISOString())
-        .then(({ count }) => setPendingCount(count ?? 0));
+      const isCapacitor = !!(window as any).Capacitor?.isNativePlatform?.();
+      const token = localStorage.getItem('admin_token') ?? '';
+      fetch(
+        isCapacitor ? 'https://zhewar.shop/api/admin/appointments' : '/api/admin/appointments',
+        {
+          ...(isCapacitor ? { credentials: 'include' } : {}),
+          headers: token ? { 'X-Admin-Token': token } : {},
+        },
+      )
+        .then((res) => (res.ok ? res.json() : []))
+        .then((data: { status: string; appointment_time: string }[]) => {
+          const now = Date.now();
+          const count = data.filter(
+            (a) => a.status === 'pending' && new Date(a.appointment_time).getTime() >= now,
+          ).length;
+          setPendingCount(count);
+        })
+        .catch(() => {});
     }
     fetchPending();
-    const channel = supabase
-      .channel('realtime:appointments:pending')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, fetchPending)
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    const interval = setInterval(fetchPending, 15000);
+    return () => clearInterval(interval);
   }, []);
 
   function setTab(t: Tab) {
