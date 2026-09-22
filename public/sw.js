@@ -1,4 +1,4 @@
-const CACHE_NAME = 'zhewar-pwa-v2'; // bumped — forces old cache eviction on all clients
+const CACHE_NAME = 'zhewar-pwa-v3'; // bumped — forces old cache eviction on all clients
 
 // App shell pages pre-cached on install for offline support
 const PRECACHE = ['/', '/book', '/my-bookings', '/offline'];
@@ -61,7 +61,25 @@ self.addEventListener('fetch', (e) => {
   // ── Rule 4: Non-Supabase cross-origin requests — don't intercept
   if (url.hostname !== self.location.hostname) return;
 
-  // ── Rule 5: Same-origin app shell + static assets — network-first, offline fallback
+  // ── Rule 5: Next.js build output is content-hashed and immutable — once
+  //    cached it never needs to be re-fetched, so serve it cache-first. This
+  //    is what makes repeat loads (and every APK WebView cold start) instant
+  //    instead of re-downloading the same JS/CSS on every visit.
+  if (url.pathname.startsWith('/_next/static/')) {
+    e.respondWith(
+      caches.open(CACHE_NAME).then(async (cache) => {
+        const cached = await cache.match(request);
+        if (cached) return cached;
+        const res = await fetch(request);
+        if (res.ok) cache.put(request, res.clone());
+        return res;
+      })
+    );
+    return;
+  }
+
+  // ── Rule 6: Everything else same-origin (pages, manifest, icons) —
+  //    network-first, offline fallback
   e.respondWith(
     fetch(request)
       .then((res) => {

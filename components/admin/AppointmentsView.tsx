@@ -228,6 +228,12 @@ export default function AppointmentsView({ initialFilter = 'upcoming' }: { initi
     return true;
   });
 
+  // Pending requests are triaged newest-first by when they were booked;
+  // other tabs stay in chronological appointment-time order (a schedule).
+  if (filter === 'pending') {
+    filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }
+
   const pendingCount     = appointments.filter(a => a.status === 'pending'   && new Date(a.appointment_time) >= now).length;
   const allPendingCount  = appointments.filter(a => a.status === 'pending').length;
   const confirmedCount = appointments.filter(a => a.status === 'confirmed' && new Date(a.appointment_time) >= now).length;
@@ -433,6 +439,8 @@ export default function AppointmentsView({ initialFilter = 'upcoming' }: { initi
                             src={appt.customers.photo_url}
                             alt={appt.customers.full_name}
                             className="w-full h-full object-cover"
+                            loading="lazy"
+                            decoding="async"
                             onError={() => setFailedPhotos(prev => new Set(prev).add(appt.id))}
                           />
                         </button>

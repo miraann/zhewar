@@ -3,7 +3,6 @@ import SocialSection from '@/components/home/SocialSection';
 import ScrollNav from '@/components/home/ScrollNav';
 import GallerySection from '@/components/home/GallerySection';
 import LinksSection from '@/components/home/LinksSection';
-import ClientOnly from '@/components/ClientOnly';
 import type { BarberProfile, GalleryPhoto, SocialLink } from '@/lib/types';
 import { createClient } from '@supabase/supabase-js';
 
@@ -51,7 +50,7 @@ export default async function HomePage() {
   return (
     <>
       {/* Fixed nav sits above the snap container */}
-      <ClientOnly><ScrollNav profile={profile} /></ClientOnly>
+      <ScrollNav profile={profile} />
 
       {/*
         Scroll-snap root — fixed to the viewport so the body never scrolls.
@@ -75,7 +74,7 @@ export default async function HomePage() {
           id="gallery"
           className="relative h-screen w-full snap-start snap-always overflow-hidden flex flex-col justify-center"
         >
-          <ClientOnly><GallerySection photos={gallery} /></ClientOnly>
+          <GallerySection photos={gallery} />
         </section>
 
         {/* ── 3. Links / Social Posts ───────────────────────────────────── */}
@@ -83,7 +82,7 @@ export default async function HomePage() {
           id="links"
           className="relative h-screen w-full snap-start snap-always overflow-hidden flex flex-col justify-center"
         >
-          <ClientOnly><LinksSection links={socialLinks} /></ClientOnly>
+          <LinksSection links={socialLinks} />
         </section>
 
         {/* ── 4. Connect + Footer ───────────────────────────────────────── */}

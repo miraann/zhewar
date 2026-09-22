@@ -4,7 +4,8 @@
 
 @font-face {
   font-family: 'Kurdish';
-  src: url('/font/kurdish.ttf') format('truetype');
+  src: url('/font/kurdish.woff2') format('woff2'),
+       url('/font/kurdish.ttf') format('truetype');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;

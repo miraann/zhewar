@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { CalendarPlus, Search } from 'lucide-react';
 import type { BarberProfile } from '@/lib/types';
 
@@ -26,7 +27,7 @@ export default function HeroSection({ profile }: { profile: BarberProfile }) {
           <div className="absolute inset-[3px] rounded-full bg-white">
             <div className="absolute inset-[2px] rounded-full overflow-hidden bg-neutral-100">
               {profile.logo_url ? (
-                <img src={profile.logo_url} alt={profile.name} className="w-full h-full object-cover" />
+                <Image src={profile.logo_url} alt={profile.name} fill sizes="(min-width: 640px) 288px, 208px" className="object-cover" priority />
               ) : (
                 <div className="w-full h-full bg-neutral-100 flex items-center justify-center">
                   <span className="text-blue-500 text-5xl">✂</span>

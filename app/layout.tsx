@@ -74,6 +74,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ckb" dir="rtl" className={inter.variable} suppressHydrationWarning>
+      <head>
+        {/* Critical site-wide font — preloaded so text doesn't wait for CSS parsing to discover it */}
+        <link rel="preload" href="/font/kurdish.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+      </head>
       <body className="text-neutral-900 antialiased min-h-screen bg-white overflow-x-hidden" suppressHydrationWarning>
         {/* ── Global background ── */}
         <div aria-hidden className="fixed inset-0 -z-10 overflow-hidden">

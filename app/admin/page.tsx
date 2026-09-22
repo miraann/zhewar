@@ -2,6 +2,7 @@ import { timingSafeEqual } from 'crypto';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
+import Image from 'next/image';
 import AdminLoginForm from '@/components/admin/LoginForm';
 
 function isValidSession(value: string): boolean {
@@ -47,10 +48,13 @@ export default async function AdminLoginPage() {
             {/* Static logo — does not rotate */}
             <div className="absolute inset-[5px] rounded-full bg-white overflow-hidden flex items-center justify-center">
               {logoUrl ? (
-                <img
+                <Image
                   src={logoUrl}
                   alt="shop logo"
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="256px"
+                  className="object-cover"
+                  priority
                 />
               ) : (
                 <svg viewBox="0 0 24 24" className="w-7 h-7" fill="none" stroke="#3b82f6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">

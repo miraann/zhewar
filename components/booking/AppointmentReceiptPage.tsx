@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { QRCodeCanvas } from 'qrcode.react';
 import { useEffect, useRef, useState } from 'react';
 import { formatTimeFull } from './DateTimePicker';
-import html2canvas from 'html2canvas';
 
 const STATUS_LABEL: Record<string, string> = {
   confirmed: 'بەسەندکراوە',
@@ -77,6 +76,7 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl 
 
   async function handleDownload() {
     if (!cardRef.current) return;
+    const { default: html2canvas } = await import('html2canvas');
     try {
       const kFont = new FontFace('UniSalar', 'url(/font/kurdish.ttf)');
       await kFont.load();

@@ -2,16 +2,21 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useWakeLock } from '@/hooks/useWakeLock';
 import { Clock, ImageIcon, User, LayoutDashboard, LogOut, Share2, Settings } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import ScheduleEditor   from '@/components/admin/ScheduleEditor';
 import AppointmentsView from '@/components/admin/AppointmentsView';
-import ProfileEditor    from '@/components/admin/ProfileEditor';
-import GalleryEditor    from '@/components/admin/GalleryEditor';
-import SocialEditor     from '@/components/admin/SocialEditor';
-import SettingsEditor          from '@/components/admin/SettingsEditor';
 import PushNotificationInit    from '@/components/admin/PushNotificationInit';
+
+// Only the default "appointments" tab loads eagerly — the rest are fetched
+// on demand so switching tabs doesn't bloat the dashboard's initial bundle
+// (this page is also what the Capacitor APK boots straight into).
+const ScheduleEditor = dynamic(() => import('@/components/admin/ScheduleEditor'));
+const ProfileEditor  = dynamic(() => import('@/components/admin/ProfileEditor'));
+const GalleryEditor  = dynamic(() => import('@/components/admin/GalleryEditor'));
+const SocialEditor   = dynamic(() => import('@/components/admin/SocialEditor'));
+const SettingsEditor = dynamic(() => import('@/components/admin/SettingsEditor'));
 
 type Tab = 'appointments' | 'schedule' | 'profile' | 'gallery' | 'social' | 'settings';
 type AppFilter = 'upcoming' | 'today' | 'all' | 'pending';
@@ -54,6 +59,22 @@ function Dashboard() {
   useEffect(() => {
     supabase.from('barber_profile').select('logo_url').single()
       .then(({ data }) => { if (data?.logo_url) setLogoUrl(data.logo_url); });
+  }, []);
+
+  // Warm the other tabs' code in the background once the browser is idle, so
+  // the first tab switch doesn't pay for a chunk download — without this,
+  // the initial load stays lean but every first tap on a new tab would.
+  useEffect(() => {
+    const idle = (window as any).requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 2000));
+    const cancel = (window as any).cancelIdleCallback ?? clearTimeout;
+    const id = idle(() => {
+      import('@/components/admin/ScheduleEditor');
+      import('@/components/admin/ProfileEditor');
+      import('@/components/admin/GalleryEditor');
+      import('@/components/admin/SocialEditor');
+      import('@/components/admin/SettingsEditor');
+    });
+    return () => cancel(id);
   }, []);
 
   useEffect(() => {
