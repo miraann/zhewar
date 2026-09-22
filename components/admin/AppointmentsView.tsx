@@ -239,6 +239,16 @@ export default function AppointmentsView({ initialFilter = 'upcoming' }: { initi
   const confirmedCount = appointments.filter(a => a.status === 'confirmed' && new Date(a.appointment_time) >= now).length;
   const todayCount     = appointments.filter(a => { const dt = new Date(a.appointment_time); return dt >= today && dt < todayEnd; }).length;
 
+  // Counts shown on the segmented-control tabs — mirror each tab's own filter exactly.
+  const todayConfirmedCount = appointments.filter(a => { const dt = new Date(a.appointment_time); return dt >= today && dt < todayEnd && a.status === 'confirmed'; }).length;
+  const allTabCount         = appointments.filter(a => new Date(a.appointment_time) >= yesterday).length;
+  const tabCounts: Record<Filter, number> = {
+    upcoming: confirmedCount,
+    today:    todayConfirmedCount,
+    all:      allTabCount,
+    pending:  allPendingCount,
+  };
+
   return (
     <div className="relative pb-16">
 
@@ -316,7 +326,15 @@ export default function AppointmentsView({ initialFilter = 'upcoming' }: { initi
               ].join(' ')}
               style={filter === f ? { boxShadow: '0 1px 4px rgba(0,0,0,0.08)' } : undefined}
             >
-              {FILTER_LABELS[f]}
+              <span className="inline-flex items-center gap-1">
+                {FILTER_LABELS[f]}
+                <span className={[
+                  'inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 rounded-full text-[9px] font-bold',
+                  filter === f ? 'bg-blue-50 text-blue-600' : 'bg-slate-200/80 text-slate-500',
+                ].join(' ')}>
+                  {tabCounts[f]}
+                </span>
+              </span>
             </button>
           ))}
         </div>
