@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Loader2, ScanFace, Facebook } from 'lucide-react';
+import NotificationStatusCard from './NotificationStatusCard';
 
 interface Settings {
   face_scan_enabled: boolean;
@@ -77,6 +78,8 @@ export default function SettingsEditor() {
         error={savingKey === null && savedKey === null ? error : ''}
         onToggle={() => handleToggle('facebook_required')}
       />
+
+      <NotificationStatusCard />
     </div>
   );
 }
