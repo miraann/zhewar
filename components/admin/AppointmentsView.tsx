@@ -365,7 +365,7 @@ export default function AppointmentsView({ initialFilter = 'upcoming' }: { initi
         </button>
 
         {/* Refresh */}
-        <button onClick={load} className="p-1.5 text-slate-400 active:text-slate-700 touch-manipulation rounded-xl active:bg-slate-100 transition-colors">
+        <button onClick={() => load()} className="p-1.5 text-slate-400 active:text-slate-700 touch-manipulation rounded-xl active:bg-slate-100 transition-colors">
           <RefreshCw className={`w-[15px] h-[15px] ${loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
