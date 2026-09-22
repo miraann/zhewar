@@ -3,18 +3,23 @@ import { cookies } from 'next/headers';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
 
-function isAdmin(): boolean {
-  const session = cookies().get('admin_session');
-  const token   = process.env.ADMIN_TOKEN ?? '';
-  if (!session?.value || !token) return false;
-  const bufA = Buffer.from(session.value);
-  const bufB = Buffer.from(token);
+function safeEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
   if (bufA.length !== bufB.length) return false;
   return timingSafeEqual(bufA, bufB);
 }
 
-export async function GET() {
-  if (!isAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+function isAdmin(req: NextRequest): boolean {
+  const token = process.env.ADMIN_TOKEN ?? '';
+  if (!token) return false;
+  const cookie = cookies().get('admin_session')?.value ?? '';
+  const header = req.headers.get('X-Admin-Token') ?? '';
+  return safeEqual(cookie, token) || safeEqual(header, token);
+}
+
+export async function GET(req: NextRequest) {
+  if (!isAdmin(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { data, error } = await getSupabaseAdmin()
     .from('barber_profile')
@@ -29,7 +34,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  if (!isAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!isAdmin(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await req.json();
   const patch: Record<string, boolean> = {};

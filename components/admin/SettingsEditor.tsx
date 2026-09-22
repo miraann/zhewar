@@ -17,7 +17,15 @@ export default function SettingsEditor() {
   const [error, setError]         = useState('');
 
   useEffect(() => {
-    fetch('/api/admin/settings')
+    const isCapacitor = !!(window as any).Capacitor?.isNativePlatform?.();
+    const token = localStorage.getItem('admin_token') ?? '';
+    fetch(
+      isCapacitor ? 'https://zhewar.shop/api/admin/settings' : '/api/admin/settings',
+      {
+        ...(isCapacitor ? { credentials: 'include' } : {}),
+        headers: token ? { 'X-Admin-Token': token } : {},
+      },
+    )
       .then((r) => r.json())
       .then((d) => setSettings({ face_scan_enabled: d.face_scan_enabled ?? true, facebook_required: d.facebook_required ?? true }))
       .catch(() => {})
@@ -31,11 +39,17 @@ export default function SettingsEditor() {
     setSavedKey(null);
     setError('');
     try {
-      const res = await fetch('/api/admin/settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ [key]: next }),
-      });
+      const isCapacitor = !!(window as any).Capacitor?.isNativePlatform?.();
+      const token = localStorage.getItem('admin_token') ?? '';
+      const res = await fetch(
+        isCapacitor ? 'https://zhewar.shop/api/admin/settings' : '/api/admin/settings',
+        {
+          method: 'POST',
+          ...(isCapacitor ? { credentials: 'include' } : {}),
+          headers: { 'Content-Type': 'application/json', ...(token ? { 'X-Admin-Token': token } : {}) },
+          body: JSON.stringify({ [key]: next }),
+        },
+      );
       if (!res.ok) throw new Error();
       setSavedKey(key);
       setTimeout(() => setSavedKey(null), 2000);
