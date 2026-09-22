@@ -1,1 +1,3 @@
 node_modules/
+.gradle_home/
+.idea/

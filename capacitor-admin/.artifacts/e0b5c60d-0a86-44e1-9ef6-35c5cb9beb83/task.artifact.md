@@ -1,3 +1,3 @@
-- [ ] Sync Capacitor assets `npx cap sync android`
-- [ ] Build debug APK `cd android && ./gradlew assembleDebug`
-- [ ] Verify APK existence
+- [x] Second Rebuild: Sync Capacitor assets `npx cap sync android`
+- [x] Second Rebuild: Build debug APK `cd android && ./gradlew assembleDebug`
+- [x] Second Rebuild: Verify APK existence
