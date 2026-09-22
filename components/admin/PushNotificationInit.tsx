@@ -16,15 +16,22 @@ export default function PushNotificationInit() {
         // where the registration event fires before the listener is attached.
         PushNotifications.addListener('registration', async ({ value: fcmToken }) => {
           const adminToken = localStorage.getItem('admin_token') ?? '';
-          await fetch('https://zhewar.shop/api/admin/fcm-token', {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(adminToken ? { 'X-Admin-Token': adminToken } : {}),
-            },
-            body: JSON.stringify({ token: fcmToken }),
-          });
+          try {
+            const res = await fetch('https://zhewar.shop/api/admin/fcm-token', {
+              method: 'POST',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(adminToken ? { 'X-Admin-Token': adminToken } : {}),
+              },
+              body: JSON.stringify({ token: fcmToken }),
+            });
+            if (!res.ok) {
+              console.error('FCM token registration failed', res.status, await res.text().catch(() => ''));
+            }
+          } catch (e) {
+            console.error('FCM token registration request failed', e);
+          }
         });
 
         PushNotifications.addListener('registrationError', (err) => {

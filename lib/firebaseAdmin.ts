@@ -14,7 +14,7 @@ export async function sendPushToAdmins(
   body: string,
   data?: Record<string, string>,
 ) {
-  if (!tokens.length) return;
+  if (!tokens.length) return [];
   const messaging = getMessaging(getApp());
   const results = await Promise.allSettled(
     tokens.map((token) =>
@@ -32,5 +32,12 @@ export async function sendPushToAdmins(
       }),
     ),
   );
+
+  results.forEach((r, i) => {
+    if (r.status === 'rejected') {
+      console.error('FCM send failed for token ending', tokens[i].slice(-8), r.reason?.code ?? r.reason);
+    }
+  });
+
   return results;
 }

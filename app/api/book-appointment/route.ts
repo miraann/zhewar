@@ -50,13 +50,28 @@ export async function POST(req: NextRequest) {
   const tokens = (tokenRows ?? []).map((r: { token: string }) => r.token);
 
   // Fire-and-forget push — don't block the response
-  if (tokens.length && process.env.FIREBASE_SERVICE_ACCOUNT) {
+  if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
+    console.error('FIREBASE_SERVICE_ACCOUNT is not set — skipping admin push notification');
+  } else if (!tokens.length) {
+    console.warn('No admin_fcm_tokens registered — skipping admin push notification');
+  } else {
     sendPushToAdmins(
       tokens,
       'داواکاری نوێ 📅',
       `${customer?.full_name ?? 'کڕیار'} — ${formatDateTime(body.appointment_time)}`,
       { appointmentId: data.id, tab: 'appointments' },
-    ).catch(console.error);
+    )
+      .then(async (results) => {
+        const deadTokens = results
+          .map((r, i) => ({ r, token: tokens[i] }))
+          .filter(({ r }) => r.status === 'rejected' && ['messaging/registration-token-not-registered', 'messaging/invalid-registration-token'].includes((r as PromiseRejectedResult).reason?.code))
+          .map(({ token }) => token);
+
+        if (deadTokens.length) {
+          await supabase.from('admin_fcm_tokens').delete().in('token', deadTokens);
+        }
+      })
+      .catch(console.error);
   }
 
   return NextResponse.json(data);
