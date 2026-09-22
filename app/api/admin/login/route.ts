@@ -84,11 +84,16 @@ export async function POST(request: NextRequest) {
   // Return token in body so Capacitor WebView can store it in localStorage
   // and use it as X-Admin-Token header for subsequent API calls (cookies are
   // not sent with JS fetch() in the WebView even for same-URL origins).
+  const isProd = process.env.NODE_ENV === 'production';
   const res = NextResponse.json({ success: true, token: process.env.ADMIN_TOKEN! }, { headers: corsHeaders(origin) });
   res.cookies.set('admin_session', process.env.ADMIN_TOKEN!, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'none',
+    // SameSite=None is only valid when Secure is also set — required for the
+    // cross-origin Capacitor WebView request in production, but on plain
+    // http://localhost dev, Secure=false + SameSite=None makes browsers
+    // reject the cookie outright, so the session never gets stored.
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
     maxAge: 60 * 60 * 8,
     path: '/',
   });
