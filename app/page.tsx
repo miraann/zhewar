@@ -46,11 +46,12 @@ async function getData() {
 
 export default async function HomePage() {
   const { profile, gallery, socialLinks } = await getData();
+  const hasGallery = gallery.length > 0;
 
   return (
     <>
       {/* Fixed nav sits above the snap container */}
-      <ScrollNav profile={profile} />
+      <ScrollNav profile={profile} hasGallery={hasGallery} />
 
       {/*
         Scroll-snap root — fixed to the viewport so the body never scrolls.
@@ -70,12 +71,14 @@ export default async function HomePage() {
         </section>
 
         {/* ── 2. Gallery ────────────────────────────────────────────────── */}
-        <section
-          id="gallery"
-          className="relative h-screen w-full snap-start snap-always overflow-hidden flex flex-col justify-center"
-        >
-          <GallerySection photos={gallery} />
-        </section>
+        {hasGallery && (
+          <section
+            id="gallery"
+            className="relative h-screen w-full snap-start snap-always overflow-hidden flex flex-col justify-center"
+          >
+            <GallerySection photos={gallery} />
+          </section>
+        )}
 
         {/* ── 3. Links / Social Posts ───────────────────────────────────── */}
         <section

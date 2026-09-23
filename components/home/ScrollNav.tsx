@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import type { BarberProfile } from '@/lib/types';
 import PWAInstallButton from '@/components/PWAInstallButton';
@@ -19,8 +19,12 @@ const POLE_STYLE: React.CSSProperties = {
   animation: 'poleSlide 2.4s linear infinite',
 };
 
-export default function ScrollNav({ profile }: { profile: BarberProfile }) {
+export default function ScrollNav({ profile, hasGallery = true }: { profile: BarberProfile; hasGallery?: boolean }) {
   const [active, setActive] = useState('home');
+  const sections = useMemo(
+    () => (hasGallery ? SECTIONS : SECTIONS.filter((s) => s.id !== 'gallery')),
+    [hasGallery],
+  );
 
   // Header is transparent only on the first section
   const scrolled = active !== 'home';
@@ -46,13 +50,13 @@ export default function ScrollNav({ profile }: { profile: BarberProfile }) {
       },
     );
 
-    SECTIONS.forEach(({ id }) => {
+    sections.forEach(({ id }) => {
       const el = document.getElementById(id);
       if (el) observer.observe(el);
     });
 
     return () => observer.disconnect();
-  }, []);
+  }, [sections]);
 
   // scrollIntoView walks up to the nearest scrollable ancestor (snap-root),
   // so this works without any extra ref passing.
@@ -98,7 +102,7 @@ export default function ScrollNav({ profile }: { profile: BarberProfile }) {
 
         {/* Section indicator dots */}
         <nav className="hidden sm:flex items-center gap-1">
-          {SECTIONS.map(({ id, label }) => (
+          {sections.map(({ id, label }) => (
             <button
               key={id}
               onClick={() => scrollTo(id)}
