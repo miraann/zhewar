@@ -5,6 +5,7 @@ import { ScanFace, Facebook, LogOut } from 'lucide-react';
 import NotificationStatusCard from './NotificationStatusCard';
 import ToggleListItem, { StatusBadge, SavingIndicator } from './ui/ToggleListItem';
 import Skeleton from './ui/Skeleton';
+import { adminLogout } from '@/lib/adminAuth';
 
 interface Settings {
   face_scan_enabled: boolean;
@@ -71,14 +72,6 @@ export default function SettingsEditor() {
       : <StatusBadge text={offLabel ?? 'ئارەزوومەندە'} tone="neutral" />;
   }
 
-  function handleLogout() {
-    localStorage.removeItem('admin_token');
-    // Navigate instead of fetch so the cookie is sent with the request
-    // (Capacitor WebView doesn't send cookies in JS fetch() calls).
-    // The GET handler on /api/admin/logout clears the cookie and redirects.
-    window.location.href = '/api/admin/logout';
-  }
-
   if (loading) return <div className="px-4 py-6"><Skeleton variant="text" className="w-32" /><div className="mt-3"><Skeleton count={2} /></div></div>;
 
   return (
@@ -115,7 +108,7 @@ export default function SettingsEditor() {
       <NotificationStatusCard />
 
       <button
-        onClick={handleLogout}
+        onClick={adminLogout}
         className="w-full flex items-center gap-3 px-4 py-3.5 rounded-md-lg text-md-error font-semibold text-sm active:bg-md-error-container/60 transition-colors touch-manipulation"
       >
         <LogOut className="w-[18px] h-[18px]" />

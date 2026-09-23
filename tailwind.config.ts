@@ -27,6 +27,7 @@ const config: Config = {
         'md-tertiary-container':       'rgb(var(--md-tertiary-container) / <alpha-value>)',
         'md-on-tertiary-container':    'rgb(var(--md-on-tertiary-container) / <alpha-value>)',
         'md-error':                    'rgb(var(--md-error) / <alpha-value>)',
+        'md-on-error':                 'rgb(var(--md-on-error) / <alpha-value>)',
         'md-error-container':          'rgb(var(--md-error-container) / <alpha-value>)',
         'md-on-error-container':       'rgb(var(--md-on-error-container) / <alpha-value>)',
         'md-warning':                  'rgb(var(--md-warning) / <alpha-value>)',

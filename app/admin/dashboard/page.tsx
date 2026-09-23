@@ -4,8 +4,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useWakeLock } from '@/hooks/useWakeLock';
-import { Clock, ImageIcon, User, LayoutDashboard, Share2, Settings } from 'lucide-react';
+import { Clock, ImageIcon, User, LayoutDashboard, Share2, Settings, RefreshCw, LogOut } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { adminLogout } from '@/lib/adminAuth';
 import AppointmentsView from '@/components/admin/AppointmentsView';
 import PushNotificationInit    from '@/components/admin/PushNotificationInit';
 import BottomNav from '@/components/admin/BottomNav';
@@ -119,7 +120,7 @@ function Dashboard() {
       {/* Registers FCM token when running inside the Capacitor APK */}
       <PushNotificationInit />
 
-      {/* ── Header (M3 small top app bar — no trailing actions; logout lives in Settings) ── */}
+      {/* ── Header (M3 small top app bar) ── */}
       <header className="sticky top-0 z-30 bg-md-surface/95 backdrop-blur-lg border-b border-md-outline-variant shadow-md-1">
         <div className="max-w-lg mx-auto px-4">
           <div className="flex items-center gap-3 h-16">
@@ -147,9 +148,25 @@ function Dashboard() {
               </div>
             </div>
 
-            <p className="text-[0.9rem] font-bold text-md-on-surface leading-tight tracking-wide">
+            <p className="flex-1 text-[0.9rem] font-bold text-md-on-surface leading-tight tracking-wide">
               پانێڵی ئەدمین
             </p>
+
+            {/* Refresh + logout */}
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <button
+                onClick={() => window.location.reload()}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-md-on-surface-variant active:bg-md-surface-container-high active:text-md-on-surface touch-manipulation transition-colors"
+              >
+                <RefreshCw className="w-[18px] h-[18px]" />
+              </button>
+              <button
+                onClick={adminLogout}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-md-error active:bg-md-error-container/60 touch-manipulation transition-colors"
+              >
+                <LogOut className="w-[18px] h-[18px]" />
+              </button>
+            </div>
           </div>
         </div>
       </header>

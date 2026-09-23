@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import type { AppointmentFull } from '@/lib/types';
 import {
   Phone, Clock, CheckCircle2, XCircle, RefreshCw,
-  Calendar, ShieldCheck, AlertCircle, Search, X, Bell,
+  Calendar, ShieldCheck, AlertCircle, Search, X, Bell, User,
 } from 'lucide-react';
 import Skeleton from './ui/Skeleton';
 
@@ -252,6 +252,22 @@ export default function AppointmentsView({ initialFilter = 'upcoming' }: { initi
     pending:  allPendingCount,
   };
 
+  // Bucket consecutive same-day appointments under one sticky date header,
+  // so the day/date no longer needs repeating on every single card.
+  type DateGroup = { key: string; dayName: string; date: string; items: AppointmentFull[] };
+  const groups: DateGroup[] = [];
+  for (const appt of filtered) {
+    const d   = new Date(appt.appointment_time);
+    const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    const last = groups[groups.length - 1];
+    if (last && last.key === key) {
+      last.items.push(appt);
+    } else {
+      const { dayName, date } = formatDT(appt.appointment_time);
+      groups.push({ key, dayName, date, items: [appt] });
+    }
+  }
+
   return (
     <div className="relative pb-16">
 
@@ -259,7 +275,7 @@ export default function AppointmentsView({ initialFilter = 'upcoming' }: { initi
       <div className="px-4 pt-5 grid grid-cols-3 gap-3">
 
         {/* Pending */}
-        <div className="bg-md-warning-container rounded-md-lg p-3.5 flex flex-col items-start gap-2">
+        <div className="bg-md-warning-container rounded-md-lg p-3.5 flex flex-col items-center text-center gap-2">
           <div className="w-8 h-8 rounded-md-md bg-md-warning/15 flex items-center justify-center">
             <AlertCircle className="w-4 h-4 text-md-warning" />
           </div>
@@ -268,7 +284,7 @@ export default function AppointmentsView({ initialFilter = 'upcoming' }: { initi
         </div>
 
         {/* Confirmed */}
-        <div className="bg-md-success-container rounded-md-lg p-3.5 flex flex-col items-start gap-2">
+        <div className="bg-md-success-container rounded-md-lg p-3.5 flex flex-col items-center text-center gap-2">
           <div className="w-8 h-8 rounded-md-md bg-md-success/15 flex items-center justify-center">
             <ShieldCheck className="w-4 h-4 text-md-success" />
           </div>
@@ -277,7 +293,7 @@ export default function AppointmentsView({ initialFilter = 'upcoming' }: { initi
         </div>
 
         {/* Today */}
-        <div className="bg-md-primary-container rounded-md-lg p-3.5 flex flex-col items-start gap-2">
+        <div className="bg-md-primary-container rounded-md-lg p-3.5 flex flex-col items-center text-center gap-2">
           <div className="w-8 h-8 rounded-md-md bg-md-primary/15 flex items-center justify-center">
             <Calendar className="w-4 h-4 text-md-primary" />
           </div>
@@ -391,218 +407,219 @@ export default function AppointmentsView({ initialFilter = 'upcoming' }: { initi
 
       {/* ── Cards ────────────────────────────────────────────────────────── */}
       {!loading && (
-        <div className="px-4 pt-1 space-y-2.5">
-          {filtered.map(appt => {
-            const { date, time, dayName } = formatDT(appt.appointment_time);
-            const fbLinks     = appt.customers.facebook_id ? getFbLinks(appt.customers.facebook_id) : null;
-            const isPending   = appt.status === 'pending';
-            const isConfirmed = appt.status === 'confirmed';
-            const isCancelled = appt.status === 'cancelled';
+        <div className="px-4 pt-1 space-y-5">
+          {groups.map(group => (
+            <div key={group.key} className="w-full max-w-md mx-auto">
 
-            const dotColorVar = isConfirmed ? '--md-success' : isCancelled ? '--md-error' : '--md-warning';
-            const dotColor    = `rgb(var(${dotColorVar}))`;
-            const dotColorTint = `rgb(var(${dotColorVar}) / 0.12)`;
+              {/* Sticky date section header */}
+              <div className="sticky top-16 z-10 py-1.5 bg-md-surface/95 backdrop-blur-sm">
+                <p className="text-[0.95rem] font-black text-black tracking-wide">
+                  {group.dayName} · {group.date}
+                </p>
+              </div>
 
-            const badgeCls = isConfirmed
-              ? 'bg-md-success-container text-md-on-success-container'
-              : isCancelled
-                ? 'bg-md-error-container text-md-on-error-container'
-                : 'bg-md-warning-container text-md-on-warning-container';
+              <div className="bg-md-surface-container rounded-md-lg border border-md-outline-variant overflow-hidden divide-y divide-md-outline-variant">
+                {group.items.map(appt => {
+                  const { time }    = formatDT(appt.appointment_time);
+                  const fbLinks     = appt.customers.facebook_id ? getFbLinks(appt.customers.facebook_id) : null;
+                  const isPending   = appt.status === 'pending';
+                  const isConfirmed = appt.status === 'confirmed';
+                  const isCancelled = appt.status === 'cancelled';
 
-            // Left accent strip color
-            const accentColor = dotColor;
+                  const dotColorVar = isConfirmed ? '--md-success' : isCancelled ? '--md-error' : '--md-warning';
+                  const dotColor    = `rgb(var(${dotColorVar}))`;
+                  const dotColorTint = `rgb(var(${dotColorVar}) / 0.12)`;
 
-            return (
-              <div
-                key={appt.id}
-                className="w-full max-w-md mx-auto bg-md-surface-container rounded-md-lg border border-md-outline-variant shadow-md-1 overflow-hidden relative"
-                style={{
-                  opacity: isCancelled ? 0.55 : 1,
-                  transition: 'opacity 0.2s',
-                }}
-              >
-                {/* Thin soft left accent */}
-                <div
-                  className="absolute inset-y-0 left-0 w-[2px]"
-                  style={{ background: accentColor, opacity: 0.6 }}
-                />
+                  const badgeCls = isConfirmed
+                    ? 'bg-md-success-container text-md-on-success-container'
+                    : isCancelled
+                      ? 'bg-md-error-container text-md-on-error-container'
+                      : 'bg-md-warning-container text-md-on-warning-container';
 
-                <div className="p-4 pl-5 space-y-3">
+                  // Left accent strip color
+                  const accentColor = dotColor;
 
-                  {/* ── Header: Avatar + Name/Status + Date/Time + Phone/Icons ── */}
-                  <div className="flex items-start gap-3">
-
-                    {/* Avatar — w-16 */}
-                    <div className="relative w-16 h-16 flex-shrink-0">
+                  return (
+                    <div
+                      key={appt.id}
+                      className="relative bg-md-surface-container"
+                      style={{
+                        opacity: isCancelled ? 0.55 : 1,
+                        transition: 'opacity 0.2s',
+                      }}
+                    >
+                      {/* Thin soft left accent */}
                       <div
-                        className="absolute inset-0 rounded-full"
-                        style={{
-                          background: 'conic-gradient(#f59e0b 0deg,#fde68a 60deg,#fff 90deg,#fde68a 120deg,#f59e0b 180deg,#d97706 240deg,#fff 270deg,#d97706 300deg,#f59e0b 360deg)',
-                          animation: 'ringRotate 3s linear infinite',
-                        }}
+                        className="absolute inset-y-0 left-0 w-[2px]"
+                        style={{ background: accentColor, opacity: 0.6 }}
                       />
-                      {appt.customers.photo_url && !failedPhotos.has(appt.id) ? (
-                        <button
-                          type="button"
-                          onClick={() => setPreview(appt.customers.photo_url)}
-                          className="absolute inset-[2px] rounded-full overflow-hidden touch-manipulation active:opacity-70 transition-opacity"
-                        >
-                          <img
-                            src={appt.customers.photo_url}
-                            alt={appt.customers.full_name}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                            decoding="async"
-                            onError={() => setFailedPhotos(prev => new Set(prev).add(appt.id))}
-                          />
-                        </button>
-                      ) : (
-                        <div
-                          className="absolute inset-[2px] rounded-full flex items-center justify-center font-bold text-sm select-none"
-                          style={{ background: dotColorTint, color: dotColor }}
-                        >
-                          {appt.customers.full_name.charAt(0)}
+
+                      <div className="p-4 pl-5 space-y-3">
+
+                        {/* ── Header: Avatar + Name/Status + Date/Time + Phone/Icons ── */}
+                        <div className="flex items-start gap-3">
+
+                          {/* Avatar — w-16 */}
+                          <div className="relative w-16 h-16 flex-shrink-0">
+                            {appt.customers.photo_url && !failedPhotos.has(appt.id) ? (
+                              <button
+                                type="button"
+                                onClick={() => setPreview(appt.customers.photo_url)}
+                                className="absolute inset-0 rounded-full overflow-hidden touch-manipulation active:opacity-70 transition-opacity"
+                              >
+                                <img
+                                  src={appt.customers.photo_url}
+                                  alt={appt.customers.full_name}
+                                  className="w-full h-full object-cover"
+                                  loading="lazy"
+                                  decoding="async"
+                                  onError={() => setFailedPhotos(prev => new Set(prev).add(appt.id))}
+                                />
+                              </button>
+                            ) : (
+                              <div
+                                className="absolute inset-0 rounded-full flex items-center justify-center select-none"
+                                style={{ background: dotColorTint, color: dotColor }}
+                              >
+                                <User className="w-7 h-7" />
+                              </div>
+                            )}
+                            <span
+                              className="absolute -bottom-0.5 -right-0.5 w-[9px] h-[9px] rounded-full border-[1.5px] border-white z-10"
+                              style={{ background: dotColor }}
+                            />
+                          </div>
+
+                          {/* Right column */}
+                          <div className="flex-1 min-w-0">
+
+                            {/* Name + status badge */}
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="font-bold text-[0.95rem] text-md-on-surface leading-tight truncate">
+                                {appt.customers.full_name}
+                              </p>
+                              <span className={`flex-shrink-0 px-2 py-[3px] text-[10px] font-semibold rounded-md-full ${badgeCls}`}>
+                                {STATUS_LABEL[appt.status]}
+                              </span>
+                            </div>
+
+                            {/* Time — the date is now shown once in the section header */}
+                            <div className="flex items-center gap-1 mt-1.5">
+                              <Clock className="w-[11px] h-[11px] text-md-on-surface-variant flex-shrink-0" />
+                              <span className="text-[0.78rem] text-md-on-surface font-bold leading-none">{time}</span>
+                            </div>
+
+                            {/* Phone + circular contact buttons */}
+                            <div className="flex items-center justify-between gap-2 mt-2">
+                              <p className="text-[0.8rem] text-black font-mono tracking-wide leading-none" dir="ltr">
+                                {appt.customers.phone_number}
+                              </p>
+                              <div className="flex items-center gap-1.5">
+                                <a
+                                  href={`tel:${appt.customers.phone_number}`}
+                                  className="w-9 h-9 rounded-full bg-md-surface-container-high border border-md-outline-variant flex items-center justify-center text-md-on-surface-variant active:bg-md-surface-container-highest touch-manipulation transition-colors"
+                                >
+                                  <Phone className="w-[18px] h-[18px]" />
+                                </a>
+                                <a
+                                  href={`https://wa.me/${toWaNumber(appt.customers.phone_number)}`}
+                                  target="_blank" rel="noopener noreferrer"
+                                  className="w-9 h-9 rounded-full flex items-center justify-center text-white active:opacity-75 touch-manipulation"
+                                  style={{ background: '#25d366' }}
+                                >
+                                  {WA_ICON_SM}
+                                </a>
+                                {fbLinks && (
+                                  <a
+                                    href={fbLinks.fbUrl}
+                                    target="_blank" rel="noopener noreferrer"
+                                    className="w-9 h-9 rounded-full flex items-center justify-center text-white active:opacity-75 touch-manipulation"
+                                    style={{ background: '#1877f2' }}
+                                  >
+                                    {FB_ICON_SM}
+                                  </a>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Booked-at timestamp */}
+                            <p className="text-[0.7rem] text-black mt-1.5 font-mono leading-none" dir="ltr">
+                              ⏱ {formatCreatedAt(appt.created_at)}
+                            </p>
+
+                            {/* Customer notes */}
+                            {appt.customers.notes && (
+                              <p className="text-[0.68rem] text-md-on-surface-variant mt-1.5 bg-md-surface-container-high rounded-md-sm px-2 py-1 border border-md-outline-variant leading-snug" dir="rtl">
+                                📝 {appt.customers.notes}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      )}
-                      <span
-                        className="absolute -bottom-0.5 -right-0.5 w-[9px] h-[9px] rounded-full border-[1.5px] border-white z-10"
-                        style={{ background: dotColor }}
-                      />
-                    </div>
 
-                    {/* Right column */}
-                    <div className="flex-1 min-w-0">
+                        {/* ── Divider ─────────────────────────────────────────────── */}
+                        <div className="h-px bg-md-outline-variant mx-0.5" />
 
-                      {/* Name + status badge */}
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="font-bold text-[0.95rem] text-md-on-surface leading-tight truncate">
-                          {appt.customers.full_name}
-                        </p>
-                        <span className={`flex-shrink-0 px-2 py-[3px] text-[10px] font-semibold rounded-md-full ${badgeCls}`}>
-                          {STATUS_LABEL[appt.status]}
-                        </span>
-                      </div>
-
-                      {/* Date + Time — two structured chips */}
-                      <div className="flex items-center gap-3 mt-1.5">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-[11px] h-[11px] text-md-on-surface-variant flex-shrink-0" />
-                          <span className="text-[0.78rem] text-md-on-surface font-bold leading-none">{dayName} · {date}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-[11px] h-[11px] text-md-on-surface-variant flex-shrink-0" />
-                          <span className="text-[0.78rem] text-md-on-surface font-bold leading-none">{time}</span>
-                        </div>
-                      </div>
-
-                      {/* Phone + circular contact buttons */}
-                      <div className="flex items-center justify-between gap-2 mt-2">
-                        <p className="text-[0.67rem] text-md-on-surface-variant font-mono tracking-wide leading-none" dir="ltr">
-                          {appt.customers.phone_number}
-                        </p>
-                        <div className="flex items-center gap-1.5">
-                          <a
-                            href={`tel:${appt.customers.phone_number}`}
-                            className="w-9 h-9 rounded-full bg-md-surface-container-high border border-md-outline-variant flex items-center justify-center text-md-on-surface-variant active:bg-md-surface-container-highest touch-manipulation transition-colors"
-                          >
-                            <Phone className="w-[18px] h-[18px]" />
-                          </a>
-                          <a
-                            href={`https://wa.me/${toWaNumber(appt.customers.phone_number)}`}
-                            target="_blank" rel="noopener noreferrer"
-                            className="w-9 h-9 rounded-full flex items-center justify-center text-white active:opacity-75 touch-manipulation"
-                            style={{ background: '#25d366' }}
-                          >
-                            {WA_ICON_SM}
-                          </a>
-                          {fbLinks && (
-                            <a
-                              href={fbLinks.fbUrl}
-                              target="_blank" rel="noopener noreferrer"
-                              className="w-9 h-9 rounded-full flex items-center justify-center text-white active:opacity-75 touch-manipulation"
-                              style={{ background: '#1877f2' }}
-                            >
-                              {FB_ICON_SM}
-                            </a>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Booked-at timestamp */}
-                      <p className="text-[0.58rem] text-md-outline mt-1.5 font-mono leading-none" dir="ltr">
-                        ⏱ {formatCreatedAt(appt.created_at)}
-                      </p>
-
-                      {/* Customer notes */}
-                      {appt.customers.notes && (
-                        <p className="text-[0.68rem] text-md-on-surface-variant mt-1.5 bg-md-surface-container-high rounded-md-sm px-2 py-1 border border-md-outline-variant leading-snug" dir="rtl">
-                          📝 {appt.customers.notes}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* ── Divider ─────────────────────────────────────────────── */}
-                  <div className="h-px bg-md-outline-variant mx-0.5" />
-
-                  {/* ── Action footer ────────────────────────────────────────── */}
-                  {isPending && (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => updateStatus(appt.id, 'confirmed')}
-                        className="flex-1 h-9 rounded-md-full font-semibold text-[0.8rem] text-md-on-primary flex items-center justify-center gap-1.5 touch-manipulation transition-all active:scale-[0.98] bg-md-primary active:bg-md-primary/90"
-                      >
-                        <CheckCircle2 className="w-[13px] h-[13px]" />
-                        پەسەندکردن
-                      </button>
-                      <button
-                        onClick={() => updateStatus(appt.id, 'cancelled')}
-                        className="px-4 h-9 rounded-md-full font-semibold text-[0.8rem] flex items-center justify-center gap-1.5 touch-manipulation transition-all active:scale-[0.98] bg-md-error-container text-md-on-error-container active:bg-md-error-container/70"
-                      >
-                        <XCircle className="w-[13px] h-[13px]" />
-                        هەڵوەشاندن
-                      </button>
-                    </div>
-                  )}
-
-                  {isConfirmed && (
-                    (filter === 'upcoming' || filter === 'today')
-                      ? <Countdown appointmentTime={appt.appointment_time} />
-                      : filter === 'all'
-                        ? (
+                        {/* ── Action footer ────────────────────────────────────────── */}
+                        {isPending && (
                           <div className="flex gap-2">
                             <button
-                              onClick={() => updateStatus(appt.id, 'cancelled')}
-                              className="flex-1 h-9 rounded-md-full font-semibold text-[0.8rem] flex items-center justify-center gap-1.5 touch-manipulation transition-all active:scale-[0.98] bg-md-error-container text-md-on-error-container active:bg-md-error-container/70"
+                              onClick={() => updateStatus(appt.id, 'confirmed')}
+                              className="flex-1 h-9 rounded-md-full font-semibold text-[0.8rem] text-md-on-primary flex items-center justify-center gap-1.5 touch-manipulation transition-all active:scale-[0.98] bg-md-primary active:bg-md-primary/90"
                             >
-                              <XCircle className="w-[13px] h-[13px]" />
-                              هەڵوەشاندنەوە
+                              <CheckCircle2 className="w-[13px] h-[13px]" />
+                              پەسەندکردن
                             </button>
                             <button
-                              onClick={() => updateStatus(appt.id, 'pending')}
-                              className="w-9 h-9 rounded-md-full flex items-center justify-center touch-manipulation transition-all active:scale-95 bg-md-surface-container-high border border-md-outline-variant text-md-on-surface-variant active:bg-md-surface-container-highest"
+                              onClick={() => updateStatus(appt.id, 'cancelled')}
+                              className="px-4 h-9 rounded-md-full font-semibold text-[0.8rem] flex items-center justify-center gap-1.5 touch-manipulation transition-all active:scale-[0.98] bg-md-error-container text-md-on-error-container active:bg-md-error-container/70"
                             >
-                              <RefreshCw className="w-[13px] h-[13px]" />
+                              <XCircle className="w-[13px] h-[13px]" />
+                              هەڵوەشاندن
                             </button>
                           </div>
-                        )
-                        : null
-                  )}
+                        )}
 
-                  {isCancelled && (
-                    <button
-                      onClick={() => updateStatus(appt.id, 'pending')}
-                      className="w-full h-9 rounded-md-full flex items-center justify-center gap-2 font-semibold text-[0.8rem] touch-manipulation transition-all active:scale-[0.99] bg-md-surface-container-high border border-md-outline-variant text-md-on-surface-variant active:bg-md-surface-container-highest"
-                    >
-                      <RefreshCw className="w-[13px] h-[13px]" />
-                      گەڕاندنەوە بۆ چاوەڕوان
-                    </button>
-                  )}
+                        {isConfirmed && (
+                          (filter === 'upcoming' || filter === 'today')
+                            ? <Countdown appointmentTime={appt.appointment_time} />
+                            : filter === 'all'
+                              ? (
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => updateStatus(appt.id, 'cancelled')}
+                                    className="flex-1 h-9 rounded-md-full font-semibold text-[0.8rem] flex items-center justify-center gap-1.5 touch-manipulation transition-all active:scale-[0.98] bg-md-error-container text-md-on-error-container active:bg-md-error-container/70"
+                                  >
+                                    <XCircle className="w-[13px] h-[13px]" />
+                                    هەڵوەشاندنەوە
+                                  </button>
+                                  <button
+                                    onClick={() => updateStatus(appt.id, 'pending')}
+                                    className="w-9 h-9 rounded-md-full flex items-center justify-center touch-manipulation transition-all active:scale-95 bg-md-surface-container-high border border-md-outline-variant text-md-on-surface-variant active:bg-md-surface-container-highest"
+                                  >
+                                    <RefreshCw className="w-[13px] h-[13px]" />
+                                  </button>
+                                </div>
+                              )
+                              : null
+                        )}
 
-                </div>
+                        {isCancelled && (
+                          <button
+                            onClick={() => updateStatus(appt.id, 'pending')}
+                            className="w-full h-9 rounded-md-full flex items-center justify-center gap-2 font-semibold text-[0.8rem] touch-manipulation transition-all active:scale-[0.99] bg-md-surface-container-high border border-md-outline-variant text-md-on-surface-variant active:bg-md-surface-container-highest"
+                          >
+                            <RefreshCw className="w-[13px] h-[13px]" />
+                            گەڕاندنەوە بۆ چاوەڕوان
+                          </button>
+                        )}
+
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       )}
 
