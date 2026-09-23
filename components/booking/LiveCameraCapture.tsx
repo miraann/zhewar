@@ -24,6 +24,15 @@ const AUTO_CAPTURE_MS = 2500;
 // Run face detection every N animation frames (~5fps on a 30fps device)
 const DETECT_EVERY_N_FRAMES = 6;
 
+// Camera + model init must finish within this long, else show retry (guards against
+// a stalled getUserMedia or a slow/stuck CDN fetch on poor mobile networks)
+const INIT_TIMEOUT_MS = 20000;
+
+// Consecutive per-frame detection failures before we give up and show retry
+// (e.g. a lost WebGL context after the tab is backgrounded — every subsequent
+// detectSingleFace() call throws, otherwise silently, forever)
+const MAX_CONSECUTIVE_DETECT_ERRORS = 25;
+
 // ── Geometry helpers ──────────────────────────────────────────────────────────
 type Pt = { x: number; y: number };
 type FaceValidity = 'invalid' | 'misaligned' | 'valid';
@@ -104,6 +113,9 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
   // blink state machine
   const blinkStateRef = useRef<'open' | 'closing'>('open');
 
+  // consecutive per-frame detection failures (WebGL context loss, etc.)
+  const detectErrorsRef = useRef(0);
+
   const [phase,        setPhase]        = useState<Phase>('loading');
   const [flash,        setFlash]        = useState(false);
   const [capturedUrl,  setCaptured]     = useState('');
@@ -157,6 +169,16 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
   useEffect(() => {
     let mounted = true;
 
+    // Guards against a stalled getUserMedia / stuck CDN fetch that would
+    // otherwise leave the UI spinning on "loading" forever
+    const initWatchdog = window.setTimeout(() => {
+      if (mounted && phaseRef.current === 'loading') {
+        setError('کامێرا یان مۆدێل بارنەبوو. دووبارە هەوڵ بدەرەوە');
+        setPhaseSync('error');
+        stopStream();
+      }
+    }, INIT_TIMEOUT_MS);
+
     async function init() {
       try {
         // Start camera immediately so the user sees themselves while models load
@@ -166,6 +188,19 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
         });
         if (!mounted) { stream.getTracks().forEach(t => t.stop()); return; }
         streamRef.current = stream;
+
+        // If the OS/browser kills the camera later (tab backgrounded, app
+        // switched, permission revoked), surface an error instead of freezing
+        // silently on the last decoded frame
+        stream.getVideoTracks().forEach((track) => {
+          track.addEventListener('ended', () => {
+            if (mounted && phaseRef.current !== 'captured') {
+              setError('کامێراکە وەستا. تکایە دووبارە هەوڵ بدەرەوە');
+              setPhaseSync('error');
+            }
+          });
+        });
+
         const v = videoRef.current!;
         v.srcObject = stream;
         v.setAttribute('playsinline', 'true');
@@ -186,6 +221,7 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
         await fa.nets.faceLandmark68TinyNet.loadFromUri(MODEL_CDN);
         if (!mounted) return;
 
+        clearTimeout(initWatchdog);
         setPhaseSync('searching');
 
         // ── detection loop ─────────────────────────────────────────────────────
@@ -212,8 +248,21 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
               result = await fa
                 .detectSingleFace(video, detectorOptions)
                 .withFaceLandmarks(/* tiny= */ true);
+              detectErrorsRef.current = 0;
             } catch {
-              // Frame-level detection error is non-fatal — skip this frame
+              // A one-off frame-level detection error is non-fatal — skip it.
+              // But a run of failures (e.g. WebGL context lost after the tab
+              // was backgrounded) will otherwise fail silently forever, so
+              // give up and surface a retryable error instead.
+              detectErrorsRef.current++;
+              if (detectErrorsRef.current >= MAX_CONSECUTIVE_DETECT_ERRORS) {
+                if (mounted) {
+                  setError('کێشەیەک لە کامێراکە ڕوویدا. تکایە دووبارە هەوڵ بدەرەوە');
+                  setPhaseSync('error');
+                  stopStream();
+                }
+                return;
+              }
               loop();
               return;
             }
@@ -314,6 +363,7 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
 
         loop();
       } catch (err: unknown) {
+        clearTimeout(initWatchdog);
         if (!mounted) return;
         const name = (err as { name?: string }).name ?? '';
         setError(
@@ -326,7 +376,7 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
     }
 
     init();
-    return () => { mounted = false; stopStream(); };
+    return () => { mounted = false; clearTimeout(initWatchdog); stopStream(); };
   }, [captureNow, stopStream, setPhaseSync]);
 
   const retry = () => window.location.reload();
