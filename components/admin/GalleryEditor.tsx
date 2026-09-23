@@ -165,49 +165,49 @@ export default function GalleryEditor() {
   return (
     <div className="px-4 py-6 space-y-5">
       <div>
-        <h2 className="text-slate-900 font-semibold text-lg">گەلەری</h2>
-        <p className="text-slate-500 text-sm mt-0.5">کۆکراوەی وێنەی کارەکانت بەڕێوە ببە</p>
+        <h2 className="text-md-on-surface font-semibold text-lg">گەلەری</h2>
+        <p className="text-md-on-surface-variant text-sm mt-0.5">کۆکراوەی وێنەی کارەکانت بەڕێوە ببە</p>
       </div>
 
       {/* Add form */}
-      <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4 space-y-3">
-        <p className="text-blue-700 text-xs font-semibold tracking-wider">زیادکردنی وێنە</p>
+      <div className="rounded-md-lg border border-md-outline-variant bg-md-surface-container-high p-4 space-y-3">
+        <p className="text-md-on-surface-variant text-xs font-semibold tracking-wider">زیادکردنی وێنە</p>
         <input
           type="text"
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
           placeholder="پێناس (ئارەزوومەند)"
-          className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm placeholder-slate-400 outline-none focus:border-blue-500/60 transition-colors"
+          className="w-full bg-md-surface-container border border-md-outline rounded-md-sm px-4 py-3 text-md-on-surface text-sm placeholder-md-on-surface-variant/60 outline-none focus:border-md-primary focus:border-2 transition-colors"
         />
         <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleUpload} />
         <button
           onClick={() => fileRef.current?.click()}
           disabled={adding}
           className={[
-            'w-full flex flex-col items-center justify-center gap-2 py-8 rounded-xl border-2 border-dashed transition-all touch-manipulation',
-            adding ? 'border-blue-300 bg-blue-100/50 cursor-not-allowed' : 'border-slate-300 bg-white active:bg-slate-50',
+            'w-full flex flex-col items-center justify-center gap-2 py-8 rounded-md-sm border-2 border-dashed transition-all touch-manipulation',
+            adding ? 'border-md-primary/40 bg-md-primary-container/30 cursor-not-allowed' : 'border-md-outline bg-md-surface-container active:bg-md-surface-container-highest',
           ].join(' ')}
         >
-          {adding ? <Loader2 className="w-7 h-7 text-blue-500 animate-spin" /> : <Upload className="w-7 h-7 text-slate-400" />}
-          <span className="text-slate-600 text-sm font-medium">{adding ? 'بارکردن...' : 'کلیک بکە بۆ هەڵبژاردنی وێنە'}</span>
-          {!adding && <span className="text-slate-400 text-xs">پێویستە شێوازی وێنەکە ٩:١٦ بێت</span>}
+          {adding ? <Loader2 className="w-7 h-7 text-md-primary animate-spin" /> : <Upload className="w-7 h-7 text-md-on-surface-variant" />}
+          <span className="text-md-on-surface text-sm font-medium">{adding ? 'بارکردن...' : 'کلیک بکە بۆ هەڵبژاردنی وێنە'}</span>
+          {!adding && <span className="text-md-on-surface-variant text-xs">پێویستە شێوازی وێنەکە ٩:١٦ بێت</span>}
         </button>
-        {addError && <p className="text-red-500 text-xs">{addError}</p>}
+        {addError && <p className="text-md-error text-xs">{addError}</p>}
       </div>
 
       {/* Grid */}
       {loading && (
         <div className="grid grid-cols-2 gap-3">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="aspect-[3/4] rounded-2xl bg-slate-100 border border-slate-200 animate-pulse" />
+            <div key={i} className="aspect-[3/4] rounded-md-lg bg-md-surface-container-high border border-md-outline-variant animate-pulse" />
           ))}
         </div>
       )}
 
       {!loading && photos.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 gap-3">
-          <ImageIcon className="w-9 h-9 text-slate-300" />
-          <p className="text-slate-400 text-sm">هیچ وێنەیەک نییە</p>
+          <ImageIcon className="w-9 h-9 text-md-outline" />
+          <p className="text-md-on-surface-variant text-sm">هیچ وێنەیەک نییە</p>
         </div>
       )}
 
@@ -231,55 +231,55 @@ export default function GalleryEditor() {
       {/* Edit sheet */}
       {editing && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={() => setEditing(null)}>
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-md-on-surface/50 backdrop-blur-sm" />
           <div
-            className="relative w-full md:w-[380px] bg-white border border-slate-200 rounded-t-3xl md:rounded-3xl px-5 pt-4 pb-8 md:pb-5 shadow-2xl"
+            className="relative w-full md:w-[380px] bg-md-surface-container border border-md-outline-variant rounded-t-md-xl md:rounded-md-xl px-5 pt-4 pb-8 md:pb-5 shadow-md-2"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="w-10 h-1 rounded-full bg-slate-200 mx-auto mb-4 md:hidden" />
-            <p className="text-slate-900 font-semibold text-sm text-center mb-4">دەستکاریکردنی وێنە</p>
+            <div className="w-10 h-1 rounded-full bg-md-outline-variant mx-auto mb-4 md:hidden" />
+            <p className="text-md-on-surface font-semibold text-sm text-center mb-4">دەستکاریکردنی وێنە</p>
             <div className="flex justify-center mb-4">
-              <div className="relative rounded-2xl overflow-hidden border border-slate-200 w-40" style={{ aspectRatio: '3/4' }}>
+              <div className="relative rounded-md-lg overflow-hidden border border-md-outline-variant w-40" style={{ aspectRatio: '3/4' }}>
                 <img src={editing.photo_url} alt="" className="w-full h-full object-cover" />
                 {replacing && (
-                  <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
-                    <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+                  <div className="absolute inset-0 bg-md-surface/70 flex items-center justify-center">
+                    <Loader2 className="w-5 h-5 text-md-primary animate-spin" />
                   </div>
                 )}
                 <input ref={editFileRef} type="file" accept="image/*" className="hidden" onChange={handleReplacePhoto} />
                 <button
                   onClick={() => editFileRef.current?.click()}
                   disabled={replacing}
-                  className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2 py-1 rounded-full bg-white/90 text-slate-700 text-[0.6rem] font-medium touch-manipulation whitespace-nowrap shadow-sm border border-slate-200"
+                  className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2 py-1 rounded-md-full bg-md-surface-container/90 text-md-on-surface text-[0.6rem] font-medium touch-manipulation whitespace-nowrap shadow-md-1 border border-md-outline-variant"
                 >
                   <RefreshCw className="w-2.5 h-2.5" />
                   گۆڕینی وێنە
                 </button>
               </div>
             </div>
-            {editError && <p className="text-red-500 text-xs mb-2 text-center">{editError}</p>}
+            {editError && <p className="text-md-error text-xs mb-2 text-center">{editError}</p>}
             <div className="mb-4">
-              <p className="text-slate-700 text-xs font-medium mb-1.5">پێناس (ئارەزوومەند)</p>
+              <p className="text-md-on-surface text-xs font-medium mb-1.5">پێناس (ئارەزوومەند)</p>
               <input
                 type="text"
                 value={editing.caption}
                 onChange={(e) => setEditing({ ...editing, caption: e.target.value })}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleSaveEdit(); if (e.key === 'Escape') setEditing(null); }}
                 placeholder="پێناس بنووسە..."
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm placeholder-slate-400 outline-none focus:border-blue-500/60 transition-colors"
+                className="w-full bg-md-surface border border-md-outline rounded-md-sm px-4 py-3 text-md-on-surface text-sm placeholder-md-on-surface-variant/60 outline-none focus:border-md-primary focus:border-2 transition-colors"
               />
             </div>
             <div className="flex gap-3">
               <button
                 onClick={() => setEditing(null)}
-                className="flex-1 py-3.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 font-medium text-sm touch-manipulation active:bg-slate-100 transition-colors"
+                className="flex-1 py-3.5 rounded-md-full border border-md-outline text-md-on-surface font-medium text-sm touch-manipulation active:bg-md-surface-container-high transition-colors"
               >
                 گەڕانەوە
               </button>
               <button
                 onClick={handleSaveEdit}
                 disabled={saving || replacing}
-                className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl bg-blue-600 text-white font-semibold text-sm touch-manipulation active:scale-[0.98] transition-transform disabled:opacity-40"
+                className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-md-full bg-md-primary text-md-on-primary font-semibold text-sm touch-manipulation active:scale-[0.98] transition-transform disabled:opacity-40"
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                 پاشەکەوت
@@ -312,7 +312,7 @@ function SortablePhoto({
     <div
       ref={setNodeRef}
       style={{ ...style, aspectRatio: '3/4' }}
-      className="relative rounded-2xl overflow-hidden border border-slate-200"
+      className="relative rounded-md-lg overflow-hidden border border-md-outline-variant"
     >
       <img src={photo.photo_url} alt={photo.caption ?? ''} className="w-full h-full object-cover" loading="lazy" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -324,7 +324,7 @@ function SortablePhoto({
       <button
         {...attributes}
         {...listeners}
-        className="absolute top-2 left-2 w-7 h-7 rounded-full bg-white/90 flex items-center justify-center text-slate-500 shadow-sm cursor-grab active:cursor-grabbing touch-manipulation"
+        className="absolute top-2 left-2 w-7 h-7 rounded-full bg-md-surface-container/90 flex items-center justify-center text-md-on-surface-variant shadow-md-1 cursor-grab active:cursor-grabbing touch-manipulation"
       >
         <GripVertical className="w-3.5 h-3.5" />
       </button>
@@ -332,7 +332,7 @@ function SortablePhoto({
       {/* Delete */}
       <button
         onClick={onDelete}
-        className="absolute bottom-8 left-2 w-7 h-7 rounded-full bg-white/90 flex items-center justify-center text-slate-500 active:text-red-500 touch-manipulation transition-colors shadow-sm"
+        className="absolute bottom-8 left-2 w-7 h-7 rounded-full bg-md-surface-container/90 flex items-center justify-center text-md-on-surface-variant active:text-md-error touch-manipulation transition-colors shadow-md-1"
       >
         <Trash2 className="w-3.5 h-3.5" />
       </button>
@@ -340,7 +340,7 @@ function SortablePhoto({
       {/* Edit */}
       <button
         onClick={onEdit}
-        className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/90 flex items-center justify-center text-slate-500 active:text-blue-600 touch-manipulation transition-colors shadow-sm"
+        className="absolute top-2 right-2 w-7 h-7 rounded-full bg-md-surface-container/90 flex items-center justify-center text-md-on-surface-variant active:text-md-primary touch-manipulation transition-colors shadow-md-1"
       >
         <Pencil className="w-3.5 h-3.5" />
       </button>

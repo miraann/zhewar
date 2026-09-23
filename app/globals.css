@@ -11,6 +11,56 @@
   font-display: swap;
 }
 
+/* ── Admin panel: static Material 3 tonal design tokens ──────────────────
+   Seeded from the app's existing brand colors (blue #2563eb primary, red
+   #ef4444 tertiary) — not live device wallpaper color (unreachable from a
+   web page in a remote-URL Capacitor WebView). RGB triplets (not hex) so
+   Tailwind's bg-md-primary/40-style opacity modifiers work. */
+:root {
+  --md-primary: 37 99 235;
+  --md-on-primary: 255 255 255;
+  --md-primary-container: 219 234 254;
+  --md-on-primary-container: 30 58 138;
+
+  --md-secondary: 71 85 105;
+  --md-secondary-container: 226 232 240;
+  --md-on-secondary-container: 30 41 59;
+
+  --md-tertiary: 239 68 68;
+  --md-tertiary-container: 254 226 226;
+  --md-on-tertiary-container: 127 29 29;
+
+  --md-error: 220 38 38;
+  --md-error-container: 254 242 242;
+  --md-on-error-container: 153 27 27;
+
+  --md-warning: 217 119 6;
+  --md-warning-container: 255 251 235;
+  --md-on-warning-container: 146 64 14;
+
+  --md-success: 5 150 105;
+  --md-success-container: 209 250 229;
+  --md-on-success-container: 6 95 70;
+
+  --md-surface: 248 250 252;
+  --md-surface-container: 255 255 255;
+  --md-surface-container-high: 241 245 249;
+  --md-surface-container-highest: 226 232 240;
+  --md-on-surface: 15 23 42;
+  --md-on-surface-variant: 100 116 139;
+  --md-outline: 203 213 225;
+  --md-outline-variant: 226 232 240;
+
+  --md-shape-sm: 8px;
+  --md-shape-md: 12px;
+  --md-shape-lg: 16px;
+  --md-shape-xl: 28px;
+  --md-shape-full: 9999px;
+
+  --md-elevation-1: 0 1px 2px rgb(15 23 42 / 0.06), 0 1px 3px rgb(15 23 42 / 0.08);
+  --md-elevation-2: 0 1px 2px rgb(15 23 42 / 0.08), 0 3px 6px rgb(15 23 42 / 0.10);
+}
+
 @layer base {
   * {
     -webkit-tap-highlight-color: transparent;
@@ -46,6 +96,12 @@
   }
   .text-balance {
     text-wrap: balance;
+  }
+  /* Clears the fixed BottomNav (row height + safe area) — kept separate from
+     .safe-bottom (which the nav itself uses) so the two padding-bottom rules
+     never stack on the same element. */
+  .admin-bottomnav-clearance {
+    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 16px));
   }
 }
 

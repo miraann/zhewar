@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Bell, Loader2 } from 'lucide-react';
+import { Bell } from 'lucide-react';
 import { FCM_TOKEN_KEY, isNativePlatform, registerAdminFcmToken, unregisterAdminFcmToken } from '@/lib/pushNotifications';
+import ToggleListItem, { StatusBadge, SavingIndicator } from './ui/ToggleListItem';
 
 type Status = 'checking' | 'unsupported' | 'enabled' | 'disabled' | 'denied' | 'error';
 
@@ -85,60 +86,22 @@ export default function NotificationStatusCard() {
 
   const badge = {
     checking:    null,
-    unsupported: { text: 'تەنها لە ئەپدا', cls: 'bg-slate-100 text-slate-500 border-slate-200' },
-    enabled:     { text: 'چالاکە',        cls: 'bg-emerald-50 text-emerald-700 border-emerald-200/60' },
-    disabled:    { text: 'ناچالاکە',      cls: 'bg-slate-100 text-slate-500 border-slate-200' },
-    denied:      { text: 'ڕێگەنەدراوە',   cls: 'bg-red-50 text-red-600 border-red-200/50' },
-    error:       { text: 'هەڵە',          cls: 'bg-red-50 text-red-600 border-red-200/50' },
+    unsupported: { text: 'تەنها لە ئەپدا', tone: 'neutral' as const },
+    enabled:     { text: 'چالاکە',        tone: 'success' as const },
+    disabled:    { text: 'ناچالاکە',      tone: 'neutral' as const },
+    denied:      { text: 'ڕێگەنەدراوە',   tone: 'error'   as const },
+    error:       { text: 'هەڵە',          tone: 'error'   as const },
   }[status];
 
   return (
-    <div className={[
-      'rounded-2xl border-2 p-5 transition-all duration-200 bg-white',
-      isEnabled ? 'border-blue-200 shadow-sm' : 'border-slate-100',
-    ].join(' ')}>
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className={[
-            'w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors',
-            isEnabled ? 'bg-blue-50' : 'bg-slate-100',
-          ].join(' ')}>
-            <Bell className={`w-5 h-5 ${isEnabled ? 'text-blue-600' : 'text-slate-400'}`} />
-          </div>
-          <div className="min-w-0">
-            <p className={`font-semibold text-sm ${isEnabled ? 'text-slate-900' : 'text-slate-400'}`}>ئاگادارکردنەوەی نوێ</p>
-            <p className="text-slate-400 text-xs mt-0.5 leading-snug">{desc}</p>
-          </div>
-        </div>
-        <button
-          onClick={isEnabled ? handleDisable : handleEnable}
-          disabled={busy || !interactive}
-          className={[
-            'relative w-12 h-6 rounded-full transition-colors duration-200 touch-manipulation flex-shrink-0',
-            (busy || !interactive) ? 'opacity-60 cursor-not-allowed' : '',
-            isEnabled ? 'bg-blue-600' : 'bg-slate-200',
-          ].join(' ')}
-        >
-          <span className={[
-            'absolute top-1 w-4 h-4 rounded-full shadow transition-all duration-200',
-            isEnabled ? 'left-7 bg-white' : 'left-1 bg-white',
-          ].join(' ')} />
-        </button>
-      </div>
-
-      <div className="mt-4 flex items-center gap-2">
-        {busy ? (
-          <span className="flex items-center gap-1.5 text-[0.7rem] text-slate-400">
-            <Loader2 className="w-3 h-3 animate-spin" />
-            جێبەجێکردن...
-          </span>
-        ) : badge ? (
-          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.65rem] font-semibold border ${badge.cls}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${isEnabled ? 'bg-emerald-500' : status === 'denied' || status === 'error' ? 'bg-red-500' : 'bg-slate-400'}`} />
-            {badge.text}
-          </span>
-        ) : null}
-      </div>
-    </div>
+    <ToggleListItem
+      icon={Bell}
+      label="ئاگادارکردنەوەی نوێ"
+      description={desc}
+      value={isEnabled}
+      disabled={busy || !interactive}
+      onToggle={isEnabled ? handleDisable : handleEnable}
+      statusNode={busy ? <SavingIndicator label="جێبەجێکردن..." /> : badge ? <StatusBadge text={badge.text} tone={badge.tone} /> : null}
+    />
   );
 }

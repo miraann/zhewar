@@ -15,7 +15,10 @@ const config: CapacitorConfig = {
     },
   },
   android: {
-    backgroundColor: '#ffffff',
+    // Matches the admin panel's md-surface tone so there's no white flash
+    // between the native splash and the WebView's first paint. Requires a
+    // native rebuild/`cap sync` to take effect.
+    backgroundColor: '#f8fafc',
   },
 };
 

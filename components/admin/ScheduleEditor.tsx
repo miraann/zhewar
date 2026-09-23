@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { WorkingSchedule } from '@/lib/types';
 import { Save, Loader2 } from 'lucide-react';
+import Switch from './ui/Switch';
+import Button from './ui/Button';
+import Skeleton from './ui/Skeleton';
 
 const DAY_NAMES = ['یەکشەممە', 'دووشەممە', 'سێشەممە', 'چوارشەممە', 'پێنجشەممە', 'هەینی', 'شەممە'];
 const INTERVALS = [30, 60, 90];
@@ -41,28 +44,30 @@ export default function ScheduleEditor() {
     setTimeout(() => setSaved(false), 2500);
   }
 
-  if (loading) return <Skeleton />;
+  if (loading) return <div className="px-4 py-6"><Skeleton count={7} /></div>;
 
   return (
     <div className="px-4 py-6 space-y-4">
       <div className="mb-6">
-        <h2 className="text-slate-900 font-semibold text-lg">خشتەی کاری</h2>
-        <p className="text-slate-500 text-sm mt-0.5">ڕۆژ و کاتی کارکردن دیاری بکە</p>
+        <h2 className="text-md-on-surface font-semibold text-lg">خشتەی کاری</h2>
+        <p className="text-md-on-surface-variant text-sm mt-0.5">ڕۆژ و کاتی کارکردن دیاری بکە</p>
       </div>
 
       {schedule.map((day) => (
         <div
           key={day.day_of_week}
           className={[
-            'rounded-2xl border-2 p-4 transition-all duration-200 bg-white',
-            day.is_active ? 'border-blue-200 shadow-sm' : 'border-slate-100 opacity-50',
+            'rounded-md-lg p-4 transition-colors duration-200',
+            day.is_active
+              ? 'bg-md-primary-container/40 border border-md-primary-container'
+              : 'bg-md-surface-container border border-md-outline-variant shadow-md-1',
           ].join(' ')}
         >
           <div className="flex items-center justify-between mb-3">
-            <span className={`font-semibold text-sm ${day.is_active ? 'text-slate-900' : 'text-slate-400'}`}>
+            <span className={`font-semibold text-sm ${day.is_active ? 'text-md-on-surface' : 'text-md-on-surface-variant'}`}>
               {DAY_NAMES[day.day_of_week]}
             </span>
-            <Toggle
+            <Switch
               checked={day.is_active}
               onChange={() => update(day.day_of_week, { is_active: !day.is_active })}
             />
@@ -72,37 +77,37 @@ export default function ScheduleEditor() {
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-slate-500 text-[0.65rem] tracking-wider font-medium">دەکرێتەوە</label>
+                  <label className="text-md-on-surface-variant text-[0.65rem] tracking-wider font-medium">دەکرێتەوە</label>
                   <input
                     type="time"
                     value={day.start_time}
                     onChange={(e) => update(day.day_of_week, { start_time: e.target.value })}
-                    className="mt-1 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-900 text-sm outline-none focus:border-blue-500/60 [color-scheme:light] transition-colors"
+                    className="mt-1 w-full bg-md-surface border border-md-outline rounded-md-sm px-3 py-2.5 text-md-on-surface text-sm outline-none focus:border-md-primary focus:border-2 [color-scheme:light] transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="text-slate-500 text-[0.65rem] tracking-wider font-medium">دادەخرێت</label>
+                  <label className="text-md-on-surface-variant text-[0.65rem] tracking-wider font-medium">دادەخرێت</label>
                   <input
                     type="time"
                     value={day.end_time}
                     onChange={(e) => update(day.day_of_week, { end_time: e.target.value })}
-                    className="mt-1 w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-900 text-sm outline-none focus:border-blue-500/60 [color-scheme:light] transition-colors"
+                    className="mt-1 w-full bg-md-surface border border-md-outline rounded-md-sm px-3 py-2.5 text-md-on-surface text-sm outline-none focus:border-md-primary focus:border-2 [color-scheme:light] transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-slate-500 text-[0.65rem] tracking-wider font-medium">ماوەی هەر کاتی سەردانیکردنێک</label>
+                <label className="text-md-on-surface-variant text-[0.65rem] tracking-wider font-medium">ماوەی هەر کاتی سەردانیکردنێک</label>
                 <div className="flex gap-2 mt-1">
                   {INTERVALS.map((min) => (
                     <button
                       key={min}
                       onClick={() => update(day.day_of_week, { slot_interval: min })}
                       className={[
-                        'flex-1 py-2 rounded-xl text-xs font-semibold border transition-all touch-manipulation',
+                        'flex-1 py-2 rounded-md-full text-xs font-semibold border transition-all touch-manipulation',
                         day.slot_interval === min
-                          ? 'border-blue-600 bg-blue-600 text-white shadow-sm'
-                          : 'border-slate-200 bg-slate-50 text-slate-600 active:bg-slate-100',
+                          ? 'border-md-secondary-container bg-md-secondary-container text-md-on-secondary-container'
+                          : 'border-md-outline-variant bg-md-surface-container-high text-md-on-surface-variant active:bg-md-surface-container-highest',
                       ].join(' ')}
                     >
                       {min} خ
@@ -115,52 +120,14 @@ export default function ScheduleEditor() {
         </div>
       ))}
 
-      <button
-        onClick={handleSave}
-        disabled={saving}
-        className={[
-          'w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-semibold text-sm tracking-wide transition-all touch-manipulation',
-          saved
-            ? 'bg-emerald-50 border-2 border-emerald-300 text-emerald-700'
-            : 'bg-blue-600 text-white shadow-md shadow-blue-200/60 active:bg-blue-700 active:scale-[0.98]',
-        ].join(' ')}
-      >
+      <Button onClick={handleSave} disabled={saving} variant={saved ? 'success' : 'filled'}>
         {saving
           ? <><Loader2 className="w-4 h-4 animate-spin" /> پاشەکەوتکردن...</>
           : saved
             ? '✓ خشتەی کار پاشەکەوتکرا!'
             : <><Save className="w-4 h-4" /> خشتەی کار پاشەکەوت بکە</>
         }
-      </button>
-    </div>
-  );
-}
-
-function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
-  return (
-    <button
-      onClick={onChange}
-      className={[
-        'relative w-11 h-6 rounded-full transition-colors duration-200 touch-manipulation flex-shrink-0',
-        checked ? 'bg-blue-600' : 'bg-slate-200',
-      ].join(' ')}
-    >
-      <span
-        className={[
-          'absolute top-1 w-4 h-4 rounded-full shadow transition-all duration-200',
-          checked ? 'left-6 bg-white' : 'left-1 bg-white',
-        ].join(' ')}
-      />
-    </button>
-  );
-}
-
-function Skeleton() {
-  return (
-    <div className="px-4 py-6 space-y-3">
-      {[...Array(7)].map((_, i) => (
-        <div key={i} className="h-16 rounded-2xl bg-slate-100 border border-slate-200 animate-pulse" />
-      ))}
+      </Button>
     </div>
   );
 }

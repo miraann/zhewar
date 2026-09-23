@@ -32,7 +32,7 @@ export default async function AdminLoginPage() {
   } catch {}
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-5 relative overflow-hidden">
+    <main className="min-h-screen flex flex-col items-center justify-center px-5 relative overflow-hidden bg-md-surface">
 
       <div className="relative z-10 w-full max-w-sm">
         <div className="flex flex-col items-center gap-4 mb-10">
@@ -41,12 +41,12 @@ export default async function AdminLoginPage() {
             <div
               className="absolute inset-0 rounded-full"
               style={{
-                background: 'conic-gradient(#ef4444 0deg,#ef4444 110deg,#f8fafc 135deg,#3b82f6 160deg,#3b82f6 290deg,#f8fafc 315deg,#ef4444 360deg)',
+                background: 'conic-gradient(rgb(var(--md-tertiary)) 0deg,rgb(var(--md-tertiary)) 110deg,rgb(var(--md-surface)) 135deg,rgb(var(--md-primary)) 160deg,rgb(var(--md-primary)) 290deg,rgb(var(--md-surface)) 315deg,rgb(var(--md-tertiary)) 360deg)',
                 animation: 'ringRotate 3.5s linear infinite',
               }}
             />
             {/* Static logo — does not rotate */}
-            <div className="absolute inset-[5px] rounded-full bg-white overflow-hidden flex items-center justify-center">
+            <div className="absolute inset-[5px] rounded-full bg-md-surface-container overflow-hidden flex items-center justify-center">
               {logoUrl ? (
                 <Image
                   src={logoUrl}
@@ -57,7 +57,7 @@ export default async function AdminLoginPage() {
                   priority
                 />
               ) : (
-                <svg viewBox="0 0 24 24" className="w-7 h-7" fill="none" stroke="#3b82f6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <svg viewBox="0 0 24 24" className="w-7 h-7" fill="none" stroke="rgb(var(--md-primary))" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M6 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" />
                   <path d="M18 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" />
                   <path d="M8.59 8.59L15 15" />
@@ -67,12 +67,12 @@ export default async function AdminLoginPage() {
             </div>
           </div>
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-slate-900">پانێڵی ئەدمین</h1>
-            <p className="text-slate-400 text-xs tracking-[0.3em] mt-1"> ژێوار عزیز </p>
+            <h1 className="text-3xl font-bold text-md-on-surface">پانێڵی ئەدمین</h1>
+            <p className="text-md-on-surface-variant text-xs tracking-[0.3em] mt-1"> ژێوار عزیز </p>
           </div>
         </div>
 
-        <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-xl shadow-slate-200/40 border border-slate-100 p-6">
+        <div className="bg-md-surface-container rounded-md-xl shadow-md-2 border border-md-outline-variant p-6">
           <AdminLoginForm />
         </div>
       </div>

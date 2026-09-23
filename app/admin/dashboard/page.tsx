@@ -4,10 +4,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useWakeLock } from '@/hooks/useWakeLock';
-import { Clock, ImageIcon, User, LayoutDashboard, LogOut, Share2, Settings } from 'lucide-react';
+import { Clock, ImageIcon, User, LayoutDashboard, Share2, Settings } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import AppointmentsView from '@/components/admin/AppointmentsView';
 import PushNotificationInit    from '@/components/admin/PushNotificationInit';
+import BottomNav from '@/components/admin/BottomNav';
 
 // Only the default "appointments" tab loads eagerly — the rest are fetched
 // on demand so switching tabs doesn't bloat the dashboard's initial bundle
@@ -21,13 +22,13 @@ const SettingsEditor = dynamic(() => import('@/components/admin/SettingsEditor')
 type Tab = 'appointments' | 'schedule' | 'profile' | 'gallery' | 'social' | 'settings';
 type AppFilter = 'upcoming' | 'today' | 'all' | 'pending';
 
-const TABS: { id: Tab; label: string; short: string; icon: React.ElementType }[] = [
-  { id: 'appointments', label: 'کاتەکانی سەردانیکردن', short: 'سەردان',  icon: LayoutDashboard },
-  { id: 'schedule',     label: 'خشتەی کار',            short: 'خشتە',   icon: Clock           },
-  { id: 'profile',      label: 'پرۆفایل',               short: 'پرۆفایل', icon: User           },
-  { id: 'gallery',      label: 'گەلەری',                short: 'گەلەری', icon: ImageIcon       },
-  { id: 'social',       label: 'پۆستەکانی سۆشیاڵ',     short: 'سۆشیاڵ', icon: Share2          },
-  { id: 'settings',     label: 'ڕێکخستنەکان',           short: 'ڕێکخستن', icon: Settings       },
+const TABS: { id: Tab; short: string; icon: React.ElementType }[] = [
+  { id: 'appointments', short: 'سەردان',   icon: LayoutDashboard },
+  { id: 'schedule',     short: 'خشتە',     icon: Clock           },
+  { id: 'profile',      short: 'پرۆفایل',  icon: User            },
+  { id: 'gallery',      short: 'گەلەری',   icon: ImageIcon       },
+  { id: 'social',       short: 'سۆشیاڵ',   icon: Share2          },
+  { id: 'settings',     short: 'ڕێکخستن',  icon: Settings        },
 ];
 
 const VALID_TABS    = new Set<Tab>(['appointments', 'schedule', 'profile', 'gallery', 'social', 'settings']);
@@ -112,132 +113,49 @@ function Dashboard() {
     router.push(`/admin/dashboard?tab=${t}`, { scroll: false });
   }
 
-  function handleLogout() {
-    localStorage.removeItem('admin_token');
-    // Navigate instead of fetch so the cookie is sent with the request
-    // (Capacitor WebView doesn't send cookies in JS fetch() calls).
-    // The GET handler on /api/admin/logout clears the cookie and redirects.
-    window.location.href = '/api/admin/logout';
-  }
-
-  const activeTab = TABS.find(t => t.id === tab)!;
-
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-md-surface">
 
       {/* Registers FCM token when running inside the Capacitor APK */}
       <PushNotificationInit />
 
-      {/* ── Header ─────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 bg-white/92 backdrop-blur-lg border-b border-slate-100/80"
-        style={{ boxShadow: '0 1px 0 rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.03)' }}
-      >
+      {/* ── Header (M3 small top app bar — no trailing actions; logout lives in Settings) ── */}
+      <header className="sticky top-0 z-30 bg-md-surface/95 backdrop-blur-lg border-b border-md-outline-variant shadow-md-1">
         <div className="max-w-lg mx-auto px-4">
+          <div className="flex items-center gap-3 h-16">
 
-          {/* ── Title row ── */}
-          <div className="flex items-center justify-between h-14 mt-5">
-            <div className="flex items-center gap-3">
-
-              {/* Shop logo with spinning ring */}
-              <div className="relative w-14 h-14 flex-shrink-0">
-                <div
-                  className="absolute inset-0 rounded-full"
-                  style={{
-                    background: 'conic-gradient(#ef4444 0deg,#ef4444 110deg,#f8fafc 135deg,#3b82f6 160deg,#3b82f6 290deg,#f8fafc 315deg,#ef4444 360deg)',
-                    animation: 'ringRotate 3.5s linear infinite',
-                  }}
-                />
-                <div className="absolute inset-[2.5px] rounded-full bg-white overflow-hidden flex items-center justify-center">
-                  {logoUrl ? (
-                    <img src={logoUrl} alt="logo" className="w-full h-full object-cover rounded-full" />
-                  ) : (
-                    <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="#3b82f6" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M6 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" />
-                      <path d="M18 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" />
-                      <path d="M8.59 8.59L15 15" />
-                      <path d="M15 9l-6.41 6.41" />
-                    </svg>
-                  )}
-                </div>
-              </div>
-
-              {/* Title + live section subtitle */}
-              <div>
-                <p className="text-[0.82rem] font-bold text-slate-900 leading-tight tracking-wide">
-                  پانێڵی ئەدمین
-                </p>
-                <p className="text-[0.62rem] text-slate-400 font-medium leading-tight mt-px">
-                  {activeTab.label}
-                </p>
+            {/* Shop logo with spinning ring */}
+            <div className="relative w-11 h-11 flex-shrink-0">
+              <div
+                className="absolute inset-0 rounded-full"
+                style={{
+                  background: 'conic-gradient(rgb(var(--md-tertiary)) 0deg,rgb(var(--md-tertiary)) 110deg,rgb(var(--md-surface)) 135deg,rgb(var(--md-primary)) 160deg,rgb(var(--md-primary)) 290deg,rgb(var(--md-surface)) 315deg,rgb(var(--md-tertiary)) 360deg)',
+                  animation: 'ringRotate 3.5s linear infinite',
+                }}
+              />
+              <div className="absolute inset-[2.5px] rounded-full bg-md-surface-container overflow-hidden flex items-center justify-center">
+                {logoUrl ? (
+                  <img src={logoUrl} alt="logo" className="w-full h-full object-cover rounded-full" />
+                ) : (
+                  <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="rgb(var(--md-primary))" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" />
+                    <path d="M18 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" />
+                    <path d="M8.59 8.59L15 15" />
+                    <path d="M15 9l-6.41 6.41" />
+                  </svg>
+                )}
               </div>
             </div>
 
-            {/* Logout */}
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-slate-400 text-xs font-medium active:text-slate-700 active:bg-slate-50 transition-all touch-manipulation border border-transparent active:border-slate-200"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              دەرچوون
-            </button>
-          </div>
-
-          {/* ── Segmented pill nav ── */}
-          <div className="pb-3">
-            <div className="bg-slate-100/80 backdrop-blur-md p-1.5 rounded-2xl flex items-center gap-1 border border-slate-200/50">
-              {TABS.map(({ id, short, icon: Icon }) => {
-                const isActive = tab === id;
-                return (
-                  <button
-                    key={id}
-                    onClick={() => setTab(id)}
-                    className={[
-                      'flex-1 relative flex flex-col items-center justify-center gap-[3px] py-[9px] rounded-xl transition-all duration-200 touch-manipulation select-none',
-                      isActive
-                        ? 'bg-white text-blue-600 scale-[1.02]'
-                        : 'text-slate-500 active:text-slate-800 active:bg-white/50',
-                    ].join(' ')}
-                    style={isActive ? {
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.05)',
-                      border: '1px solid rgba(226,232,240,0.8)',
-                    } : undefined}
-                  >
-                    {/* Icon + pending badge */}
-                    <div className="relative">
-                      <Icon
-                        className={`w-[15px] h-[15px] transition-colors duration-200 ${isActive ? 'text-blue-600' : 'text-slate-400'}`}
-                      />
-                      {id === 'appointments' && pendingCount > 0 && (
-                        <span
-                          className="absolute -top-[5px] -right-[6px] min-w-[13px] h-[13px] rounded-full bg-red-500 text-white flex items-center justify-center leading-none font-bold px-[2.5px]"
-                          style={{ fontSize: '8px' }}
-                        >
-                          {pendingCount > 9 ? '9+' : pendingCount}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Short label */}
-                    <span
-                      className="leading-none transition-colors duration-200"
-                      style={{
-                        fontSize: '9.5px',
-                        fontWeight: isActive ? 700 : 500,
-                        color: isActive ? '#2563eb' : '#94a3b8',
-                      }}
-                    >
-                      {short}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+            <p className="text-[0.9rem] font-bold text-md-on-surface leading-tight tracking-wide">
+              پانێڵی ئەدمین
+            </p>
           </div>
         </div>
       </header>
 
       {/* ── Tab content ────────────────────────────────────────────────── */}
-      <main className="flex-1 max-w-lg mx-auto w-full">
+      <main className="flex-1 max-w-lg mx-auto w-full admin-bottomnav-clearance">
         {tab === 'appointments' && <AppointmentsView initialFilter={appFilter} />}
         {tab === 'schedule'     && <ScheduleEditor />}
         {tab === 'profile'      && <ProfileEditor />}
@@ -245,6 +163,13 @@ function Dashboard() {
         {tab === 'social'       && <SocialEditor />}
         {tab === 'settings'     && <SettingsEditor />}
       </main>
+
+      <BottomNav
+        tabs={TABS}
+        active={tab}
+        badges={{ appointments: pendingCount }}
+        onSelect={setTab}
+      />
     </div>
   );
 }
