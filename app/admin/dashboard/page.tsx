@@ -84,8 +84,13 @@ function Dashboard() {
   // closed by RLS (customers/appointments only readable via the
   // admin-authenticated API with the service-role key). Poll that route
   // and derive the count client-side instead of subscribing to Realtime.
+  // On the appointments tab, AppointmentsView already polls this route and
+  // reports the count via onPendingCount, so don't double the requests.
+  const onAppointmentsTab = tab === 'appointments';
   useEffect(() => {
+    if (onAppointmentsTab) return;
     function fetchPending() {
+      if (document.hidden) return;
       const isCapacitor = !!(window as any).Capacitor?.isNativePlatform?.();
       const token = localStorage.getItem('admin_token') ?? '';
       fetch(
@@ -107,8 +112,12 @@ function Dashboard() {
     }
     fetchPending();
     const interval = setInterval(fetchPending, 15000);
-    return () => clearInterval(interval);
-  }, []);
+    document.addEventListener('visibilitychange', fetchPending);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', fetchPending);
+    };
+  }, [onAppointmentsTab]);
 
   function setTab(t: Tab) {
     router.push(`/admin/dashboard?tab=${t}`, { scroll: false });
@@ -173,7 +182,7 @@ function Dashboard() {
 
       {/* ── Tab content ────────────────────────────────────────────────── */}
       <main className="flex-1 max-w-lg mx-auto w-full admin-bottomnav-clearance">
-        {tab === 'appointments' && <AppointmentsView initialFilter={appFilter} />}
+        {tab === 'appointments' && <AppointmentsView initialFilter={appFilter} onPendingCount={setPendingCount} />}
         {tab === 'schedule'     && <ScheduleEditor />}
         {tab === 'profile'      && <ProfileEditor />}
         {tab === 'gallery'      && <GalleryEditor />}

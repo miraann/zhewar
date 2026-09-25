@@ -154,7 +154,13 @@ function Countdown({ appointmentTime }: { appointmentTime: string }) {
 
 // ── Component ──────────────────────────────────────────────────────────────────
 
-export default function AppointmentsView({ initialFilter = 'upcoming' }: { initialFilter?: Filter }) {
+export default function AppointmentsView({
+  initialFilter = 'upcoming',
+  onPendingCount,
+}: {
+  initialFilter?: Filter;
+  onPendingCount?: (count: number) => void;
+}) {
   const [appointments, setAppointments] = useState<AppointmentFull[]>([]);
   const [loading, setLoading]           = useState(true);
   const [filter, setFilter]             = useState<Filter>(initialFilter);
@@ -193,9 +199,17 @@ export default function AppointmentsView({ initialFilter = 'upcoming' }: { initi
   // key, which required `appointments` to be readable by anon — a data
   // exposure hole now closed by RLS, so we poll the authenticated admin
   // API instead.
+  // Skipped while the app is backgrounded; catches up as soon as it's visible.
   useEffect(() => {
-    const interval = setInterval(() => load({ silent: true }), 15000);
-    return () => clearInterval(interval);
+    const interval = setInterval(() => {
+      if (!document.hidden) load({ silent: true });
+    }, 15000);
+    function onVisible() { if (!document.hidden) load({ silent: true }); }
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, [load]);
 
   async function updateStatus(id: string, status: 'confirmed' | 'cancelled' | 'pending') {
@@ -238,6 +252,11 @@ export default function AppointmentsView({ initialFilter = 'upcoming' }: { initi
   }
 
   const pendingCount     = appointments.filter(a => a.status === 'pending'   && new Date(a.appointment_time) >= now).length;
+
+  // Feeds the bottom-nav badge so the dashboard doesn't poll the same route.
+  useEffect(() => {
+    if (!loading) onPendingCount?.(pendingCount);
+  }, [pendingCount, loading, onPendingCount]);
   const allPendingCount  = appointments.filter(a => a.status === 'pending').length;
   const confirmedCount = appointments.filter(a => a.status === 'confirmed' && new Date(a.appointment_time) >= now).length;
   const todayCount     = appointments.filter(a => { const dt = new Date(a.appointment_time); return dt >= today && dt < todayEnd; }).length;
