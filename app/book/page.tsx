@@ -1,18 +1,43 @@
 import { Suspense } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import BookingFlow from '@/components/booking/BookingFlow';
+import type { BookingSettings } from '@/lib/types';
 
 interface BookPageProps {
   searchParams: { name?: string; phone?: string };
 }
 
-export default function BookPage({ searchParams }: BookPageProps) {
+// Loaded on the server so the registration card renders the correct first
+// step (face scan vs. form) immediately instead of switching after mount.
+// Not cached, so admin toggles apply on the next visit.
+async function getBookingSettings(): Promise<BookingSettings> {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { global: { fetch: (url, opts) => fetch(url, { ...opts, cache: 'no-store' }) } }
+  );
+
+  const { data } = await supabase
+    .from('barber_profile')
+    .select('logo_url, face_scan_enabled, facebook_required')
+    .single();
+
+  return {
+    logo_url:          data?.logo_url ?? null,
+    face_scan_enabled: data?.face_scan_enabled ?? true,
+    facebook_required: data?.facebook_required ?? true,
+  };
+}
+
+export default async function BookPage({ searchParams }: BookPageProps) {
   const name  = searchParams.name  ? decodeURIComponent(searchParams.name)  : undefined;
   const phone = searchParams.phone ? decodeURIComponent(searchParams.phone) : undefined;
+  const settings = await getBookingSettings();
 
   return (
     <main className="min-h-screen relative overflow-hidden">
       <Suspense fallback={<SplashFallback />}>
-        <BookingFlow initialName={name} initialPhone={phone} />
+        <BookingFlow initialName={name} initialPhone={phone} settings={settings} />
       </Suspense>
     </main>
   );

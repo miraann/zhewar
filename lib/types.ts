@@ -52,6 +52,8 @@ export interface BarberProfile {
   updated_at: string;
 }
 
+export type BookingSettings = Pick<BarberProfile, 'logo_url' | 'face_scan_enabled' | 'facebook_required'>;
+
 export interface SocialLink {
   id: string;
   title: string;

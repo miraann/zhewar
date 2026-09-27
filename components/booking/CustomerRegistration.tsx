@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Camera, User, Phone, Loader2, HelpCircle, AlertCircle, CheckCircle2, Home, ScanFace, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import type { Customer } from '@/lib/types';
+import type { BookingSettings, Customer } from '@/lib/types';
 import LiveCameraCapture from './LiveCameraCapture';
 
 // Re-compress to a capped JPEG before uploading (guards against large inputs)
@@ -35,10 +35,16 @@ function dataUrlToBlob(dataUrl: string): Blob {
 }
 
 interface Props {
+  settings:   BookingSettings;
   onComplete: (customer: Customer) => void;
 }
 
-export default function CustomerRegistration({ onComplete }: Props) {
+export default function CustomerRegistration({ settings, onComplete }: Props) {
+  const {
+    logo_url:          logoUrl,
+    face_scan_enabled: faceScanEnabled,
+    facebook_required: facebookRequired,
+  } = settings;
   const [name, setName]                 = useState('');
   const [phone, setPhone]               = useState('');
   const [photoUrl, setPhotoUrl]         = useState('');
@@ -54,10 +60,7 @@ export default function CustomerRegistration({ onComplete }: Props) {
   const [alertMsg, setAlertMsg]         = useState('');
   const [showCamera, setShowCamera]     = useState(false);
   const [notes, setNotes]               = useState('');
-  const [logoUrl, setLogoUrl]           = useState<string | null>(null);
-  const [faceScanEnabled, setFaceScanEnabled]   = useState(true);
-  const [facebookRequired, setFacebookRequired] = useState(true);
-  const [regStep, setRegStep]           = useState<'scan' | 'form'>('form');
+  const [regStep, setRegStep]           = useState<'scan' | 'form'>(faceScanEnabled ? 'scan' : 'form');
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -70,16 +73,6 @@ export default function CustomerRegistration({ onComplete }: Props) {
         if (data.id)    setFbId(data.id);
       })
       .catch(() => {});
-
-    supabase.from('barber_profile').select('logo_url, face_scan_enabled, facebook_required').single()
-      .then(({ data }) => {
-        if (data?.logo_url) setLogoUrl(data.logo_url);
-        if (typeof data?.face_scan_enabled === 'boolean') {
-          setFaceScanEnabled(data.face_scan_enabled);
-          if (data.face_scan_enabled) setRegStep('scan');
-        }
-        if (typeof data?.facebook_required === 'boolean') setFacebookRequired(data.facebook_required);
-      });
   }, []);
 
   function toFbUrl(raw: string): string {

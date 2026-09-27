@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import type { Customer, WorkingSchedule } from '@/lib/types';
+import type { BookingSettings, Customer, WorkingSchedule } from '@/lib/types';
 import { AlertCircle } from 'lucide-react';
 import DateTimePicker from './DateTimePicker';
 import BookingSummary from './BookingSummary';
@@ -26,9 +26,10 @@ const STEP_URL: Record<Step, string> = {
 interface Props {
   initialName?:  string;
   initialPhone?: string;
+  settings:      BookingSettings;
 }
 
-export default function BookingFlow({ initialName, initialPhone }: Props) {
+export default function BookingFlow({ initialName, initialPhone, settings }: Props) {
   const router       = useRouter();
   const searchParams = useSearchParams();
   const step         = stepFromParam(searchParams.get('step'));
@@ -180,6 +181,7 @@ export default function BookingFlow({ initialName, initialPhone }: Props) {
     <>
       {errorModal}
       <CustomerRegistration
+        settings={settings}
         onComplete={(cust) => {
           setCustomer(cust);
           router.push(STEP_URL.datetime);
