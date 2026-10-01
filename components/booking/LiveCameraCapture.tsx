@@ -9,6 +9,8 @@ type Phase = 'loading' | 'searching' | 'face_found' | 'captured' | 'error';
 interface Props {
   onCapture: (dataUrl: string) => void;
   onCancel:  () => void;
+  // Restart scanning after a capture; falls back to a full page reload
+  onRetake?: () => void;
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -100,7 +102,7 @@ function validateFace(result: any, videoW: number, videoH: number): FaceValidity
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
-export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
+export default function LiveCameraCapture({ onCapture, onCancel, onRetake }: Props) {
   const videoRef   = useRef<HTMLVideoElement>(null);
   const streamRef  = useRef<MediaStream | null>(null);
   const rafRef     = useRef<number>(0);
@@ -593,10 +595,7 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
         )}
 
         {phase === 'captured' && (
-          <>
-            <p className="text-emerald-400 font-bold text-lg">وێنەکەت تۆمار کرا ✓</p>
-            <p className="text-white/55 text-xs">  کارەکەت سەرکەوتووبوو</p>
-          </>
+          <p className="text-emerald-400 font-bold text-lg">وێنەکەت گیرا ✓</p>
         )}
 
         {phase === 'error' && (
@@ -615,15 +614,16 @@ export default function LiveCameraCapture({ onCapture, onCancel }: Props) {
 
       {/* ── Post-capture buttons ─────────────────────────────────────────────── */}
       {phase === 'captured' && capturedUrl && (
-        <div className="flex gap-3 mt-6 w-full max-w-xs px-4">
+        <div className="flex gap-2.5 mt-6 w-full max-w-xs px-4">
           <button
             onClick={() => { stopStream(); onCapture(capturedUrl); }}
             className="flex-1 h-12 rounded-2xl bg-emerald-500 text-white font-bold text-sm active:bg-emerald-600 active:scale-[0.98] transition-all touch-manipulation shadow-lg shadow-emerald-500/30"
           >
-            بەکاربهێنە ✓
+            بەردەوام بە ✓
           </button>
           <button
-            onClick={retry}
+            onClick={() => { stopStream(); (onRetake ?? retry)(); }}
+            aria-label="دووبارە سکان"
             className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 text-white flex items-center justify-center active:scale-95 transition-transform touch-manipulation"
           >
             <RefreshCw className="w-4 h-4" />

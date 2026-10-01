@@ -192,10 +192,6 @@ export default function AppointmentsView({
       .catch(() => {});
   }, []);
 
-  function templatesOf(kind: WhatsAppTemplateKind) {
-    return waTemplates.filter((t) => t.kind === kind);
-  }
-
   const load = useCallback(async (opts: { silent?: boolean } = {}) => {
     if (!opts.silent) setLoading(true);
     try {
@@ -474,11 +470,14 @@ export default function AppointmentsView({
                 {group.items.map(appt => {
                   const { time }    = formatDT(appt.appointment_time);
                   const fbLinks     = appt.customers.facebook_id ? getFbLinks(appt.customers.facebook_id) : null;
+                  // The face scanned for this booking; older bookings predate it
+                  const photo       = appt.photo_url ?? appt.customers.photo_url;
                   const isPending   = appt.status === 'pending';
                   const isConfirmed = appt.status === 'confirmed';
                   const isCancelled = appt.status === 'cancelled';
-                  const waKind: WhatsAppTemplateKind | null = isConfirmed ? 'accept' : isCancelled ? 'decline' : null;
-                  const hasWaTemplates = !!waKind && templatesOf(waKind).length > 0;
+                  // Pending bookings open on the accept messages; the sheet can switch kinds.
+                  const waKind: WhatsAppTemplateKind = isCancelled ? 'decline' : 'accept';
+                  const hasWaTemplates = waTemplates.length > 0;
 
                   const dotColorVar = isConfirmed ? '--md-success' : isCancelled ? '--md-error' : '--md-warning';
                   const dotColor    = `rgb(var(${dotColorVar}))`;
@@ -515,14 +514,14 @@ export default function AppointmentsView({
 
                           {/* Avatar — w-16 */}
                           <div className="relative w-16 h-16 flex-shrink-0">
-                            {appt.customers.photo_url && !failedPhotos.has(appt.id) ? (
+                            {photo && !failedPhotos.has(appt.id) ? (
                               <button
                                 type="button"
-                                onClick={() => setPreview(appt.customers.photo_url)}
+                                onClick={() => setPreview(photo)}
                                 className="absolute inset-0 rounded-full overflow-hidden touch-manipulation active:opacity-70 transition-opacity"
                               >
                                 <img
-                                  src={appt.customers.photo_url}
+                                  src={photo}
                                   alt={appt.customers.full_name}
                                   className="w-full h-full object-cover"
                                   loading="lazy"
@@ -578,7 +577,7 @@ export default function AppointmentsView({
                                 {hasWaTemplates ? (
                                   <button
                                     type="button"
-                                    onClick={() => setWaSheet({ appt, kind: waKind!, afterAction: false })}
+                                    onClick={() => setWaSheet({ appt, kind: waKind, afterAction: false })}
                                     className="w-9 h-9 rounded-full flex items-center justify-center text-white active:opacity-75 touch-manipulation"
                                     style={{ background: '#25d366' }}
                                   >
@@ -709,7 +708,7 @@ export default function AppointmentsView({
         <WhatsAppSendSheet
           phone={waSheet.appt.customers.phone_number}
           kind={waSheet.kind}
-          templates={templatesOf(waSheet.kind)}
+          templates={waTemplates}
           values={waValues(waSheet.appt)}
           afterAction={waSheet.afterAction}
           onClose={() => setWaSheet(null)}

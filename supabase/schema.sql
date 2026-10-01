@@ -21,6 +21,9 @@ CREATE TABLE IF NOT EXISTS appointments (
   appointment_time TIMESTAMPTZ NOT NULL,
   status           TEXT        NOT NULL DEFAULT 'pending'
                    CHECK (status IN ('pending', 'confirmed', 'cancelled')),
+  -- Face scan taken for this booking (customer_photos bucket); falls
+  -- back to customers.photo_url when null.
+  photo_url        TEXT,
   created_at       TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -154,3 +157,37 @@ CREATE POLICY "public_read_profile"  ON barber_profile     FOR SELECT USING (tru
 CREATE POLICY "public_read_gallery"  ON gallery_photos     FOR SELECT USING (true);
 CREATE POLICY "public_read_social"   ON social_links       FOR SELECT USING (true);
 -- customers, appointments, admin_fcm_tokens, whatsapp_templates: intentionally no anon policy.
+
+-- ── سڕینەوەی سەردانە کۆنەکان ───────────────
+-- Appointments are deleted 3 days after appointment_time; customers once
+-- they have no appointment left (or, if they never booked, 3 days after
+-- created_at). Hourly pg_cron job — details in
+-- migrations/2026-10-01_visit_retention.sql.
+CREATE EXTENSION IF NOT EXISTS pg_cron WITH SCHEMA pg_catalog;
+
+CREATE OR REPLACE FUNCTION public.delete_past_visits()
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  cutoff            TIMESTAMPTZ := NOW() - INTERVAL '3 days';
+  appointments_gone INTEGER;
+  customers_gone    INTEGER;
+BEGIN
+  DELETE FROM appointments WHERE appointment_time < cutoff;
+  GET DIAGNOSTICS appointments_gone = ROW_COUNT;
+
+  DELETE FROM customers c
+  WHERE c.created_at < cutoff
+    AND NOT EXISTS (SELECT 1 FROM appointments a WHERE a.customer_id = c.id);
+  GET DIAGNOSTICS customers_gone = ROW_COUNT;
+
+  RETURN jsonb_build_object('appointments', appointments_gone, 'customers', customers_gone);
+END;
+$$;
+
+REVOKE EXECUTE ON FUNCTION public.delete_past_visits() FROM PUBLIC, anon, authenticated;
+
+SELECT cron.schedule('delete-past-visits', '0 * * * *', $$ SELECT public.delete_past_visits(); $$);

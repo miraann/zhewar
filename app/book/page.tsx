@@ -3,10 +3,6 @@ import { createClient } from '@supabase/supabase-js';
 import BookingFlow from '@/components/booking/BookingFlow';
 import type { BookingSettings } from '@/lib/types';
 
-interface BookPageProps {
-  searchParams: { name?: string; phone?: string };
-}
-
 // Loaded on the server so the registration card renders the correct first
 // step (face scan vs. form) immediately instead of switching after mount.
 // Not cached, so admin toggles apply on the next visit.
@@ -29,15 +25,13 @@ async function getBookingSettings(): Promise<BookingSettings> {
   };
 }
 
-export default async function BookPage({ searchParams }: BookPageProps) {
-  const name  = searchParams.name  ? decodeURIComponent(searchParams.name)  : undefined;
-  const phone = searchParams.phone ? decodeURIComponent(searchParams.phone) : undefined;
+export default async function BookPage() {
   const settings = await getBookingSettings();
 
   return (
     <main className="min-h-screen relative overflow-hidden">
       <Suspense fallback={<SplashFallback />}>
-        <BookingFlow initialName={name} initialPhone={phone} settings={settings} />
+        <BookingFlow settings={settings} />
       </Suspense>
     </main>
   );

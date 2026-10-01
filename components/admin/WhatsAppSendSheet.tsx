@@ -1,9 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { MessageCircle, Send } from 'lucide-react';
+import { CheckCircle2, MessageCircle, Send, XCircle } from 'lucide-react';
 import type { WhatsAppTemplate, WhatsAppTemplateKind } from '@/lib/types';
-import { fillWaTemplate, waLink, type WaMessageValues } from '@/lib/whatsapp';
+import { WA_KIND_LABEL, fillWaTemplate, waLink, type WaMessageValues } from '@/lib/whatsapp';
+
+const KINDS: WhatsAppTemplateKind[] = ['accept', 'decline'];
+
+const KIND_STYLE: Record<WhatsAppTemplateKind, { icon: React.ElementType; activeCls: string }> = {
+  accept:  { icon: CheckCircle2, activeCls: 'bg-md-success-container text-md-on-success-container border-md-success/40' },
+  decline: { icon: XCircle,      activeCls: 'bg-md-error-container text-md-on-error-container border-md-error/40' },
+};
 
 const PROMPT: Record<WhatsAppTemplateKind, string> = {
   accept:  'کاتەکە پەسەند کرا. پەیامێک بۆ واتساپی کڕیار بنێردرێت؟',
@@ -12,24 +19,37 @@ const PROMPT: Record<WhatsAppTemplateKind, string> = {
 
 // Pick one of the واتساپ-tab messages (the kind's first is preselected), see
 // it filled in for this booking, and open it in WhatsApp. Shown right after
-// a booking is accepted/declined, and from the WhatsApp button on a
-// confirmed/cancelled card. The send button is a real <a>, not
-// window.open() — the tap itself is what lets the APK's WebView hand wa.me
-// off to WhatsApp.
+// a booking is accepted/declined — only that kind's messages — and from the
+// WhatsApp button on any card, where the admin can switch between accept and
+// decline messages. The send button is a real <a>, not window.open() — the
+// tap itself is what lets the APK's WebView hand wa.me off to WhatsApp.
 export default function WhatsAppSendSheet({
-  phone, kind, templates, values, afterAction, onClose,
+  phone, kind: initialKind, templates: allTemplates, values, afterAction, onClose,
 }: {
   phone: string;
+  /** Kind shown first; after an accept/decline it's the only one shown. */
   kind: WhatsAppTemplateKind;
-  /** Non-empty, in send order — callers only open the sheet when there's something to send. */
+  /** Every template, in send order. Callers only open the sheet when `kind`
+   *  (afterAction) or any kind (otherwise) has something to send. */
   templates: WhatsAppTemplate[];
   values: WaMessageValues;
   afterAction: boolean;
   onClose: () => void;
 }) {
+  const kinds = afterAction
+    ? [initialKind]
+    : KINDS.filter((k) => allTemplates.some((t) => t.kind === k));
+  const [kind, setKind] = useState(kinds.includes(initialKind) ? initialKind : kinds[0]);
+  const templates = allTemplates.filter((t) => t.kind === kind);
+
   const [selectedId, setSelectedId] = useState(templates[0].id);
   const selected = templates.find((t) => t.id === selectedId) ?? templates[0];
   const message  = fillWaTemplate(selected.body, values);
+
+  function switchKind(k: WhatsAppTemplateKind) {
+    setKind(k);
+    setSelectedId(allTemplates.find((t) => t.kind === k)!.id);
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" onClick={onClose}>
@@ -51,6 +71,31 @@ export default function WhatsAppSendSheet({
         <p className="text-md-on-surface-variant text-[0.8rem] mt-1 leading-relaxed">
           {afterAction ? PROMPT[kind] : 'کام پەیام بۆ واتساپی کڕیار بنێردرێت؟'}
         </p>
+
+        {kinds.length > 1 && (
+          <div role="radiogroup" aria-label="جۆری پەیام" className="mt-4 grid grid-cols-2 gap-2">
+            {kinds.map((k) => {
+              const active = k === kind;
+              const Icon   = KIND_STYLE[k].icon;
+              return (
+                <button
+                  key={k}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  onClick={() => switchKind(k)}
+                  className={[
+                    'h-10 rounded-md-full text-[0.8rem] font-semibold flex items-center justify-center gap-1.5 border touch-manipulation transition-colors',
+                    active ? KIND_STYLE[k].activeCls : 'bg-md-surface-container-high text-md-on-surface-variant border-md-outline-variant',
+                  ].join(' ')}
+                >
+                  <Icon className="w-[14px] h-[14px]" />
+                  {WA_KIND_LABEL[k]}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {templates.length > 1 && (
           <div role="radiogroup" className="mt-4 flex flex-wrap justify-center gap-1.5">

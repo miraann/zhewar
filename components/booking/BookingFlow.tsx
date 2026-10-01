@@ -23,13 +23,41 @@ const STEP_URL: Record<Step, string> = {
   summary:  '/book?step=summary',
 };
 
-interface Props {
-  initialName?:  string;
-  initialPhone?: string;
-  settings:      BookingSettings;
+// Re-creates the customer row if the hourly cleanup (supabase/migrations/
+// 2026-10-01_visit_retention.sql) deleted it between registration and
+// confirm, with the same fields CustomerRegistration sent.
+async function registerAgain(cached: Customer): Promise<Customer | null> {
+  let storedToken: string | null = null;
+  try { storedToken = localStorage.getItem('luxe_customer_token'); } catch {}
+  try {
+    const res = await fetch('/api/register-customer', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        full_name:    cached.full_name,
+        phone_number: cached.phone_number,
+        photo_url:    cached.photo_url,
+        facebook_id:  cached.facebook_id,
+        notes:        cached.notes,
+        access_token: storedToken || undefined,
+      }),
+    });
+    const json = await res.json();
+    if (!res.ok || !json?.id) return null;
+    try {
+      if (typeof json.access_token === 'string') localStorage.setItem('luxe_customer_token', json.access_token);
+    } catch {}
+    return json as Customer;
+  } catch {
+    return null;
+  }
 }
 
-export default function BookingFlow({ initialName, initialPhone, settings }: Props) {
+interface Props {
+  settings: BookingSettings;
+}
+
+export default function BookingFlow({ settings }: Props) {
   const router       = useRouter();
   const searchParams = useSearchParams();
   const step         = stepFromParam(searchParams.get('step'));
@@ -47,6 +75,8 @@ export default function BookingFlow({ initialName, initialPhone, settings }: Pro
   const [selectedTime, setSelectedTime] = useState<string | null>(() => {
     try { return sessionStorage.getItem('book_time'); } catch { return null; }
   });
+  // Face scan taken for this booking, stored on the appointment
+  const [bookingPhoto, setBookingPhoto] = useState<string | null>(null);
 
   // Keep sessionStorage in sync
   useEffect(() => {
@@ -63,6 +93,8 @@ export default function BookingFlow({ initialName, initialPhone, settings }: Pro
     } catch {}
   }, [selectedTime]);
 
+  const displayCustomer = customer && bookingPhoto ? { ...customer, photo_url: bookingPhoto } : customer;
+
   // If landing on summary without date/time, push back to datetime
   useEffect(() => {
     if (step === 'summary' && (!selectedDate || !selectedTime)) {
@@ -78,52 +110,21 @@ export default function BookingFlow({ initialName, initialPhone, settings }: Pro
       ]);
       if (scheduleData) setWorkingSchedule(scheduleData);
       if (blockedData)  setBlockedDates(blockedData.map((r) => r.blocked_date));
-
-      let resolved: Customer | null = null;
-      let isRegistered = false;
-      try {
-        const cached = localStorage.getItem('luxe_customer');
-        if (cached) resolved = JSON.parse(cached);
-        isRegistered = localStorage.getItem('luxe_registered') === '1';
-      } catch {}
-
-      if (resolved) setCustomer(resolved);
-
-      // Validate: datetime/summary requires a registered customer
-      if (step !== 'register' && (!resolved || !isRegistered)) {
-        router.replace(STEP_URL.register);
-        return;
-      }
-
-      // Auto-advance: already registered and landing on register with no QR params
-      if (step === 'register' && resolved && isRegistered && !initialName) {
-        router.replace(STEP_URL.datetime);
-        return;
-      }
-
-      // Handle QR / initialName deep-link
-      if (initialName && initialPhone) {
-        try {
-          const res = await fetch('/api/register-customer', {
-            method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ full_name: initialName, phone_number: initialPhone }),
-          });
-          const upserted = await res.json();
-          if (res.ok && upserted?.id) {
-            try {
-              localStorage.setItem('luxe_customer', JSON.stringify(upserted));
-              localStorage.setItem('luxe_registered', '1');
-            } catch {}
-            setCustomer(upserted);
-            router.replace(STEP_URL.datetime);
-          }
-        } catch {}
-      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     init();
+    // Cached registration left by older versions — no longer used
+    try {
+      localStorage.removeItem('luxe_customer');
+      localStorage.removeItem('luxe_registered');
+    } catch {}
   }, []);
+
+  // Every booking starts with registration (face scan + form), so the
+  // customer only exists once that's done in this visit — landing on a
+  // later step directly, or after a refresh, starts over.
+  useEffect(() => {
+    if (step !== 'register' && !customer) router.replace(STEP_URL.register);
+  }, [step, customer, router]);
 
   const handleDateChange = useCallback((date: Date) => {
     setSelectedDate(date);
@@ -137,24 +138,47 @@ export default function BookingFlow({ initialName, initialPhone, settings }: Pro
     const [h, m] = selectedTime.split(':').map(Number);
     const dt = new Date(selectedDate);
     dt.setHours(h, m, 0, 0);
+    const book = (customerId: string | null) => fetch('/api/book-appointment', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        customer_id:      customerId,
+        appointment_time: dt.toISOString(),
+        photo_url:        bookingPhoto ?? customer?.photo_url ?? null,
+      }),
+    });
     let data: { id: string } | null = null;
     try {
-      const res = await fetch('/api/book-appointment', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ customer_id: customer?.id ?? null, appointment_time: dt.toISOString() }),
-      });
+      let res = await book(customer?.id ?? null);
+      // The hourly cleanup deleted the customer since they registered
+      if (res.status === 404 && customer) {
+        const fresh = await registerAgain(customer);
+        if (fresh) {
+          setCustomer(fresh);
+          res = await book(fresh.id);
+        }
+      }
       const json = await res.json();
       if (res.ok && json?.id) data = json;
+      // Missing or reused face scan — start over at registration
+      if (json?.error === 'face_scan_required') {
+        setConfirming(false);
+        setCustomer(null);
+        setBookingError('تکایە سەرەتا سکانی ڕووخسارت بکە');
+        return;
+      }
     } catch {}
     setConfirming(false);
     if (!data) {
       setBookingError('کاتی سەردانیکردن تۆمار نەکرا. تکایە دووبارە هەوڵ بدەرەوە.');
       return;
     }
-    try { sessionStorage.removeItem('book_date'); sessionStorage.removeItem('book_time'); } catch {}
+    try {
+      sessionStorage.removeItem('book_date');
+      sessionStorage.removeItem('book_time');
+    } catch {}
     router.push(`/appointment/${data.id}`);
-  }, [customer, selectedDate, selectedTime, router]);
+  }, [customer, bookingPhoto, selectedDate, selectedTime, router]);
 
   const errorModal = bookingError && (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-6" dir="rtl">
@@ -182,8 +206,9 @@ export default function BookingFlow({ initialName, initialPhone, settings }: Pro
       {errorModal}
       <CustomerRegistration
         settings={settings}
-        onComplete={(cust) => {
+        onComplete={(cust, photo) => {
           setCustomer(cust);
+          setBookingPhoto(photo);
           router.push(STEP_URL.datetime);
         }}
       />
@@ -200,19 +225,16 @@ export default function BookingFlow({ initialName, initialPhone, settings }: Pro
           selectedTime={selectedTime}
           workingSchedule={workingSchedule}
           blockedDates={blockedDates}
-          customer={customer}
+          customer={displayCustomer}
           onDateSelect={handleDateChange}
           onTimeSelect={setSelectedTime}
           onNext={() => router.push(STEP_URL.summary)}
-          onEdit={() => {
-            try { localStorage.removeItem('luxe_registered'); } catch {}
-            router.push(STEP_URL.register);
-          }}
+          onEdit={() => router.push(STEP_URL.register)}
         />
       )}
       {step === 'summary' && selectedDate && selectedTime && (
         <BookingSummary
-          customer={customer}
+          customer={displayCustomer}
           date={selectedDate}
           time={selectedTime}
           confirming={confirming}

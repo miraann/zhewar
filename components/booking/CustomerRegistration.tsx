@@ -5,6 +5,7 @@ import { Camera, User, Phone, Loader2, HelpCircle, AlertCircle, CheckCircle2, Ho
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import type { BookingSettings, Customer } from '@/lib/types';
+import { faceScanPath, faceScanUrl, newFaceScanPath } from '@/lib/faceScans';
 import LiveCameraCapture from './LiveCameraCapture';
 
 // Re-compress to a capped JPEG before uploading (guards against large inputs)
@@ -34,9 +35,21 @@ function dataUrlToBlob(dataUrl: string): Blob {
   return new Blob([arr], { type: mime });
 }
 
+// Uploads a compressed JPEG to the customer_photos bucket; null on failure
+async function uploadPhoto(dataUrl: string): Promise<{ path: string; url: string } | null> {
+  const path = newFaceScanPath();
+  const { error } = await supabase.storage
+    .from('customer_photos')
+    .upload(path, dataUrlToBlob(dataUrl), { contentType: 'image/jpeg' });
+  return error ? null : { path, url: faceScanUrl(path) };
+}
+
+// Shown for every booking: the customer scans their face again and fills in
+// the form from scratch — nothing is reused from an earlier booking.
 interface Props {
   settings:   BookingSettings;
-  onComplete: (customer: Customer) => void;
+  // bookingPhoto: the face scan taken for this booking
+  onComplete: (customer: Customer, bookingPhoto: string | null) => void;
 }
 
 export default function CustomerRegistration({ settings, onComplete }: Props) {
@@ -59,6 +72,7 @@ export default function CustomerRegistration({ settings, onComplete }: Props) {
   const [error, setError]               = useState('');
   const [alertMsg, setAlertMsg]         = useState('');
   const [showCamera, setShowCamera]     = useState(false);
+  const [cameraKey, setCameraKey]       = useState(0);
   const [notes, setNotes]               = useState('');
   const [regStep, setRegStep]           = useState<'scan' | 'form'>(faceScanEnabled ? 'scan' : 'form');
   const fileRef = useRef<HTMLInputElement>(null);
@@ -69,7 +83,8 @@ export default function CustomerRegistration({ settings, onComplete }: Props) {
       .then((data) => {
         if (!data) return;
         if (data.name)  setName(data.name);
-        if (data.photo) setPhotoUrl(data.photo);
+        // With face scan on, the photo must be this visit's scan
+        if (data.photo && !faceScanEnabled) setPhotoUrl((cur) => cur || data.photo);
         if (data.id)    setFbId(data.id);
       })
       .catch(() => {});
@@ -108,17 +123,18 @@ export default function CustomerRegistration({ settings, onComplete }: Props) {
   async function handleCameraCapture(dataUrl: string) {
     setShowCamera(false);
     setUploading(true);
+    setError('');
     const compressed = await compressDataUrl(dataUrl);
     setPhotoUrl(compressed);
     setRegStep('form');
-    const blob = dataUrlToBlob(compressed);
-    const path = `customer-${Date.now()}.jpg`;
-    const { error: uploadErr } = await supabase.storage
-      .from('customer_photos')
-      .upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
-    if (!uploadErr) {
-      const { data } = supabase.storage.from('customer_photos').getPublicUrl(path);
-      setPhotoUrl(data.publicUrl);
+    const uploaded = await uploadPhoto(compressed);
+    if (uploaded) {
+      setPhotoUrl(uploaded.url);
+    } else {
+      // Never submit the inline data: URL as the photo — make them rescan
+      setPhotoUrl('');
+      setRegStep('scan');
+      setError('وێنەکە بارنەکرا. تکایە دووبارە سکان بکە');
     }
     setUploading(false);
   }
@@ -133,21 +149,23 @@ export default function CustomerRegistration({ settings, onComplete }: Props) {
       const dataUrl = ev.target?.result as string;
       const compressed = await compressDataUrl(dataUrl);
       setPhotoUrl(compressed);
-      const blob = dataUrlToBlob(compressed);
-      const path = `customer-${Date.now()}.jpg`;
-      const { error: uploadErr } = await supabase.storage
-        .from('customer_photos')
-        .upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
-      if (!uploadErr) {
-        const { data } = supabase.storage.from('customer_photos').getPublicUrl(path);
-        setPhotoUrl(data.publicUrl);
-      }
+      const uploaded = await uploadPhoto(compressed);
+      setPhotoUrl(uploaded?.url ?? '');
+      if (!uploaded) setError('وێنەکە بارنەکرا. تکایە دووبارە هەوڵبدەرەوە');
       setUploading(false);
     };
     reader.readAsDataURL(file);
   }
 
   async function handleSubmit() {
+    if (uploading || saving)           return;
+    // Only an upload from this visit's scan counts — never a Facebook photo
+    if (faceScanEnabled && !faceScanPath(photoUrl)) {
+      setPhotoUrl('');
+      setRegStep('scan');
+      setError('تکایە سەرەتا سکانی ڕووخسارت بکە');
+      return;
+    }
     if (!name.trim())                  { setError('تکایە ناوی خۆت بنووسە');                     return; }
     if (name.trim().length > 60)       { setError('ناو زۆر درێژە (زیاتر لە ٦٠ پیت)');             return; }
     if (!phone.trim())                 { setError('تکایە ژمارەی مۆبایلت بنووسە');               return; }
@@ -184,15 +202,18 @@ export default function CustomerRegistration({ settings, onComplete }: Props) {
     } catch {}
     setSaving(false);
     if (saved) {
+      // A second phone booking under an existing number gets the old record
+      // back unchanged (it lacks the access token), photo included — so the
+      // scan just taken wins over whatever the server returned.
+      if (photoUrl) saved = { ...saved, photo_url: photoUrl };
+      const bookingPhoto = photoUrl && faceScanPath(photoUrl) ? photoUrl : null;
       try {
-        localStorage.setItem('luxe_customer', JSON.stringify(saved));
-        localStorage.setItem('luxe_registered', '1');
         // Only present on first registration/an already-recognized update —
         // keep the existing stored token otherwise so this device stays
         // "recognized" for the phone number it originally registered.
         if (savedToken) localStorage.setItem('luxe_customer_token', savedToken);
       } catch {}
-      onComplete(saved);
+      onComplete(saved, bookingPhoto);
     } else {
       setError('هەڵەیەک ڕوویدا. تکایە دووبارە هەوڵبدەرەوە.');
     }
@@ -272,8 +293,10 @@ export default function CustomerRegistration({ settings, onComplete }: Props) {
           <>
             {showCamera && (
               <LiveCameraCapture
+                key={cameraKey}
                 onCapture={handleCameraCapture}
                 onCancel={() => setShowCamera(false)}
+                onRetake={() => setCameraKey((k) => k + 1)}
               />
             )}
 
@@ -298,6 +321,10 @@ export default function CustomerRegistration({ settings, onComplete }: Props) {
                 <ScanFace className="w-5 h-5" />
                 {uploading ? 'بارکردن...' : 'سکانی ڕووخسار'}
               </button>
+
+              {error && (
+                <p className="text-red-500 text-xs text-center px-1">⚠ {error}</p>
+              )}
             </div>
           </>
         ) : (
@@ -323,7 +350,7 @@ export default function CustomerRegistration({ settings, onComplete }: Props) {
                   )}
                 </div>
                 <button
-                  onClick={() => setRegStep('scan')}
+                  onClick={() => { setError(''); setRegStep('scan'); }}
                   className="mt-1.5 flex items-center gap-1 text-blue-500 text-xs font-medium touch-manipulation active:text-blue-700"
                 >
                   <RefreshCw className="w-3 h-3" />
@@ -513,10 +540,10 @@ export default function CustomerRegistration({ settings, onComplete }: Props) {
             {/* Submit */}
             <button
               onClick={handleSubmit}
-              disabled={saving}
+              disabled={saving || uploading}
               className={[
                 'w-full h-14 rounded-2xl font-bold text-base transition-all touch-manipulation select-none',
-                saving
+                saving || uploading
                   ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
                   : 'bg-blue-600 text-white shadow-md shadow-blue-200/70 active:bg-blue-700 active:scale-[0.98]',
               ].join(' ')}
@@ -524,7 +551,9 @@ export default function CustomerRegistration({ settings, onComplete }: Props) {
               <span className="flex items-center justify-center gap-2">
                 {saving
                   ? <><Loader2 className="w-5 h-5 animate-spin" /> چاوەڕوانبە...</>
-                  : 'دەستپێبکە ←'
+                  : uploading
+                    ? <><Loader2 className="w-5 h-5 animate-spin" /> بارکردنی وێنە...</>
+                    : 'دەستپێبکە ←'
                 }
               </span>
             </button>
