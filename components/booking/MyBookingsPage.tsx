@@ -54,6 +54,7 @@ interface Booking {
   id: string;
   appointment_time: string;
   status: string;
+  photo_url: string | null;
   customers: Customer;
 }
 
@@ -120,6 +121,8 @@ export default function MyBookingsPage() {
   }
 
   const customer = bookings?.[0]?.customers ?? null;
+  // The face scanned for the next booking; older bookings predate it
+  const customerPhoto = bookings?.[0]?.photo_url ?? customer?.photo_url ?? null;
 
   return (
     <div className="min-h-screen flex flex-col items-center py-12 px-4 relative overflow-hidden">
@@ -185,8 +188,8 @@ export default function MyBookingsPage() {
               {customer && (
                 <div className="bg-white border border-slate-100 shadow-md rounded-3xl p-5 flex items-center gap-4">
                   <div className="w-16 h-16 rounded-full flex-shrink-0 overflow-hidden bg-slate-100 border-2 border-slate-200">
-                    {customer.photo_url ? (
-                      <img src={customer.photo_url} alt={customer.full_name} className="w-full h-full object-cover" />
+                    {customerPhoto ? (
+                      <img src={customerPhoto} alt={customer.full_name} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-blue-400">
                         {customer.full_name.charAt(0)}

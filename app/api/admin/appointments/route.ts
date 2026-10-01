@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await getSupabaseAdmin()
     .from('appointments')
-    .select('id, appointment_time, status, created_at, customers(full_name, phone_number, photo_url, facebook_id, notes)')
+    .select('id, appointment_time, status, photo_url, created_at, customers(full_name, phone_number, photo_url, facebook_id, notes)')
     .or(`appointment_time.gte.${recentCutoff},status.eq.pending`)
     .order('appointment_time', { ascending: true });
 

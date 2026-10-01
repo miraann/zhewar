@@ -13,6 +13,8 @@ export interface Appointment {
   customer_id: string;
   appointment_time: string;
   status: 'pending' | 'confirmed' | 'cancelled';
+  // Face scan taken for this booking — prefer over customers.photo_url
+  photo_url: string | null;
   created_at: string;
 }
 

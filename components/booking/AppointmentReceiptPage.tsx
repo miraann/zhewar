@@ -60,6 +60,7 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl 
   const sid         = shortId(appointment.id);
   const isCancelled = appointment.status === 'cancelled';
   const statusStyle = STATUS_COLOR[appointment.status] ?? STATUS_COLOR.pending;
+  const photoUrl    = appointment.photo_url ?? appointment.customers.photo_url;
 
   const rawFb = (appointment.customers as any).facebook_id as string | null;
   const fbUrl = (() => {
@@ -208,10 +209,10 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl 
             <div className="flex flex-col items-center pt-6 pb-5 px-6 gap-1.5">
               {/* Avatar */}
               <div className="w-24 h-24 rounded-full ring-4 ring-blue-500/10 p-1 bg-white shadow-md overflow-hidden">
-                {appointment.customers.photo_url ? (
+                {photoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={appointment.customers.photo_url}
+                    src={photoUrl}
                     alt=""
                     crossOrigin="anonymous"
                     className="w-full h-full object-cover rounded-full"

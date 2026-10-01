@@ -1,10 +1,13 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Camera, User, Phone, Loader2, HelpCircle, AlertCircle, CheckCircle2, Home, ScanFace, RefreshCw } from 'lucide-react';
+import { Camera, User, Phone, Loader2, HelpCircle, AlertCircle, CheckCircle2, Home, ScanFace, RefreshCw, X } from 'lucide-react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import type { BookingSettings, Customer } from '@/lib/types';
+import {
+  faceScanPath, faceScanUrl, forgetFaceScan, newFaceScanPath, readSavedFaceScans, saveFaceScan,
+} from '@/lib/faceScans';
 import LiveCameraCapture from './LiveCameraCapture';
 
 // Re-compress to a capped JPEG before uploading (guards against large inputs)
@@ -34,12 +37,26 @@ function dataUrlToBlob(dataUrl: string): Blob {
   return new Blob([arr], { type: mime });
 }
 
-interface Props {
-  settings:   BookingSettings;
-  onComplete: (customer: Customer) => void;
+// Uploads a compressed JPEG to the customer_photos bucket; null on failure
+async function uploadPhoto(dataUrl: string): Promise<{ path: string; url: string } | null> {
+  const path = newFaceScanPath();
+  const { error } = await supabase.storage
+    .from('customer_photos')
+    .upload(path, dataUrlToBlob(dataUrl), { contentType: 'image/jpeg' });
+  return error ? null : { path, url: faceScanUrl(path) };
 }
 
-export default function CustomerRegistration({ settings, onComplete }: Props) {
+interface Props {
+  settings:       BookingSettings;
+  // Face scans saved on this device (zh_face_scans cookie, read on the
+  // server so they show on first render)
+  savedFaceScans: string[];
+  // bookingPhoto: the face scan to attach to this booking, whether or not
+  // the customer chose to save it
+  onComplete: (customer: Customer, bookingPhoto: string | null) => void;
+}
+
+export default function CustomerRegistration({ settings, savedFaceScans, onComplete }: Props) {
   const {
     logo_url:          logoUrl,
     face_scan_enabled: faceScanEnabled,
@@ -59,9 +76,18 @@ export default function CustomerRegistration({ settings, onComplete }: Props) {
   const [error, setError]               = useState('');
   const [alertMsg, setAlertMsg]         = useState('');
   const [showCamera, setShowCamera]     = useState(false);
+  const [cameraKey, setCameraKey]       = useState(0);
+  // false = the customer picked "only this time" for the current face scan:
+  // it goes on this booking but not on their profile or this device
+  const [photoSaved, setPhotoSaved]     = useState(true);
+  const [savedScans, setSavedScans]     = useState(savedFaceScans);
   const [notes, setNotes]               = useState('');
   const [regStep, setRegStep]           = useState<'scan' | 'form'>(faceScanEnabled ? 'scan' : 'form');
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // The server-rendered list can be stale after client-side navigation
+  // (router cache), so re-read the cookie once mounted
+  useEffect(() => { setSavedScans(readSavedFaceScans()); }, []);
 
   useEffect(() => {
     fetch('/api/auth/facebook/profile')
@@ -105,22 +131,33 @@ export default function CustomerRegistration({ settings, onComplete }: Props) {
     setFetchingFb(false);
   }
 
-  async function handleCameraCapture(dataUrl: string) {
+  async function handleCameraCapture(dataUrl: string, save: boolean) {
     setShowCamera(false);
     setUploading(true);
+    setError('');
     const compressed = await compressDataUrl(dataUrl);
     setPhotoUrl(compressed);
+    setPhotoSaved(save);
     setRegStep('form');
-    const blob = dataUrlToBlob(compressed);
-    const path = `customer-${Date.now()}.jpg`;
-    const { error: uploadErr } = await supabase.storage
-      .from('customer_photos')
-      .upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
-    if (!uploadErr) {
-      const { data } = supabase.storage.from('customer_photos').getPublicUrl(path);
-      setPhotoUrl(data.publicUrl);
+    const uploaded = await uploadPhoto(compressed);
+    if (uploaded) {
+      setPhotoUrl(uploaded.url);
+      if (save) setSavedScans(saveFaceScan(uploaded.path));
+    } else {
+      // Never submit the inline data: URL as the photo — make them rescan
+      setPhotoUrl('');
+      setRegStep('scan');
+      setError('وێنەکە بارنەکرا. تکایە دووبارە سکان بکە');
     }
     setUploading(false);
+  }
+
+  function pickSavedScan(path: string) {
+    setPhotoUrl(faceScanUrl(path));
+    setPhotoSaved(true);
+    setSavedScans(saveFaceScan(path)); // most recently used first
+    setError('');
+    setRegStep('form');
   }
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -133,21 +170,17 @@ export default function CustomerRegistration({ settings, onComplete }: Props) {
       const dataUrl = ev.target?.result as string;
       const compressed = await compressDataUrl(dataUrl);
       setPhotoUrl(compressed);
-      const blob = dataUrlToBlob(compressed);
-      const path = `customer-${Date.now()}.jpg`;
-      const { error: uploadErr } = await supabase.storage
-        .from('customer_photos')
-        .upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
-      if (!uploadErr) {
-        const { data } = supabase.storage.from('customer_photos').getPublicUrl(path);
-        setPhotoUrl(data.publicUrl);
-      }
+      setPhotoSaved(true);
+      const uploaded = await uploadPhoto(compressed);
+      setPhotoUrl(uploaded?.url ?? '');
+      if (!uploaded) setError('وێنەکە بارنەکرا. تکایە دووبارە هەوڵبدەرەوە');
       setUploading(false);
     };
     reader.readAsDataURL(file);
   }
 
   async function handleSubmit() {
+    if (uploading || saving)           return;
     if (!name.trim())                  { setError('تکایە ناوی خۆت بنووسە');                     return; }
     if (name.trim().length > 60)       { setError('ناو زۆر درێژە (زیاتر لە ٦٠ پیت)');             return; }
     if (!phone.trim())                 { setError('تکایە ژمارەی مۆبایلت بنووسە');               return; }
@@ -170,7 +203,7 @@ export default function CustomerRegistration({ settings, onComplete }: Props) {
         body: JSON.stringify({
           full_name:    name.trim(),
           phone_number: phone.trim(),
-          photo_url:    photoUrl || null,
+          photo_url:    photoSaved ? photoUrl || null : null,
           facebook_id:  fbId || messengerUrl.trim() || null,
           notes:        notes.trim() || null,
           access_token: storedToken || undefined,
@@ -184,6 +217,11 @@ export default function CustomerRegistration({ settings, onComplete }: Props) {
     } catch {}
     setSaving(false);
     if (saved) {
+      // A second phone booking under an existing number gets the old record
+      // back unchanged (it lacks the access token), photo included — so the
+      // device's own saved scan wins over whatever the server returned.
+      if (photoSaved && photoUrl) saved = { ...saved, photo_url: photoUrl };
+      const bookingPhoto = photoUrl && faceScanPath(photoUrl) ? photoUrl : null;
       try {
         localStorage.setItem('luxe_customer', JSON.stringify(saved));
         localStorage.setItem('luxe_registered', '1');
@@ -192,7 +230,7 @@ export default function CustomerRegistration({ settings, onComplete }: Props) {
         // "recognized" for the phone number it originally registered.
         if (savedToken) localStorage.setItem('luxe_customer_token', savedToken);
       } catch {}
-      onComplete(saved);
+      onComplete(saved, bookingPhoto);
     } else {
       setError('هەڵەیەک ڕوویدا. تکایە دووبارە هەوڵبدەرەوە.');
     }
@@ -272,8 +310,10 @@ export default function CustomerRegistration({ settings, onComplete }: Props) {
           <>
             {showCamera && (
               <LiveCameraCapture
+                key={cameraKey}
                 onCapture={handleCameraCapture}
                 onCancel={() => setShowCamera(false)}
+                onRetake={() => setCameraKey((k) => k + 1)}
               />
             )}
 
@@ -298,6 +338,40 @@ export default function CustomerRegistration({ settings, onComplete }: Props) {
                 <ScanFace className="w-5 h-5" />
                 {uploading ? 'بارکردن...' : 'سکانی ڕووخسار'}
               </button>
+
+              {error && (
+                <p className="text-red-500 text-xs text-center px-1">⚠ {error}</p>
+              )}
+
+              {/* Face scans saved on this device */}
+              {savedScans.length > 0 && !uploading && (
+                <div className="w-full pt-4 border-t border-slate-100 space-y-3">
+                  <p className="text-slate-500 text-xs text-center">
+                    یان وێنەیەکی پاشەکەوتکراوی ئەم مۆبایلە هەڵبژێرە
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-3">
+                    {savedScans.map((path) => (
+                      <div key={path} className="relative">
+                        <button
+                          type="button"
+                          onClick={() => pickSavedScan(path)}
+                          className="block w-16 h-16 rounded-full overflow-hidden border-2 border-blue-200 bg-blue-50 shadow-sm touch-manipulation active:scale-95 transition-transform"
+                        >
+                          <img src={faceScanUrl(path)} alt="" className="w-full h-full object-cover" loading="lazy" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSavedScans(forgetFaceScan(path))}
+                          aria-label="سڕینەوە لەم مۆبایلە"
+                          className="absolute -top-1 -left-1 w-6 h-6 rounded-full bg-white border border-slate-200 shadow flex items-center justify-center touch-manipulation active:scale-90 transition-transform"
+                        >
+                          <X className="w-3 h-3 text-slate-500" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </>
         ) : (
@@ -322,8 +396,18 @@ export default function CustomerRegistration({ settings, onComplete }: Props) {
                     </div>
                   )}
                 </div>
+                {photoUrl && (
+                  <span
+                    className={[
+                      'mt-2 px-2.5 py-0.5 rounded-full text-[0.65rem] font-semibold',
+                      photoSaved ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500',
+                    ].join(' ')}
+                  >
+                    {photoSaved ? 'پاشەکەوتکرا لەم مۆبایلە' : 'تەنها بۆ ئەم نەوبەتە'}
+                  </span>
+                )}
                 <button
-                  onClick={() => setRegStep('scan')}
+                  onClick={() => { setError(''); setRegStep('scan'); }}
                   className="mt-1.5 flex items-center gap-1 text-blue-500 text-xs font-medium touch-manipulation active:text-blue-700"
                 >
                   <RefreshCw className="w-3 h-3" />
@@ -513,10 +597,10 @@ export default function CustomerRegistration({ settings, onComplete }: Props) {
             {/* Submit */}
             <button
               onClick={handleSubmit}
-              disabled={saving}
+              disabled={saving || uploading}
               className={[
                 'w-full h-14 rounded-2xl font-bold text-base transition-all touch-manipulation select-none',
-                saving
+                saving || uploading
                   ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
                   : 'bg-blue-600 text-white shadow-md shadow-blue-200/70 active:bg-blue-700 active:scale-[0.98]',
               ].join(' ')}
@@ -524,7 +608,9 @@ export default function CustomerRegistration({ settings, onComplete }: Props) {
               <span className="flex items-center justify-center gap-2">
                 {saving
                   ? <><Loader2 className="w-5 h-5 animate-spin" /> چاوەڕوانبە...</>
-                  : 'دەستپێبکە ←'
+                  : uploading
+                    ? <><Loader2 className="w-5 h-5 animate-spin" /> بارکردنی وێنە...</>
+                    : 'دەستپێبکە ←'
                 }
               </span>
             </button>

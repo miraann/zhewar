@@ -86,9 +86,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(existing);
   }
 
+  // No photo means the customer chose not to save this face scan (it still
+  // goes on the booking itself) — keep the profile photo they already have.
+  const { photo_url: newPhoto, ...rest } = fields;
   const { data, error } = await supabase
     .from('customers')
-    .update(fields)
+    .update(newPhoto ? fields : rest)
     .eq('id', existing.id)
     .select()
     .single();

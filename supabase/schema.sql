@@ -21,6 +21,9 @@ CREATE TABLE IF NOT EXISTS appointments (
   appointment_time TIMESTAMPTZ NOT NULL,
   status           TEXT        NOT NULL DEFAULT 'pending'
                    CHECK (status IN ('pending', 'confirmed', 'cancelled')),
+  -- Face scan taken for this booking (customer_photos bucket); falls
+  -- back to customers.photo_url when null.
+  photo_url        TEXT,
   created_at       TIMESTAMPTZ DEFAULT NOW()
 );
 

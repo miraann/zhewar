@@ -24,12 +24,13 @@ const STEP_URL: Record<Step, string> = {
 };
 
 interface Props {
-  initialName?:  string;
-  initialPhone?: string;
-  settings:      BookingSettings;
+  initialName?:   string;
+  initialPhone?:  string;
+  settings:       BookingSettings;
+  savedFaceScans: string[];
 }
 
-export default function BookingFlow({ initialName, initialPhone, settings }: Props) {
+export default function BookingFlow({ initialName, initialPhone, settings, savedFaceScans }: Props) {
   const router       = useRouter();
   const searchParams = useSearchParams();
   const step         = stepFromParam(searchParams.get('step'));
@@ -47,6 +48,11 @@ export default function BookingFlow({ initialName, initialPhone, settings }: Pro
   const [selectedTime, setSelectedTime] = useState<string | null>(() => {
     try { return sessionStorage.getItem('book_time'); } catch { return null; }
   });
+  // Face scan taken for this booking — set even when the customer chose not
+  // to save it, so it's shown here and stored on the appointment either way
+  const [bookingPhoto, setBookingPhoto] = useState<string | null>(() => {
+    try { return sessionStorage.getItem('book_photo'); } catch { return null; }
+  });
 
   // Keep sessionStorage in sync
   useEffect(() => {
@@ -62,6 +68,15 @@ export default function BookingFlow({ initialName, initialPhone, settings }: Pro
       else              sessionStorage.removeItem('book_time');
     } catch {}
   }, [selectedTime]);
+
+  useEffect(() => {
+    try {
+      if (bookingPhoto) sessionStorage.setItem('book_photo', bookingPhoto);
+      else              sessionStorage.removeItem('book_photo');
+    } catch {}
+  }, [bookingPhoto]);
+
+  const displayCustomer = customer && bookingPhoto ? { ...customer, photo_url: bookingPhoto } : customer;
 
   // If landing on summary without date/time, push back to datetime
   useEffect(() => {
@@ -116,6 +131,7 @@ export default function BookingFlow({ initialName, initialPhone, settings }: Pro
               localStorage.setItem('luxe_registered', '1');
             } catch {}
             setCustomer(upserted);
+            setBookingPhoto(null);
             router.replace(STEP_URL.datetime);
           }
         } catch {}
@@ -142,7 +158,11 @@ export default function BookingFlow({ initialName, initialPhone, settings }: Pro
       const res = await fetch('/api/book-appointment', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ customer_id: customer?.id ?? null, appointment_time: dt.toISOString() }),
+        body:    JSON.stringify({
+          customer_id:      customer?.id ?? null,
+          appointment_time: dt.toISOString(),
+          photo_url:        bookingPhoto ?? customer?.photo_url ?? null,
+        }),
       });
       const json = await res.json();
       if (res.ok && json?.id) data = json;
@@ -152,9 +172,13 @@ export default function BookingFlow({ initialName, initialPhone, settings }: Pro
       setBookingError('کاتی سەردانیکردن تۆمار نەکرا. تکایە دووبارە هەوڵ بدەرەوە.');
       return;
     }
-    try { sessionStorage.removeItem('book_date'); sessionStorage.removeItem('book_time'); } catch {}
+    try {
+      sessionStorage.removeItem('book_date');
+      sessionStorage.removeItem('book_time');
+      sessionStorage.removeItem('book_photo');
+    } catch {}
     router.push(`/appointment/${data.id}`);
-  }, [customer, selectedDate, selectedTime, router]);
+  }, [customer, bookingPhoto, selectedDate, selectedTime, router]);
 
   const errorModal = bookingError && (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-6" dir="rtl">
@@ -182,8 +206,10 @@ export default function BookingFlow({ initialName, initialPhone, settings }: Pro
       {errorModal}
       <CustomerRegistration
         settings={settings}
-        onComplete={(cust) => {
+        savedFaceScans={savedFaceScans}
+        onComplete={(cust, photo) => {
           setCustomer(cust);
+          setBookingPhoto(photo);
           router.push(STEP_URL.datetime);
         }}
       />
@@ -200,7 +226,7 @@ export default function BookingFlow({ initialName, initialPhone, settings }: Pro
           selectedTime={selectedTime}
           workingSchedule={workingSchedule}
           blockedDates={blockedDates}
-          customer={customer}
+          customer={displayCustomer}
           onDateSelect={handleDateChange}
           onTimeSelect={setSelectedTime}
           onNext={() => router.push(STEP_URL.summary)}
@@ -212,7 +238,7 @@ export default function BookingFlow({ initialName, initialPhone, settings }: Pro
       )}
       {step === 'summary' && selectedDate && selectedTime && (
         <BookingSummary
-          customer={customer}
+          customer={displayCustomer}
           date={selectedDate}
           time={selectedTime}
           confirming={confirming}

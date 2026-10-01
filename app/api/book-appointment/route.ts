@@ -1,4 +1,5 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { faceScanPath } from '@/lib/faceScans';
 import { NextRequest, NextResponse } from 'next/server';
 import { sendPushToAdmins } from '@/lib/firebaseAdmin';
 
@@ -22,6 +23,14 @@ export async function POST(req: NextRequest) {
 
   const supabase = getSupabaseAdmin();
 
+  // The face scan taken for this booking. It's stored on the appointment,
+  // not the customer, because a second phone can book under an existing
+  // phone number without being allowed to overwrite that customer's
+  // profile — so customers.photo_url may show someone else's older scan.
+  // Only our own bucket is accepted (the CSP blocks any other image host).
+  const photoUrl =
+    typeof body.photo_url === 'string' && faceScanPath(body.photo_url) ? body.photo_url : null;
+
   // Insert appointment
   const { data, error } = await supabase
     .from('appointments')
@@ -29,6 +38,7 @@ export async function POST(req: NextRequest) {
       customer_id:      body.customer_id,
       appointment_time: body.appointment_time,
       status:           'pending',
+      photo_url:        photoUrl,
     })
     .select()
     .single();

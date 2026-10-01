@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await supabase
     .from('appointments')
-    .select('id, appointment_time, status, customers!inner(full_name, phone_number, photo_url)')
+    .select('id, appointment_time, status, photo_url, customers!inner(full_name, phone_number, photo_url)')
     .eq('customers.phone_number', phone.trim())
     .gte('appointment_time', new Date().toISOString())
     .order('appointment_time', { ascending: true });

@@ -1,6 +1,8 @@
 import { Suspense } from 'react';
+import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
 import BookingFlow from '@/components/booking/BookingFlow';
+import { FACE_SCANS_COOKIE, parseFaceScansCookie } from '@/lib/faceScans';
 import type { BookingSettings } from '@/lib/types';
 
 interface BookPageProps {
@@ -33,11 +35,12 @@ export default async function BookPage({ searchParams }: BookPageProps) {
   const name  = searchParams.name  ? decodeURIComponent(searchParams.name)  : undefined;
   const phone = searchParams.phone ? decodeURIComponent(searchParams.phone) : undefined;
   const settings = await getBookingSettings();
+  const savedFaceScans = parseFaceScansCookie(cookies().get(FACE_SCANS_COOKIE)?.value);
 
   return (
     <main className="min-h-screen relative overflow-hidden">
       <Suspense fallback={<SplashFallback />}>
-        <BookingFlow initialName={name} initialPhone={phone} settings={settings} />
+        <BookingFlow initialName={name} initialPhone={phone} settings={settings} savedFaceScans={savedFaceScans} />
       </Suspense>
     </main>
   );

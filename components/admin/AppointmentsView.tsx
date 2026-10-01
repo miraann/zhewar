@@ -441,6 +441,8 @@ export default function AppointmentsView({
                 {group.items.map(appt => {
                   const { time }    = formatDT(appt.appointment_time);
                   const fbLinks     = appt.customers.facebook_id ? getFbLinks(appt.customers.facebook_id) : null;
+                  // The face scanned for this booking; older bookings predate it
+                  const photo       = appt.photo_url ?? appt.customers.photo_url;
                   const isPending   = appt.status === 'pending';
                   const isConfirmed = appt.status === 'confirmed';
                   const isCancelled = appt.status === 'cancelled';
@@ -480,14 +482,14 @@ export default function AppointmentsView({
 
                           {/* Avatar — w-16 */}
                           <div className="relative w-16 h-16 flex-shrink-0">
-                            {appt.customers.photo_url && !failedPhotos.has(appt.id) ? (
+                            {photo && !failedPhotos.has(appt.id) ? (
                               <button
                                 type="button"
-                                onClick={() => setPreview(appt.customers.photo_url)}
+                                onClick={() => setPreview(photo)}
                                 className="absolute inset-0 rounded-full overflow-hidden touch-manipulation active:opacity-70 transition-opacity"
                               >
                                 <img
-                                  src={appt.customers.photo_url}
+                                  src={photo}
                                   alt={appt.customers.full_name}
                                   className="w-full h-full object-cover"
                                   loading="lazy"
