@@ -13,6 +13,14 @@ const config: CapacitorConfig = {
     PushNotifications: {
       presentationOptions: ['badge', 'sound', 'alert'],
     },
+    // Capacitor 8 manages the system bars itself. The app still opts out of
+    // edge-to-edge (styles.xml, targetSdk 35), so its inset handling has
+    // nothing to do, and 'DARK' keeps the light bar icons the app has always
+    // shown on the theme's dark status bar.
+    SystemBars: {
+      insetsHandling: 'disable',
+      style: 'DARK',
+    },
   },
   android: {
     // Matches the admin panel's md-surface tone so there's no white flash
