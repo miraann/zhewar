@@ -3,9 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Camera, User, Phone, Loader2, HelpCircle, AlertCircle, CheckCircle2, Home, ScanFace, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
 import type { BookingSettings, Customer } from '@/lib/types';
-import { faceScanPath, faceScanUrl, newFaceScanPath } from '@/lib/faceScans';
+import { faceScanPath } from '@/lib/faceScans';
 import LiveCameraCapture from './LiveCameraCapture';
 
 // Re-compress to a capped JPEG before uploading (guards against large inputs)
@@ -35,13 +34,20 @@ function dataUrlToBlob(dataUrl: string): Blob {
   return new Blob([arr], { type: mime });
 }
 
-// Uploads a compressed JPEG to the customer_photos bucket; null on failure
+// Uploads a compressed JPEG to the customer_photos bucket (through
+// /api/upload-face-scan — the bucket takes no anon uploads); null on failure
 async function uploadPhoto(dataUrl: string): Promise<{ path: string; url: string } | null> {
-  const path = newFaceScanPath();
-  const { error } = await supabase.storage
-    .from('customer_photos')
-    .upload(path, dataUrlToBlob(dataUrl), { contentType: 'image/jpeg' });
-  return error ? null : { path, url: faceScanUrl(path) };
+  try {
+    const res = await fetch('/api/upload-face-scan', {
+      method:  'POST',
+      headers: { 'Content-Type': 'image/jpeg' },
+      body:    dataUrlToBlob(dataUrl),
+    });
+    const json = await res.json();
+    return res.ok && json?.url ? { path: json.path, url: json.url } : null;
+  } catch {
+    return null;
+  }
 }
 
 // Shown for every booking: the customer scans their face again and fills in
