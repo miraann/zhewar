@@ -40,13 +40,10 @@ export default function AdminLoginForm() {
     setLoading(true);
 
     try {
-      // Capacitor WebView uses capacitor://localhost as its JS origin, making
-      // /api/admin/login cross-origin. We need an absolute URL + credentials:include
-      // so the Set-Cookie is stored. On a regular browser the request is same-origin
-      // and works fine with a relative URL and the default credentials mode.
+      // The APK loads the live site, so this is same-origin there too.
       const isCapacitor = !!(window as any).Capacitor?.isNativePlatform?.();
       const res = await fetch(
-        isCapacitor ? 'https://zhewar.shop/api/admin/login' : '/api/admin/login',
+        '/api/admin/login',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

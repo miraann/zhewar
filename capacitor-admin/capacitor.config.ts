@@ -6,8 +6,12 @@ const config: CapacitorConfig = {
   webDir: 'www',
   server: {
     // Loads the live admin dashboard — no separate web build needed
-    url: 'https://zhewar.shop/admin/dashboard',
+    url: 'https://www.zhewar.shop/admin/dashboard',
     cleartext: false,
+    // Vercel redirects zhewar.shop to www (or the reverse, if the primary
+    // domain changes). A host not listed here opens in the browser instead,
+    // leaving the app on a blank screen.
+    allowNavigation: ['zhewar.shop', 'www.zhewar.shop'],
   },
   plugins: {
     PushNotifications: {

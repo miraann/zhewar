@@ -12,7 +12,7 @@ export function isNativePlatform(): boolean {
 
 export async function registerAdminFcmToken(fcmToken: string): Promise<void> {
   const adminToken = localStorage.getItem('admin_token') ?? '';
-  const res = await fetch('https://zhewar.shop/api/admin/fcm-token', {
+  const res = await fetch('/api/admin/fcm-token', {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -31,7 +31,7 @@ export async function unregisterAdminFcmToken(): Promise<void> {
   if (!token) return;
 
   const adminToken = localStorage.getItem('admin_token') ?? '';
-  await fetch('https://zhewar.shop/api/admin/fcm-token', {
+  await fetch('/api/admin/fcm-token', {
     method: 'DELETE',
     credentials: 'include',
     headers: {

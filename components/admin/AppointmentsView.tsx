@@ -202,7 +202,7 @@ export default function AppointmentsView({
       const isCapacitor = !!(window as any).Capacitor?.isNativePlatform?.();
       const token = localStorage.getItem('admin_token') ?? '';
       const res = await fetch(
-        isCapacitor ? 'https://zhewar.shop/api/admin/appointments' : '/api/admin/appointments',
+        '/api/admin/appointments',
         {
           ...(isCapacitor ? { credentials: 'include' } : {}),
           headers: token ? { 'X-Admin-Token': token } : {},

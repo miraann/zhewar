@@ -28,7 +28,7 @@ export default function SettingsEditor() {
     const isCapacitor = !!(window as any).Capacitor?.isNativePlatform?.();
     const token = localStorage.getItem('admin_token') ?? '';
     fetch(
-      isCapacitor ? 'https://zhewar.shop/api/admin/settings' : '/api/admin/settings',
+      '/api/admin/settings',
       {
         ...(isCapacitor ? { credentials: 'include' } : {}),
         headers: token ? { 'X-Admin-Token': token } : {},
@@ -53,7 +53,7 @@ export default function SettingsEditor() {
       const isCapacitor = !!(window as any).Capacitor?.isNativePlatform?.();
       const token = localStorage.getItem('admin_token') ?? '';
       const res = await fetch(
-        isCapacitor ? 'https://zhewar.shop/api/admin/settings' : '/api/admin/settings',
+        '/api/admin/settings',
         {
           method: 'POST',
           ...(isCapacitor ? { credentials: 'include' } : {}),
