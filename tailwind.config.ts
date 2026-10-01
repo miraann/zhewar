@@ -61,6 +61,8 @@ const config: Config = {
         'fade-up':   'fadeUp 0.7s ease forwards',
         'fade-in':   'fadeIn 0.6s ease forwards',
         'spin-slow': 'spin 3s linear infinite',
+        'pop-in':    'popIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both',
+        draw:        'draw 0.4s 0.25s ease-out both',
       },
       keyframes: {
         shimmer: {
@@ -74,6 +76,15 @@ const config: Config = {
         fadeIn: {
           '0%':   { opacity: '0' },
           '100%': { opacity: '1' },
+        },
+        popIn: {
+          '0%':   { opacity: '0', transform: 'scale(0.5)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        // Strokes a path drawn with pathLength={1} strokeDasharray={1}.
+        draw: {
+          '0%':   { strokeDashoffset: '1' },
+          '100%': { strokeDashoffset: '0' },
         },
       },
     },

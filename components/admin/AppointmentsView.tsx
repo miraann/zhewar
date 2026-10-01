@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import Skeleton from './ui/Skeleton';
 import WhatsAppSendSheet from './WhatsAppSendSheet';
+import BookingConfirmSheet from './BookingConfirmSheet';
 import { adminFetch } from '@/lib/adminFetch';
 import { waLink, type WaMessageValues } from '@/lib/whatsapp';
 
@@ -180,6 +181,7 @@ export default function AppointmentsView({
   const [failedPhotos, setFailedPhotos] = useState<Set<string>>(new Set());
   const [waTemplates, setWaTemplates]   = useState<WhatsAppTemplate[]>([]);
   const [waSheet, setWaSheet]           = useState<{ appt: AppointmentFull; kind: WhatsAppTemplateKind; afterAction: boolean } | null>(null);
+  const [decision, setDecision]         = useState<{ appt: AppointmentFull; kind: WhatsAppTemplateKind } | null>(null);
 
   // Messages from the واتساپ tab, already in send order. If this fails
   // (or there are none) the WhatsApp button just opens a plain chat.
@@ -235,27 +237,28 @@ export default function AppointmentsView({
     };
   }, [load]);
 
-  async function updateStatus(id: string, status: 'confirmed' | 'cancelled' | 'pending') {
-    const isCapacitor = !!(window as any).Capacitor?.isNativePlatform?.();
-    const token = localStorage.getItem('admin_token') ?? '';
-    await fetch(
-      isCapacitor ? `https://zhewar.shop/api/admin/appointments/${id}` : `/api/admin/appointments/${id}`,
-      {
+  async function updateStatus(id: string, status: 'confirmed' | 'cancelled' | 'pending'): Promise<boolean> {
+    try {
+      const res = await adminFetch(`/api/admin/appointments/${id}`, {
         method: 'PATCH',
-        ...(isCapacitor ? { credentials: 'include' } : {}),
-        headers: { 'Content-Type': 'application/json', ...(token ? { 'X-Admin-Token': token } : {}) },
         body: JSON.stringify({ status }),
-      },
-    );
-    setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a));
-
-    // Offer to tell the customer on WhatsApp right away.
-    const kind: WhatsAppTemplateKind | null = status === 'confirmed' ? 'accept' : status === 'cancelled' ? 'decline' : null;
-    const appt = appointments.find(a => a.id === id);
-    if (kind && appt && templatesOf(kind).length > 0) {
-      setWaSheet({ appt, kind, afterAction: true });
+      });
+      if (!res.ok) return false;
+    } catch {
+      return false;
     }
+    setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a));
+    return true;
   }
+
+  // Accept/decline go through BookingConfirmSheet; once saved, offer to
+  // tell the customer on WhatsApp right away.
+  const finishDecision = useCallback(() => {
+    if (!decision) return;
+    const { appt, kind } = decision;
+    setDecision(null);
+    if (waTemplates.some(t => t.kind === kind)) setWaSheet({ appt, kind, afterAction: true });
+  }, [decision, waTemplates]);
 
   const now        = new Date();
   const today      = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -625,14 +628,14 @@ export default function AppointmentsView({
                         {isPending && (
                           <div className="flex gap-2">
                             <button
-                              onClick={() => updateStatus(appt.id, 'confirmed')}
+                              onClick={() => setDecision({ appt, kind: 'accept' })}
                               className="flex-1 h-9 rounded-md-full font-semibold text-[0.8rem] text-md-on-primary flex items-center justify-center gap-1.5 touch-manipulation transition-all active:scale-[0.98] bg-md-primary active:bg-md-primary/90"
                             >
                               <CheckCircle2 className="w-[13px] h-[13px]" />
                               پەسەندکردن
                             </button>
                             <button
-                              onClick={() => updateStatus(appt.id, 'cancelled')}
+                              onClick={() => setDecision({ appt, kind: 'decline' })}
                               className="px-4 h-9 rounded-md-full font-semibold text-[0.8rem] flex items-center justify-center gap-1.5 touch-manipulation transition-all active:scale-[0.98] bg-md-error-container text-md-on-error-container active:bg-md-error-container/70"
                             >
                               <XCircle className="w-[13px] h-[13px]" />
@@ -648,7 +651,7 @@ export default function AppointmentsView({
                               ? (
                                 <div className="flex gap-2">
                                   <button
-                                    onClick={() => updateStatus(appt.id, 'cancelled')}
+                                    onClick={() => setDecision({ appt, kind: 'decline' })}
                                     className="flex-1 h-9 rounded-md-full font-semibold text-[0.8rem] flex items-center justify-center gap-1.5 touch-manipulation transition-all active:scale-[0.98] bg-md-error-container text-md-on-error-container active:bg-md-error-container/70"
                                   >
                                     <XCircle className="w-[13px] h-[13px]" />
@@ -684,6 +687,22 @@ export default function AppointmentsView({
           ))}
         </div>
       )}
+
+      {/* ── Accept / decline confirmation ────────────────────────────────── */}
+      {decision && (() => {
+        const { dayName, date, time } = formatDT(decision.appt.appointment_time);
+        return (
+          <BookingConfirmSheet
+            key={decision.appt.id}
+            decision={decision.kind}
+            name={decision.appt.customers.full_name}
+            when={`${dayName} ${date} · ${time}`}
+            onConfirm={() => updateStatus(decision.appt.id, decision.kind === 'accept' ? 'confirmed' : 'cancelled')}
+            onCancel={() => setDecision(null)}
+            onDone={finishDecision}
+          />
+        );
+      })()}
 
       {/* ── WhatsApp message sheet ───────────────────────────────────────── */}
       {waSheet && (
