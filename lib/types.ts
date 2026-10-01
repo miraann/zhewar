@@ -63,6 +63,17 @@ export interface SocialLink {
   created_at: string;
 }
 
+export type WhatsAppTemplateKind = 'accept' | 'decline';
+
+export interface WhatsAppTemplate {
+  id: string;
+  kind: WhatsAppTemplateKind;
+  title: string;
+  body: string;
+  sort_order: number;
+  created_at: string;
+}
+
 export interface GalleryPhoto {
   id: string;
   photo_url: string;

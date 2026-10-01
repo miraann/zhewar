@@ -22,7 +22,7 @@ export default function BottomNav<T extends string>({
             >
               <span
                 className={[
-                  'relative w-16 h-8 rounded-md-full flex items-center justify-center transition-colors duration-200',
+                  'relative w-full max-w-[4rem] h-8 rounded-md-full flex items-center justify-center transition-colors duration-200',
                   isActive ? 'bg-md-primary-container' : 'bg-transparent',
                 ].join(' ')}
               >

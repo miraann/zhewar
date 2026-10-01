@@ -84,6 +84,19 @@ CREATE TABLE IF NOT EXISTS admin_fcm_tokens (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- ── پەیامەکانی واتساپ ───────────────────────
+-- Server-only, like admin_fcm_tokens: managed under the admin «واتساپ» tab
+-- via /api/admin/whatsapp-templates. Default messages are seeded by
+-- migrations/2026-10-01_whatsapp_templates.sql.
+CREATE TABLE IF NOT EXISTS whatsapp_templates (
+  id         UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
+  kind       TEXT        NOT NULL CHECK (kind IN ('accept', 'decline')),
+  title      TEXT        NOT NULL CHECK (char_length(btrim(title)) BETWEEN 1 AND 80),
+  body       TEXT        NOT NULL CHECK (char_length(btrim(body)) BETWEEN 1 AND 1000),
+  sort_order INTEGER     NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- ── داتای دەستپێک ──────────────────────────
 
 INSERT INTO working_schedule (day_of_week, is_active, start_time, end_time, slot_interval) VALUES
@@ -130,10 +143,11 @@ ALTER TABLE barber_profile   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE gallery_photos   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE social_links     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE admin_fcm_tokens ENABLE ROW LEVEL SECURITY;
+ALTER TABLE whatsapp_templates ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "public_read_schedule" ON working_schedule   FOR SELECT USING (true);
 CREATE POLICY "public_read_blocked"  ON blocked_dates      FOR SELECT USING (true);
 CREATE POLICY "public_read_profile"  ON barber_profile     FOR SELECT USING (true);
 CREATE POLICY "public_read_gallery"  ON gallery_photos     FOR SELECT USING (true);
 CREATE POLICY "public_read_social"   ON social_links       FOR SELECT USING (true);
--- customers, appointments, admin_fcm_tokens: intentionally no anon policy.
+-- customers, appointments, admin_fcm_tokens, whatsapp_templates: intentionally no anon policy.

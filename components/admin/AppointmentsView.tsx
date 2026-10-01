@@ -1,22 +1,17 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import type { AppointmentFull } from '@/lib/types';
+import type { AppointmentFull, WhatsAppTemplate, WhatsAppTemplateKind } from '@/lib/types';
 import {
   Phone, Clock, CheckCircle2, XCircle, RefreshCw,
   Calendar, ShieldCheck, AlertCircle, Search, X, Bell, User,
 } from 'lucide-react';
 import Skeleton from './ui/Skeleton';
+import WhatsAppSendSheet from './WhatsAppSendSheet';
+import { adminFetch } from '@/lib/adminFetch';
+import { waLink, type WaMessageValues } from '@/lib/whatsapp';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-// Convert Iraqi local number (07XX…) to WhatsApp international format (964 7XX…)
-function toWaNumber(raw: string): string {
-  const digits = raw.replace(/\D/g, '');
-  if (digits.startsWith('964')) return digits;
-  if (digits.startsWith('0'))   return '964' + digits.slice(1);
-  return digits;
-}
 
 function getFbLinks(raw: string): { fbUrl: string; messengerUrl: string } | null {
   if (!raw) return null;
@@ -76,6 +71,19 @@ function formatDT(iso: string) {
     dayName: DAY_NAMES_KU[d.getDay()],
     date:    `${d.getDate()}/${d.getMonth() + 1}`,
     time:    `${display}${m ? `:${String(m).padStart(2, '0')}` : ''} ${period}`,
+  };
+}
+
+// Fills a WhatsApp template's placeholders — see lib/whatsapp.ts.
+function waValues(appt: AppointmentFull): WaMessageValues {
+  const { dayName, date, time } = formatDT(appt.appointment_time);
+  const origin = window.location.origin;
+  return {
+    name: appt.customers.full_name,
+    date: `${dayName} ${date}`,
+    time,
+    link: `${origin}/appointment/${appt.id}`,
+    book: `${origin}/book`,
   };
 }
 
@@ -170,6 +178,21 @@ export default function AppointmentsView({
   useEffect(() => { setFilter(initialFilter); }, [initialFilter]);
   const [preview, setPreview]           = useState<string | null>(null);
   const [failedPhotos, setFailedPhotos] = useState<Set<string>>(new Set());
+  const [waTemplates, setWaTemplates]   = useState<WhatsAppTemplate[]>([]);
+  const [waSheet, setWaSheet]           = useState<{ appt: AppointmentFull; kind: WhatsAppTemplateKind; afterAction: boolean } | null>(null);
+
+  // Messages from the واتساپ tab, already in send order. If this fails
+  // (or there are none) the WhatsApp button just opens a plain chat.
+  useEffect(() => {
+    adminFetch('/api/admin/whatsapp-templates')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data: WhatsAppTemplate[]) => setWaTemplates(data))
+      .catch(() => {});
+  }, []);
+
+  function templatesOf(kind: WhatsAppTemplateKind) {
+    return waTemplates.filter((t) => t.kind === kind);
+  }
 
   const load = useCallback(async (opts: { silent?: boolean } = {}) => {
     if (!opts.silent) setLoading(true);
@@ -225,6 +248,13 @@ export default function AppointmentsView({
       },
     );
     setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a));
+
+    // Offer to tell the customer on WhatsApp right away.
+    const kind: WhatsAppTemplateKind | null = status === 'confirmed' ? 'accept' : status === 'cancelled' ? 'decline' : null;
+    const appt = appointments.find(a => a.id === id);
+    if (kind && appt && templatesOf(kind).length > 0) {
+      setWaSheet({ appt, kind, afterAction: true });
+    }
   }
 
   const now        = new Date();
@@ -444,6 +474,8 @@ export default function AppointmentsView({
                   const isPending   = appt.status === 'pending';
                   const isConfirmed = appt.status === 'confirmed';
                   const isCancelled = appt.status === 'cancelled';
+                  const waKind: WhatsAppTemplateKind | null = isConfirmed ? 'accept' : isCancelled ? 'decline' : null;
+                  const hasWaTemplates = !!waKind && templatesOf(waKind).length > 0;
 
                   const dotColorVar = isConfirmed ? '--md-success' : isCancelled ? '--md-error' : '--md-warning';
                   const dotColor    = `rgb(var(${dotColorVar}))`;
@@ -540,14 +572,25 @@ export default function AppointmentsView({
                                 >
                                   <Phone className="w-[18px] h-[18px]" />
                                 </a>
-                                <a
-                                  href={`https://wa.me/${toWaNumber(appt.customers.phone_number)}`}
-                                  target="_blank" rel="noopener noreferrer"
-                                  className="w-9 h-9 rounded-full flex items-center justify-center text-white active:opacity-75 touch-manipulation"
-                                  style={{ background: '#25d366' }}
-                                >
-                                  {WA_ICON_SM}
-                                </a>
+                                {hasWaTemplates ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => setWaSheet({ appt, kind: waKind!, afterAction: false })}
+                                    className="w-9 h-9 rounded-full flex items-center justify-center text-white active:opacity-75 touch-manipulation"
+                                    style={{ background: '#25d366' }}
+                                  >
+                                    {WA_ICON_SM}
+                                  </button>
+                                ) : (
+                                  <a
+                                    href={waLink(appt.customers.phone_number)}
+                                    target="_blank" rel="noopener noreferrer"
+                                    className="w-9 h-9 rounded-full flex items-center justify-center text-white active:opacity-75 touch-manipulation"
+                                    style={{ background: '#25d366' }}
+                                  >
+                                    {WA_ICON_SM}
+                                  </a>
+                                )}
                                 {fbLinks && (
                                   <a
                                     href={fbLinks.fbUrl}
@@ -640,6 +683,18 @@ export default function AppointmentsView({
             </div>
           ))}
         </div>
+      )}
+
+      {/* ── WhatsApp message sheet ───────────────────────────────────────── */}
+      {waSheet && (
+        <WhatsAppSendSheet
+          phone={waSheet.appt.customers.phone_number}
+          kind={waSheet.kind}
+          templates={templatesOf(waSheet.kind)}
+          values={waValues(waSheet.appt)}
+          afterAction={waSheet.afterAction}
+          onClose={() => setWaSheet(null)}
+        />
       )}
 
       {/* ── Image lightbox ───────────────────────────────────────────────── */}

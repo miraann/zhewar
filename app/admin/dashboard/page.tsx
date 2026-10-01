@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useWakeLock } from '@/hooks/useWakeLock';
-import { Clock, ImageIcon, User, LayoutDashboard, Share2, Settings, RefreshCw, LogOut } from 'lucide-react';
+import { Clock, ImageIcon, User, LayoutDashboard, Share2, Settings, RefreshCw, LogOut, MessageCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { adminLogout } from '@/lib/adminAuth';
 import AppointmentsView from '@/components/admin/AppointmentsView';
@@ -18,9 +18,10 @@ const ScheduleEditor = dynamic(() => import('@/components/admin/ScheduleEditor')
 const ProfileEditor  = dynamic(() => import('@/components/admin/ProfileEditor'));
 const GalleryEditor  = dynamic(() => import('@/components/admin/GalleryEditor'));
 const SocialEditor   = dynamic(() => import('@/components/admin/SocialEditor'));
+const WhatsAppEditor = dynamic(() => import('@/components/admin/WhatsAppEditor'));
 const SettingsEditor = dynamic(() => import('@/components/admin/SettingsEditor'));
 
-type Tab = 'appointments' | 'schedule' | 'profile' | 'gallery' | 'social' | 'settings';
+type Tab = 'appointments' | 'schedule' | 'profile' | 'gallery' | 'social' | 'whatsapp' | 'settings';
 type AppFilter = 'upcoming' | 'today' | 'all' | 'pending';
 
 const TABS: { id: Tab; short: string; icon: React.ElementType }[] = [
@@ -29,10 +30,11 @@ const TABS: { id: Tab; short: string; icon: React.ElementType }[] = [
   { id: 'profile',      short: 'پرۆفایل',  icon: User            },
   { id: 'gallery',      short: 'گەلەری',   icon: ImageIcon       },
   { id: 'social',       short: 'سۆشیاڵ',   icon: Share2          },
+  { id: 'whatsapp',     short: 'واتساپ',   icon: MessageCircle   },
   { id: 'settings',     short: 'ڕێکخستن',  icon: Settings        },
 ];
 
-const VALID_TABS    = new Set<Tab>(['appointments', 'schedule', 'profile', 'gallery', 'social', 'settings']);
+const VALID_TABS    = new Set<Tab>(['appointments', 'schedule', 'profile', 'gallery', 'social', 'whatsapp', 'settings']);
 const APP_FILTER_MAP: Record<string, AppFilter> = { upcoming: 'upcoming', today: 'today', all: 'all', pending: 'pending' };
 
 export default function AdminDashboard() {
@@ -74,6 +76,7 @@ function Dashboard() {
       import('@/components/admin/ProfileEditor');
       import('@/components/admin/GalleryEditor');
       import('@/components/admin/SocialEditor');
+      import('@/components/admin/WhatsAppEditor');
       import('@/components/admin/SettingsEditor');
     });
     return () => cancel(id);
@@ -187,6 +190,7 @@ function Dashboard() {
         {tab === 'profile'      && <ProfileEditor />}
         {tab === 'gallery'      && <GalleryEditor />}
         {tab === 'social'       && <SocialEditor />}
+        {tab === 'whatsapp'     && <WhatsAppEditor />}
         {tab === 'settings'     && <SettingsEditor />}
       </main>
 
