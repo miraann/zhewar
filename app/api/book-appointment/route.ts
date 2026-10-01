@@ -1,5 +1,6 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { NextRequest, NextResponse } from 'next/server';
+import { waitUntil } from '@vercel/functions';
 import { notifyAdmins } from '@/lib/firebaseAdmin';
 
 const KURDISH_DAYS = ['یەکشەممە','دووشەممە','سێشەممە','چوارشەممە','پێنجشەممە','هەینی','شەممە'];
@@ -42,19 +43,24 @@ export async function POST(req: NextRequest) {
     .eq('id', body.customer_id)
     .single();
 
-  // Fire-and-forget push — don't block the response
+  // Push without blocking the response. Vercel freezes the function as soon
+  // as the response is sent, so an un-awaited send would stall mid-flight and
+  // only go out when a later request (e.g. the admin opening the app) thaws
+  // the same instance — waitUntil keeps it running until the send settles.
   if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
     console.error('FIREBASE_SERVICE_ACCOUNT is not set — skipping admin push notification');
   } else {
-    notifyAdmins(
-      'داواکاری نوێ 📅',
-      `${customer?.full_name ?? 'کڕیار'} — ${formatDateTime(body.appointment_time)}`,
-      { appointmentId: data.id, tab: 'appointments' },
-    )
-      .then(({ total }) => {
-        if (!total) console.warn('No admin_fcm_tokens registered — skipping admin push notification');
-      })
-      .catch(console.error);
+    waitUntil(
+      notifyAdmins(
+        'داواکاری نوێ 📅',
+        `${customer?.full_name ?? 'کڕیار'} — ${formatDateTime(body.appointment_time)}`,
+        { appointmentId: data.id, tab: 'appointments' },
+      )
+        .then(({ total }) => {
+          if (!total) console.warn('No admin_fcm_tokens registered — skipping admin push notification');
+        })
+        .catch(console.error),
+    );
   }
 
   return NextResponse.json(data);

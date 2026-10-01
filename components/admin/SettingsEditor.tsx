@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { ScanFace, Facebook, LogOut } from 'lucide-react';
 import NotificationStatusCard from './NotificationStatusCard';
+import BackgroundDeliveryCard from './BackgroundDeliveryCard';
 import NotificationSoundCard from './NotificationSoundCard';
 import PushTestCard from './PushTestCard';
 import ToggleListItem, { StatusBadge, SavingIndicator } from './ui/ToggleListItem';
@@ -113,6 +114,7 @@ export default function SettingsEditor() {
       />
 
       <NotificationStatusCard />
+      <BackgroundDeliveryCard />
       <NotificationSoundCard initial={sound} />
       <PushTestCard />
 

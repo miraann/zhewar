@@ -27,14 +27,21 @@ async function sendPushToAdmins(
     tokens.map((token) =>
       messaging.send({
         token,
+        // Keep the `notification` block: when the app is swiped away, Android's
+        // FCM SDK draws it in the tray itself without starting any app code. A
+        // data-only message would need the app's JS, which isn't running then.
         notification: { title, body },
         data,
         android: {
+          // Delivered immediately, even in Doze, since it shows a notification
           priority: 'high',
           notification: {
-            // Android 8+ plays the channel's sound; `sound` covers older versions
+            // Android 8+ takes sound, importance and lock-screen visibility
+            // from the channel; these fields cover Android 7 and older
             sound: soundResource(sound) ?? 'default',
             channelId: soundChannelId(sound),
+            priority: 'max',
+            visibility: 'public',
           },
         },
       }),

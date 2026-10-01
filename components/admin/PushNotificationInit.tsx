@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { ensureNotificationChannels, registerAdminFcmToken } from '@/lib/pushNotifications';
+import { promptBatteryWhitelistOnce } from '@/lib/backgroundReliability';
 
 export default function PushNotificationInit() {
   useEffect(() => {
@@ -38,6 +39,10 @@ export default function PushNotificationInit() {
         if (perm.receive !== 'granted') return;
 
         await PushNotifications.register();
+
+        // Battery optimization and OEM task killers are what keep pushes
+        // from reaching a swiped-away app — ask once to be let off them
+        await promptBatteryWhitelistOnce();
       } catch (e) {
         console.error('Push init error', e);
       }
