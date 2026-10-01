@@ -274,9 +274,9 @@ export default function AppointmentsView({
     return true;
   });
 
-  // Pending requests are triaged newest-first by when they were booked;
-  // other tabs stay in chronological appointment-time order (a schedule).
-  if (filter === 'pending') {
+  // Pending and All list the newest bookings first, by when they were
+  // booked; Upcoming/Today stay in appointment-time order (a schedule).
+  if (filter === 'pending' || filter === 'all') {
     filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   }
 
