@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { registerAdminFcmToken } from '@/lib/pushNotifications';
+import { ensureNotificationChannels, registerAdminFcmToken } from '@/lib/pushNotifications';
 
 export default function PushNotificationInit() {
   useEffect(() => {
@@ -32,16 +32,7 @@ export default function PushNotificationInit() {
           window.location.href = '/admin/dashboard?tab=appointments-pending';
         });
 
-        // Android 8+ requires a notification channel to exist or notifications
-        // are silently dropped. The channelId must match what the server sends.
-        await PushNotifications.createChannel({
-          id: 'bookings',
-          name: 'بوکینگی نوێ',
-          importance: 5,
-          sound: 'default',
-          vibration: true,
-          visibility: 1,
-        });
+        await ensureNotificationChannels();
 
         const perm = await PushNotifications.requestPermissions();
         if (perm.receive !== 'granted') return;

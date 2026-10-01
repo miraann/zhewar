@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The notify_* sounds are only referenced by name from notification
+     channels at runtime, so keep them if resource shrinking is ever enabled. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@raw/notify_*" />

@@ -53,6 +53,9 @@ CREATE TABLE IF NOT EXISTS barber_profile (
   whatsapp_number TEXT,
   tiktok_url      TEXT,
   address         TEXT,
+  -- Sound for new-booking pushes; ids in lib/notificationSounds.ts
+  notification_sound TEXT   NOT NULL DEFAULT 'default'
+    CHECK (notification_sound IN ('default', 'chime', 'bell', 'doorbell', 'alert')),
   updated_at      TIMESTAMPTZ DEFAULT NOW()
 );
 

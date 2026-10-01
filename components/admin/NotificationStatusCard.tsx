@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Bell } from 'lucide-react';
-import { FCM_TOKEN_KEY, isNativePlatform, registerAdminFcmToken, unregisterAdminFcmToken } from '@/lib/pushNotifications';
+import { FCM_TOKEN_KEY, ensureNotificationChannels, isNativePlatform, registerAdminFcmToken, unregisterAdminFcmToken } from '@/lib/pushNotifications';
 import ToggleListItem, { StatusBadge, SavingIndicator } from './ui/ToggleListItem';
 
 type Status = 'checking' | 'unsupported' | 'enabled' | 'disabled' | 'denied' | 'error';
@@ -32,14 +32,7 @@ export default function NotificationStatusCard() {
     try {
       const { PushNotifications } = await import('@capacitor/push-notifications');
 
-      await PushNotifications.createChannel({
-        id: 'bookings',
-        name: 'بوکینگی نوێ',
-        importance: 5,
-        sound: 'default',
-        vibration: true,
-        visibility: 1,
-      });
+      await ensureNotificationChannels();
 
       const perm = await PushNotifications.requestPermissions();
       if (perm.receive !== 'granted') {

@@ -3,9 +3,12 @@
 import { useState, useEffect } from 'react';
 import { ScanFace, Facebook, LogOut } from 'lucide-react';
 import NotificationStatusCard from './NotificationStatusCard';
+import NotificationSoundCard from './NotificationSoundCard';
+import PushTestCard from './PushTestCard';
 import ToggleListItem, { StatusBadge, SavingIndicator } from './ui/ToggleListItem';
 import Skeleton from './ui/Skeleton';
 import { adminLogout } from '@/lib/adminAuth';
+import { DEFAULT_NOTIFICATION_SOUND, NotificationSoundId, isNotificationSound } from '@/lib/notificationSounds';
 
 interface Settings {
   face_scan_enabled: boolean;
@@ -14,6 +17,7 @@ interface Settings {
 
 export default function SettingsEditor() {
   const [settings, setSettings] = useState<Settings>({ face_scan_enabled: true, facebook_required: true });
+  const [sound, setSound]       = useState<NotificationSoundId>(DEFAULT_NOTIFICATION_SOUND);
   const [loading, setLoading]   = useState(true);
   const [savingKey, setSavingKey] = useState<keyof Settings | null>(null);
   const [savedKey,  setSavedKey]  = useState<keyof Settings | null>(null);
@@ -30,7 +34,10 @@ export default function SettingsEditor() {
       },
     )
       .then((r) => r.json())
-      .then((d) => setSettings({ face_scan_enabled: d.face_scan_enabled ?? true, facebook_required: d.facebook_required ?? true }))
+      .then((d) => {
+        setSettings({ face_scan_enabled: d.face_scan_enabled ?? true, facebook_required: d.facebook_required ?? true });
+        if (isNotificationSound(d.notification_sound)) setSound(d.notification_sound);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
@@ -106,6 +113,8 @@ export default function SettingsEditor() {
       />
 
       <NotificationStatusCard />
+      <NotificationSoundCard initial={sound} />
+      <PushTestCard />
 
       <button
         onClick={adminLogout}
