@@ -2,6 +2,7 @@ import { timingSafeEqual } from 'crypto';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import { NextRequest, NextResponse } from 'next/server';
+import { setAdminSessionCookie } from '@/lib/adminSession';
 
 // Capacitor WebView may use capacitor://localhost as its origin even when
 // server.url points to zhewar.shop — allow it so the fetch doesn't get
@@ -75,7 +76,9 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const { password } = await request.json();
+  // `app` is true when the login comes from the APK, which stays signed in
+  // until the admin taps logout.
+  const { password, app } = await request.json();
 
   if (!password || !safeCompare(password, process.env.ADMIN_PASSWORD ?? '')) {
     return NextResponse.json({ error: 'Invalid password' }, { status: 401, headers: corsHeaders(origin) });
@@ -84,18 +87,7 @@ export async function POST(request: NextRequest) {
   // Return token in body so Capacitor WebView can store it in localStorage
   // and use it as X-Admin-Token header for subsequent API calls (cookies are
   // not sent with JS fetch() in the WebView even for same-URL origins).
-  const isProd = process.env.NODE_ENV === 'production';
   const res = NextResponse.json({ success: true, token: process.env.ADMIN_TOKEN! }, { headers: corsHeaders(origin) });
-  res.cookies.set('admin_session', process.env.ADMIN_TOKEN!, {
-    httpOnly: true,
-    // SameSite=None is only valid when Secure is also set — required for the
-    // cross-origin Capacitor WebView request in production, but on plain
-    // http://localhost dev, Secure=false + SameSite=None makes browsers
-    // reject the cookie outright, so the session never gets stored.
-    secure: isProd,
-    sameSite: isProd ? 'none' : 'lax',
-    maxAge: 60 * 60 * 8,
-    path: '/',
-  });
+  setAdminSessionCookie(res, app === true);
   return res;
 }

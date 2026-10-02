@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, LogIn, Loader2, Clock } from 'lucide-react';
 import Button from './ui/Button';
+import { isAdminApp, renewAppSession } from '@/lib/adminAuth';
 
 export default function AdminLoginForm() {
   const router = useRouter();
@@ -16,6 +17,25 @@ export default function AdminLoginForm() {
 
   useEffect(() => {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, []);
+
+  // The APK only lands here if the WebView lost its session cookie (or it
+  // expired on an older 8-hour login). Its token from the last login is still
+  // in localStorage, so sign straight back in. Only logout removes the token.
+  useEffect(() => {
+    if (!isAdminApp() || !localStorage.getItem('admin_token')) return;
+    setLoading(true);
+    renewAppSession()
+      .then((res) => {
+        if (res.ok) {
+          window.location.replace('/admin/dashboard');
+          return;
+        }
+        // ADMIN_TOKEN was changed on the server, so the saved one is dead
+        if (res.status === 401) localStorage.removeItem('admin_token');
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, []);
 
   function startCountdown(seconds: number) {
@@ -41,13 +61,13 @@ export default function AdminLoginForm() {
 
     try {
       // The APK loads the live site, so this is same-origin there too.
-      const isCapacitor = !!(window as any).Capacitor?.isNativePlatform?.();
+      const isCapacitor = isAdminApp();
       const res = await fetch(
         '/api/admin/login',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password }),
+          body: JSON.stringify({ password, app: isCapacitor }),
           ...(isCapacitor ? { credentials: 'include' } : {}),
         },
       );

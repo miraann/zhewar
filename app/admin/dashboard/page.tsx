@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import { useWakeLock } from '@/hooks/useWakeLock';
 import { Clock, ImageIcon, User, LayoutDashboard, Share2, Settings, RefreshCw, LogOut, MessageCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { adminLogout } from '@/lib/adminAuth';
+import { adminLogout, isAdminApp, renewAppSession } from '@/lib/adminAuth';
 import AppointmentsView from '@/components/admin/AppointmentsView';
 import PushNotificationInit    from '@/components/admin/PushNotificationInit';
 import BottomNav from '@/components/admin/BottomNav';
@@ -59,6 +59,12 @@ function Dashboard() {
 
   const [pendingCount, setPendingCount] = useState(0);
   const [logoUrl, setLogoUrl]           = useState<string | null>(null);
+
+  // Every APK launch pushes the session cookie's expiry out again, so
+  // closing the app never signs the admin out
+  useEffect(() => {
+    if (isAdminApp()) renewAppSession().catch(() => {});
+  }, []);
 
   useEffect(() => {
     supabase.from('barber_profile').select('logo_url').single()
