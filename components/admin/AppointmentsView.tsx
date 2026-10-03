@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import type { AppointmentFull, WhatsAppTemplate, WhatsAppTemplateKind } from '@/lib/types';
 import {
   Phone, Clock, CheckCircle2, XCircle, RefreshCw,
-  Calendar, ShieldCheck, AlertCircle, Search, X, Bell, User,
+  Calendar, ShieldCheck, AlertCircle, Search, X, Bell, User, History,
 } from 'lucide-react';
 import Skeleton from './ui/Skeleton';
 import WhatsAppSendSheet from './WhatsAppSendSheet';
@@ -96,6 +96,20 @@ const FILTER_LABELS: Record<Filter, string> = { upcoming: 'داهاتوو', toda
 
 export type AppFilter = Filter;
 
+// ── Style tokens ──────────────────────────────────────────────────────────────
+
+// White floating surface on the #FAFAFC canvas
+const SURFACE     = 'rounded-3xl bg-white border border-slate-100/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)]';
+const PILL        = 'inline-flex items-center gap-1.5 bg-slate-100/70 text-slate-700 rounded-full px-3 py-1 text-xs font-semibold leading-5';
+const ACTION_BTN  = 'min-h-[48px] rounded-2xl font-bold text-sm flex items-center justify-center gap-2 touch-manipulation active:scale-95 transition-all duration-200';
+const CONTACT_BTN = 'w-11 h-11 rounded-2xl flex items-center justify-center touch-manipulation active:scale-95 transition-all duration-200';
+
+const STATUS_TONE = {
+  confirmed: { dot: 'bg-emerald-500', badge: 'bg-emerald-50 text-emerald-700', ring: 'ring-emerald-500/25', avatar: 'bg-emerald-50 text-emerald-500' },
+  pending:   { dot: 'bg-amber-500',   badge: 'bg-amber-50 text-amber-700',     ring: 'ring-indigo-500/20',  avatar: 'bg-indigo-50 text-indigo-400' },
+  cancelled: { dot: 'bg-rose-500',    badge: 'bg-rose-50 text-rose-600',       ring: 'ring-rose-500/25',    avatar: 'bg-rose-50 text-rose-400' },
+};
+
 // ── Brand icon SVGs (18 px, inline-only, no className so they inherit color) ──
 
 const WA_ICON_SM = (
@@ -138,20 +152,19 @@ function Countdown({ appointmentTime }: { appointmentTime: string }) {
   return (
     <div
       dir="ltr"
-      className="flex items-center justify-center gap-1.5 px-3 h-14 rounded-md-md"
-      style={{ background: 'rgb(var(--md-primary))' }}
+      className="flex items-center justify-center gap-2 px-4 h-14 rounded-2xl bg-gradient-to-l from-indigo-600 to-violet-600 shadow-[0_10px_24px_-8px_rgb(79,70,229,0.55)]"
     >
       {['D','H','M','S'].map((unit, i) => (
-        <div key={unit} className="flex items-center gap-1.5">
-          <div className="flex flex-col items-center">
-            <span className="font-black text-base leading-none tabular-nums text-white">
+        <div key={unit} className="flex items-center gap-2">
+          <div className="flex flex-col items-center min-w-[1.75rem]">
+            <span className="font-black text-lg leading-none tabular-nums text-white">
               {segments[i] ?? '00'}
             </span>
-            <span className="text-[0.5rem] font-semibold mt-0.5 text-white/70">
+            <span className="text-[0.55rem] font-bold mt-1 text-white/70">
               {unit}
             </span>
           </div>
-          {i < 3 && <span className="font-black text-base leading-none pb-2 text-white/50">:</span>}
+          {i < 3 && <span className="font-black text-lg leading-none pb-3 text-white/40">:</span>}
         </div>
       ))}
     </div>
@@ -313,137 +326,131 @@ export default function AppointmentsView({
     }
   }
 
+  // Summary tiles — same three counts as before, restyled as floating tiles.
+  const metrics = [
+    { label: 'چاوەڕوان', value: pendingCount,   icon: AlertCircle, iconCls: 'text-amber-500',   accent: 'from-amber-400 to-orange-500' },
+    { label: 'پەسەند',   value: confirmedCount, icon: ShieldCheck, iconCls: 'text-emerald-500', accent: 'from-emerald-400 to-teal-500' },
+    { label: 'ئەمڕۆ',    value: todayCount,     icon: Calendar,    iconCls: 'text-indigo-500',  accent: 'from-indigo-500 to-violet-500' },
+  ];
+
   return (
     <div className="relative pb-16">
 
-      {/* ── Metric cards ─────────────────────────────────────────────────── */}
+      {/* ── Metric tiles ─────────────────────────────────────────────────── */}
       <div className="px-4 pt-5 grid grid-cols-3 gap-3">
-
-        {/* Pending */}
-        <div className="bg-md-warning-container rounded-md-lg p-3.5 flex flex-col items-center text-center gap-2">
-          <div className="w-8 h-8 rounded-md-md bg-md-warning/15 flex items-center justify-center">
-            <AlertCircle className="w-4 h-4 text-md-warning" />
+        {metrics.map(({ label, value, icon: Icon, iconCls, accent }) => (
+          <div key={label} className={`relative overflow-hidden p-3.5 ${SURFACE}`}>
+            <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-l ${accent}`} />
+            <div className={`absolute -top-10 -end-10 w-24 h-24 rounded-full bg-gradient-to-br ${accent} opacity-20 blur-2xl pointer-events-none`} />
+            <div className="relative">
+              <div className="inline-flex bg-slate-100/80 rounded-2xl p-3">
+                <Icon className={`w-[18px] h-[18px] ${iconCls}`} />
+              </div>
+              <p className="mt-3 text-3xl font-black text-slate-900 leading-none tabular-nums">{value}</p>
+              <p className="mt-2 text-[0.7rem] font-bold text-slate-500">{label}</p>
+            </div>
           </div>
-          <span className="text-[1.75rem] font-black text-md-on-warning-container leading-none">{pendingCount}</span>
-          <span className="text-[0.58rem] font-semibold text-md-on-warning-container/70 tracking-widest">چاوەڕوان</span>
-        </div>
-
-        {/* Confirmed */}
-        <div className="bg-md-success-container rounded-md-lg p-3.5 flex flex-col items-center text-center gap-2">
-          <div className="w-8 h-8 rounded-md-md bg-md-success/15 flex items-center justify-center">
-            <ShieldCheck className="w-4 h-4 text-md-success" />
-          </div>
-          <span className="text-[1.75rem] font-black text-md-on-success-container leading-none">{confirmedCount}</span>
-          <span className="text-[0.58rem] font-semibold text-md-on-success-container/70 tracking-widest">پەسەند</span>
-        </div>
-
-        {/* Today */}
-        <div className="bg-md-primary-container rounded-md-lg p-3.5 flex flex-col items-center text-center gap-2">
-          <div className="w-8 h-8 rounded-md-md bg-md-primary/15 flex items-center justify-center">
-            <Calendar className="w-4 h-4 text-md-primary" />
-          </div>
-          <span className="text-[1.75rem] font-black text-md-on-primary-container leading-none">{todayCount}</span>
-          <span className="text-[0.58rem] font-semibold text-md-on-primary-container/70 tracking-widest">ئەمڕۆ</span>
-        </div>
+        ))}
       </div>
 
-      {/* ── Search ───────────────────────────────────────────────────────── */}
-      <div className="px-4 pt-4">
-        <div className="flex items-center gap-3 px-4 py-3 rounded-md-full bg-md-surface-container-high focus-within:bg-md-surface-container focus-within:border-md-primary focus-within:border-2 border-2 border-transparent transition-colors">
-          <Search className="w-4 h-4 text-md-on-surface-variant flex-shrink-0 pointer-events-none" />
+      {/* ── Search + refresh ─────────────────────────────────────────────── */}
+      <div className="px-4 pt-4 flex items-center gap-2">
+        <div className="flex-1 min-w-0 flex items-center gap-3 px-4 h-[52px] rounded-2xl bg-white border border-slate-100/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/10 transition-all duration-200">
+          <Search className="w-[18px] h-[18px] text-slate-400 flex-shrink-0 pointer-events-none" />
           <input
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="گەڕان — ناو یان ژمارەی مۆبایل..."
             dir="rtl"
-            className="flex-1 bg-transparent outline-none text-sm text-md-on-surface placeholder-md-on-surface-variant/60"
+            className="flex-1 min-w-0 bg-transparent outline-none text-sm text-slate-900 placeholder-slate-400"
           />
           {search && (
-            <button onClick={() => setSearch('')} className="text-md-on-surface-variant active:text-md-on-surface touch-manipulation">
+            <button
+              onClick={() => setSearch('')}
+              className="w-8 h-8 -me-2 rounded-full flex items-center justify-center text-slate-400 active:bg-slate-100 active:scale-90 transition-all duration-200 touch-manipulation"
+            >
               <X className="w-4 h-4" />
             </button>
           )}
         </div>
+
+        <button
+          onClick={() => load()}
+          className="w-[52px] h-[52px] flex-shrink-0 rounded-2xl bg-white border border-slate-100/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex items-center justify-center text-slate-500 active:scale-95 transition-all duration-200 touch-manipulation"
+        >
+          <RefreshCw className={`w-[18px] h-[18px] ${loading ? 'animate-spin' : ''}`} />
+        </button>
       </div>
 
-      {/* ── Filter tabs + refresh ────────────────────────────────────────── */}
+      {/* ── Filter segmented control + pending ───────────────────────────── */}
       <div className="px-4 pt-3 flex items-center gap-2">
 
-        {/* Filter chips — داهاتوو / ئەمڕۆ / هەموو */}
-        <div className="flex-1 flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
-          {(['upcoming', 'today', 'all'] as Filter[]).map(f => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={[
-                'flex-1 py-[7px] rounded-md-full text-[0.68rem] font-semibold touch-manipulation transition-all duration-200 leading-none border',
-                filter === f
-                  ? 'bg-md-secondary-container text-md-on-secondary-container border-md-secondary-container'
-                  : 'bg-md-surface-container-high text-md-on-surface-variant border-md-outline-variant active:bg-md-surface-container-highest',
-              ].join(' ')}
-            >
-              <span className="inline-flex items-center gap-1">
+        {/* داهاتوو / ئەمڕۆ / هەموو */}
+        <div className="flex-1 min-w-0 flex items-center gap-1 p-1 rounded-2xl bg-white border border-slate-100/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          {(['upcoming', 'today', 'all'] as Filter[]).map(f => {
+            const on = filter === f;
+            return (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={[
+                  'flex-1 min-w-0 h-10 rounded-xl text-xs inline-flex items-center justify-center gap-1.5 touch-manipulation transition-all duration-200 active:scale-95',
+                  on ? 'bg-indigo-50 text-indigo-600 font-bold' : 'text-slate-500 font-semibold',
+                ].join(' ')}
+              >
                 {FILTER_LABELS[f]}
                 <span className={[
-                  'inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 rounded-full text-[9px] font-bold',
-                  filter === f ? 'bg-md-surface-container/70 text-md-on-secondary-container' : 'bg-md-surface-container-highest text-md-on-surface-variant',
+                  'inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold tabular-nums transition-colors duration-200',
+                  on ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500',
                 ].join(' ')}>
                   {tabCounts[f]}
                 </span>
-              </span>
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
 
         {/* Pending bell capsule */}
         <button
           onClick={() => setFilter(filter === 'pending' ? 'upcoming' : 'pending')}
           className={[
-            'relative flex items-center gap-1 px-3 py-[7px] rounded-md-full text-[0.68rem] font-semibold touch-manipulation transition-all duration-200 leading-none flex-shrink-0 border',
+            'relative h-12 px-3.5 flex-shrink-0 rounded-2xl flex items-center gap-1.5 text-xs font-bold touch-manipulation transition-all duration-200 active:scale-95',
             filter === 'pending'
-              ? 'bg-md-warning text-white border-md-warning'
-              : 'bg-md-surface-container-high text-md-on-surface-variant border-md-outline-variant active:bg-md-surface-container-highest',
+              ? 'bg-gradient-to-l from-amber-400 to-orange-500 text-white shadow-[0_10px_24px_-8px_rgb(245,158,11,0.6)]'
+              : 'bg-white border border-slate-100/80 text-slate-600 shadow-[0_8px_30px_rgb(0,0,0,0.04)]',
           ].join(' ')}
         >
-          <Bell className="w-3 h-3 flex-shrink-0" />
+          <Bell className="w-4 h-4 flex-shrink-0" />
           <span>{FILTER_LABELS['pending']}</span>
           {allPendingCount > 0 && (
-            <span
-              className="absolute -top-[5px] -start-[5px] min-w-[15px] h-[15px] rounded-full bg-md-error text-md-on-error flex items-center justify-center font-bold leading-none px-[2.5px]"
-              style={{ fontSize: '8.5px' }}
-            >
+            <span className="absolute -top-1.5 -start-1.5 min-w-[20px] h-5 px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold leading-none flex items-center justify-center ring-2 ring-md-surface">
               {allPendingCount > 9 ? '9+' : allPendingCount}
             </span>
           )}
         </button>
-
-        {/* Refresh */}
-        <button onClick={() => load()} className="p-1.5 text-md-on-surface-variant active:text-md-on-surface touch-manipulation rounded-md-md active:bg-md-surface-container-high transition-colors">
-          <RefreshCw className={`w-[15px] h-[15px] ${loading ? 'animate-spin' : ''}`} />
-        </button>
       </div>
 
-      <p className="px-4 pt-2 pb-1 text-[0.65rem] text-md-on-surface-variant font-semibold">{filtered.length} کاتی سەردان</p>
+      <p className="px-5 pt-4 pb-1 text-xs text-slate-400 font-bold">{filtered.length} کاتی سەردان</p>
 
       {/* ── Skeletons ────────────────────────────────────────────────────── */}
       {loading && (
         <div className="px-4 pt-1">
-          <Skeleton variant="card" count={3} className="h-32" />
+          <Skeleton variant="card" count={3} className="h-44" />
         </div>
       )}
 
       {/* ── Empty ────────────────────────────────────────────────────────── */}
       {!loading && filtered.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-14 gap-3 px-8 text-center">
-          <div className="w-11 h-11 rounded-full bg-md-surface-container-high border border-md-outline-variant flex items-center justify-center">
-            <Calendar className="w-4 h-4 text-md-outline" />
+        <div className="flex flex-col items-center justify-center py-16 gap-4 px-8 text-center">
+          <div className={`w-16 h-16 flex items-center justify-center ${SURFACE}`}>
+            <Calendar className="w-7 h-7 text-indigo-300" />
           </div>
-          <div className="space-y-1">
-            <p className="text-[0.82rem] font-semibold text-md-on-surface-variant">
+          <div className="space-y-1.5">
+            <p className="text-sm font-bold text-slate-700">
               {search ? 'هیچ ئەنجامێک نەدۆزرایەوە' : 'هیچ کاتی سەردانیکردنێک نییە'}
             </p>
-            <p className="text-[0.7rem] text-md-outline">
+            <p className="text-xs text-slate-400">
               {search ? 'ناو یان ژمارەی دیکە تەماشا بکە' : 'کاتەکانی نوێ لێرە دەردەکەون'}
             </p>
           </div>
@@ -452,18 +459,19 @@ export default function AppointmentsView({
 
       {/* ── Cards ────────────────────────────────────────────────────────── */}
       {!loading && (
-        <div className="px-4 pt-1 space-y-5">
+        <div className="px-4 pt-1 space-y-6">
           {groups.map(group => (
-            <div key={group.key} className="w-full max-w-md mx-auto">
+            <section key={group.key} className="w-full max-w-md mx-auto">
 
               {/* Sticky date section header */}
-              <div className="sticky top-16 z-10 py-1.5 bg-md-surface/95 backdrop-blur-sm">
-                <p className="text-[0.95rem] font-black text-black tracking-wide">
+              <div className="sticky top-16 z-10 -mx-1 px-1 py-2.5 bg-md-surface/95 backdrop-blur-sm">
+                <p className="flex items-center gap-2 text-base font-black text-slate-900">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
                   {group.dayName} · {group.date}
                 </p>
               </div>
 
-              <div className="bg-md-surface-container rounded-md-lg border border-md-outline-variant overflow-hidden divide-y divide-md-outline-variant">
+              <div className="space-y-3 pt-1">
                 {group.items.map(appt => {
                   const { time }    = formatDT(appt.appointment_time);
                   const fbLinks     = appt.customers.facebook_id ? getFbLinks(appt.customers.facebook_id) : null;
@@ -475,211 +483,177 @@ export default function AppointmentsView({
                   // Pending bookings open on the accept messages; the sheet can switch kinds.
                   const waKind: WhatsAppTemplateKind = isCancelled ? 'decline' : 'accept';
                   const hasWaTemplates = waTemplates.length > 0;
-
-                  const dotColorVar = isConfirmed ? '--md-success' : isCancelled ? '--md-error' : '--md-warning';
-                  const dotColor    = `rgb(var(${dotColorVar}))`;
-                  const dotColorTint = `rgb(var(${dotColorVar}) / 0.12)`;
-
-                  const badgeCls = isConfirmed
-                    ? 'bg-md-success-container text-md-on-success-container'
-                    : isCancelled
-                      ? 'bg-md-error-container text-md-on-error-container'
-                      : 'bg-md-warning-container text-md-on-warning-container';
-
-                  // Left accent strip color
-                  const accentColor = dotColor;
+                  const tone = STATUS_TONE[isConfirmed ? 'confirmed' : isCancelled ? 'cancelled' : 'pending'];
 
                   return (
-                    <div
+                    <article
                       key={appt.id}
-                      className="relative bg-md-surface-container"
-                      style={{
-                        opacity: isCancelled ? 0.55 : 1,
-                        transition: 'opacity 0.2s',
-                      }}
+                      className={`relative p-4 transition-opacity duration-200 ${SURFACE} ${isCancelled ? 'opacity-60' : ''}`}
                     >
-                      {/* Thin soft left accent */}
-                      <div
-                        className="absolute inset-y-0 left-0 w-[2px]"
-                        style={{ background: accentColor, opacity: 0.6 }}
-                      />
 
-                      <div className="p-4 pl-5 space-y-3">
+                      {/* ── Avatar + name/status + time & phone pills ── */}
+                      <div className="flex items-start gap-3.5">
 
-                        {/* ── Header: Avatar + Name/Status + Date/Time + Phone/Icons ── */}
-                        <div className="flex items-start gap-3">
-
-                          {/* Avatar — w-16 */}
-                          <div className="relative w-16 h-16 flex-shrink-0">
-                            {photo && !failedPhotos.has(appt.id) ? (
-                              <button
-                                type="button"
-                                onClick={() => setPreview(photo)}
-                                className="absolute inset-0 rounded-full overflow-hidden touch-manipulation active:opacity-70 transition-opacity"
-                              >
-                                <img
-                                  src={photo}
-                                  alt={appt.customers.full_name}
-                                  className="w-full h-full object-cover"
-                                  loading="lazy"
-                                  decoding="async"
-                                  onError={() => setFailedPhotos(prev => new Set(prev).add(appt.id))}
-                                />
-                              </button>
-                            ) : (
-                              <div
-                                className="absolute inset-0 rounded-full flex items-center justify-center select-none"
-                                style={{ background: dotColorTint, color: dotColor }}
-                              >
-                                <User className="w-7 h-7" />
-                              </div>
-                            )}
-                            <span
-                              className="absolute -bottom-0.5 -right-0.5 w-[9px] h-[9px] rounded-full border-[1.5px] border-white z-10"
-                              style={{ background: dotColor }}
-                            />
-                          </div>
-
-                          {/* Right column */}
-                          <div className="flex-1 min-w-0">
-
-                            {/* Name + status badge */}
-                            <div className="flex items-center justify-between gap-2">
-                              <p className="font-bold text-[0.95rem] text-md-on-surface leading-tight truncate">
-                                {appt.customers.full_name}
-                              </p>
-                              <span className={`flex-shrink-0 px-2 py-[3px] text-[10px] font-semibold rounded-md-full ${badgeCls}`}>
-                                {STATUS_LABEL[appt.status]}
-                              </span>
+                        <div className="relative w-16 h-16 flex-shrink-0">
+                          {photo && !failedPhotos.has(appt.id) ? (
+                            <button
+                              type="button"
+                              onClick={() => setPreview(photo)}
+                              className={`absolute inset-0 rounded-full overflow-hidden ring-2 ring-offset-2 ${tone.ring} touch-manipulation active:scale-95 transition-transform duration-200`}
+                            >
+                              <img
+                                src={photo}
+                                alt={appt.customers.full_name}
+                                className="w-full h-full object-cover"
+                                loading="lazy"
+                                decoding="async"
+                                onError={() => setFailedPhotos(prev => new Set(prev).add(appt.id))}
+                              />
+                            </button>
+                          ) : (
+                            <div className={`absolute inset-0 rounded-full flex items-center justify-center select-none ring-2 ring-offset-2 ${tone.ring} ${tone.avatar}`}>
+                              <User className="w-7 h-7" />
                             </div>
-
-                            {/* Time — the date is now shown once in the section header */}
-                            <div className="flex items-center gap-1 mt-1.5">
-                              <Clock className="w-[11px] h-[11px] text-md-on-surface-variant flex-shrink-0" />
-                              <span className="text-[0.78rem] text-md-on-surface font-bold leading-none">{time}</span>
-                            </div>
-
-                            {/* Phone + circular contact buttons */}
-                            <div className="flex items-center justify-between gap-2 mt-2">
-                              <p className="text-[0.8rem] text-black font-mono tracking-wide leading-none" dir="ltr">
-                                {appt.customers.phone_number}
-                              </p>
-                              <div className="flex items-center gap-1.5">
-                                <a
-                                  href={`tel:${appt.customers.phone_number}`}
-                                  className="w-9 h-9 rounded-full bg-md-surface-container-high border border-md-outline-variant flex items-center justify-center text-md-on-surface-variant active:bg-md-surface-container-highest touch-manipulation transition-colors"
-                                >
-                                  <Phone className="w-[18px] h-[18px]" />
-                                </a>
-                                {hasWaTemplates ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => setWaSheet({ appt, kind: waKind, afterAction: false })}
-                                    className="w-9 h-9 rounded-full flex items-center justify-center text-white active:opacity-75 touch-manipulation"
-                                    style={{ background: '#25d366' }}
-                                  >
-                                    {WA_ICON_SM}
-                                  </button>
-                                ) : (
-                                  <a
-                                    href={waLink(appt.customers.phone_number)}
-                                    target="_blank" rel="noopener noreferrer"
-                                    className="w-9 h-9 rounded-full flex items-center justify-center text-white active:opacity-75 touch-manipulation"
-                                    style={{ background: '#25d366' }}
-                                  >
-                                    {WA_ICON_SM}
-                                  </a>
-                                )}
-                                {fbLinks && (
-                                  <a
-                                    href={fbLinks.fbUrl}
-                                    target="_blank" rel="noopener noreferrer"
-                                    className="w-9 h-9 rounded-full flex items-center justify-center text-white active:opacity-75 touch-manipulation"
-                                    style={{ background: '#1877f2' }}
-                                  >
-                                    {FB_ICON_SM}
-                                  </a>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Booked-at timestamp */}
-                            <p className="text-[0.7rem] text-black mt-1.5 font-mono leading-none" dir="ltr">
-                              ⏱ {formatCreatedAt(appt.created_at)}
-                            </p>
-
-                            {/* Customer notes */}
-                            {appt.customers.notes && (
-                              <p className="text-[0.68rem] text-md-on-surface-variant mt-1.5 bg-md-surface-container-high rounded-md-sm px-2 py-1 border border-md-outline-variant leading-snug" dir="rtl">
-                                📝 {appt.customers.notes}
-                              </p>
-                            )}
-                          </div>
+                          )}
+                          <span className={`absolute bottom-0 end-0 w-3.5 h-3.5 rounded-full border-2 border-white z-10 ${tone.dot}`} />
                         </div>
 
-                        {/* ── Divider ─────────────────────────────────────────────── */}
-                        <div className="h-px bg-md-outline-variant mx-0.5" />
-
-                        {/* ── Action footer ────────────────────────────────────────── */}
-                        {isPending && (
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => setDecision({ appt, kind: 'accept' })}
-                              className="flex-1 h-9 rounded-md-full font-semibold text-[0.8rem] text-md-on-primary flex items-center justify-center gap-1.5 touch-manipulation transition-all active:scale-[0.98] bg-md-primary active:bg-md-primary/90"
-                            >
-                              <CheckCircle2 className="w-[13px] h-[13px]" />
-                              پەسەندکردن
-                            </button>
-                            <button
-                              onClick={() => setDecision({ appt, kind: 'decline' })}
-                              className="px-4 h-9 rounded-md-full font-semibold text-[0.8rem] flex items-center justify-center gap-1.5 touch-manipulation transition-all active:scale-[0.98] bg-md-error-container text-md-on-error-container active:bg-md-error-container/70"
-                            >
-                              <XCircle className="w-[13px] h-[13px]" />
-                              هەڵوەشاندن
-                            </button>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="font-black text-base text-slate-900 leading-snug truncate">
+                              {appt.customers.full_name}
+                            </p>
+                            <span className={`flex-shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${tone.badge}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${tone.dot}`} />
+                              {STATUS_LABEL[appt.status]}
+                            </span>
                           </div>
-                        )}
 
-                        {isConfirmed && (
-                          (filter === 'upcoming' || filter === 'today')
-                            ? <Countdown appointmentTime={appt.appointment_time} />
-                            : filter === 'all'
-                              ? (
-                                <div className="flex gap-2">
-                                  <button
-                                    onClick={() => setDecision({ appt, kind: 'decline' })}
-                                    className="flex-1 h-9 rounded-md-full font-semibold text-[0.8rem] flex items-center justify-center gap-1.5 touch-manipulation transition-all active:scale-[0.98] bg-md-error-container text-md-on-error-container active:bg-md-error-container/70"
-                                  >
-                                    <XCircle className="w-[13px] h-[13px]" />
-                                    هەڵوەشاندنەوە
-                                  </button>
-                                  <button
-                                    onClick={() => updateStatus(appt.id, 'pending')}
-                                    className="w-9 h-9 rounded-md-full flex items-center justify-center touch-manipulation transition-all active:scale-95 bg-md-surface-container-high border border-md-outline-variant text-md-on-surface-variant active:bg-md-surface-container-highest"
-                                  >
-                                    <RefreshCw className="w-[13px] h-[13px]" />
-                                  </button>
-                                </div>
-                              )
-                              : null
-                        )}
-
-                        {isCancelled && (
-                          <button
-                            onClick={() => updateStatus(appt.id, 'pending')}
-                            className="w-full h-9 rounded-md-full flex items-center justify-center gap-2 font-semibold text-[0.8rem] touch-manipulation transition-all active:scale-[0.99] bg-md-surface-container-high border border-md-outline-variant text-md-on-surface-variant active:bg-md-surface-container-highest"
-                          >
-                            <RefreshCw className="w-[13px] h-[13px]" />
-                            گەڕاندنەوە بۆ چاوەڕوان
-                          </button>
-                        )}
-
+                          {/* The date is shown once in the section header */}
+                          <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
+                            <span className={PILL}>
+                              <Clock className="w-3.5 h-3.5 text-indigo-500 flex-shrink-0" />
+                              {time}
+                            </span>
+                            <span className={PILL} dir="ltr">
+                              <Phone className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                              <span className="tabular-nums tracking-wide">{appt.customers.phone_number}</span>
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
+
+                      {/* ── Booked-at pill + contact buttons ── */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 mt-3.5">
+                        <span className={`${PILL} text-slate-500`} dir="ltr">
+                          <History className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                          <span className="tabular-nums">{formatCreatedAt(appt.created_at)}</span>
+                        </span>
+
+                        <div className="flex items-center gap-2">
+                          <a
+                            href={`tel:${appt.customers.phone_number}`}
+                            className={`${CONTACT_BTN} bg-slate-100/80 text-slate-600 active:bg-slate-200/80`}
+                          >
+                            <Phone className="w-[18px] h-[18px]" />
+                          </a>
+                          {hasWaTemplates ? (
+                            <button
+                              type="button"
+                              onClick={() => setWaSheet({ appt, kind: waKind, afterAction: false })}
+                              className={`${CONTACT_BTN} bg-[#25d366] text-white shadow-[0_8px_18px_-8px_rgba(37,211,102,0.8)]`}
+                            >
+                              {WA_ICON_SM}
+                            </button>
+                          ) : (
+                            <a
+                              href={waLink(appt.customers.phone_number)}
+                              target="_blank" rel="noopener noreferrer"
+                              className={`${CONTACT_BTN} bg-[#25d366] text-white shadow-[0_8px_18px_-8px_rgba(37,211,102,0.8)]`}
+                            >
+                              {WA_ICON_SM}
+                            </a>
+                          )}
+                          {fbLinks && (
+                            <a
+                              href={fbLinks.fbUrl}
+                              target="_blank" rel="noopener noreferrer"
+                              className={`${CONTACT_BTN} bg-[#1877f2] text-white shadow-[0_8px_18px_-8px_rgba(24,119,242,0.8)]`}
+                            >
+                              {FB_ICON_SM}
+                            </a>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Customer notes */}
+                      {appt.customers.notes && (
+                        <p className="mt-3 text-xs text-slate-600 bg-slate-50 rounded-2xl px-3.5 py-2.5 border border-slate-100 leading-relaxed" dir="rtl">
+                          📝 {appt.customers.notes}
+                        </p>
+                      )}
+
+                      <div className="h-px bg-slate-100 my-4" />
+
+                      {/* ── Actions ── */}
+                      {isPending && (
+                        <div className="flex gap-2.5">
+                          <button
+                            onClick={() => setDecision({ appt, kind: 'accept' })}
+                            className={`flex-1 ${ACTION_BTN} bg-gradient-to-l from-indigo-600 to-violet-600 text-white shadow-[0_10px_24px_-8px_rgb(79,70,229,0.6)]`}
+                          >
+                            <CheckCircle2 className="w-[18px] h-[18px]" />
+                            پەسەندکردن
+                          </button>
+                          <button
+                            onClick={() => setDecision({ appt, kind: 'decline' })}
+                            className={`px-5 ${ACTION_BTN} bg-rose-50 text-rose-600 active:bg-rose-100`}
+                          >
+                            <XCircle className="w-[18px] h-[18px]" />
+                            هەڵوەشاندن
+                          </button>
+                        </div>
+                      )}
+
+                      {isConfirmed && (
+                        (filter === 'upcoming' || filter === 'today')
+                          ? <Countdown appointmentTime={appt.appointment_time} />
+                          : filter === 'all'
+                            ? (
+                              <div className="flex gap-2.5">
+                                <button
+                                  onClick={() => setDecision({ appt, kind: 'decline' })}
+                                  className={`flex-1 ${ACTION_BTN} bg-rose-50 text-rose-600 active:bg-rose-100`}
+                                >
+                                  <XCircle className="w-[18px] h-[18px]" />
+                                  هەڵوەشاندنەوە
+                                </button>
+                                <button
+                                  onClick={() => updateStatus(appt.id, 'pending')}
+                                  className={`w-12 ${ACTION_BTN} bg-slate-100/80 text-slate-500 active:bg-slate-200/80`}
+                                >
+                                  <RefreshCw className="w-[18px] h-[18px]" />
+                                </button>
+                              </div>
+                            )
+                            : null
+                      )}
+
+                      {isCancelled && (
+                        <button
+                          onClick={() => updateStatus(appt.id, 'pending')}
+                          className={`w-full ${ACTION_BTN} bg-slate-100/80 text-slate-600 active:bg-slate-200/80`}
+                        >
+                          <RefreshCw className="w-[18px] h-[18px]" />
+                          گەڕاندنەوە بۆ چاوەڕوان
+                        </button>
+                      )}
+
+                    </article>
                   );
                 })}
               </div>
-            </div>
+            </section>
           ))}
         </div>
       )}
@@ -716,14 +690,14 @@ export default function AppointmentsView({
       {preview && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-8"
-          style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(20px)' }}
+          style={{ background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(20px)' }}
           onClick={() => setPreview(null)}
         >
           <div className="relative max-w-xs w-full" onClick={e => e.stopPropagation()}>
-            <img src={preview} alt="" className="w-full rounded-md-xl object-contain shadow-md-2" />
+            <img src={preview} alt="" className="w-full rounded-3xl object-contain shadow-[0_12px_40px_rgb(0,0,0,0.25)]" />
             <button
               onClick={() => setPreview(null)}
-              className="absolute -top-3 -right-3 w-9 h-9 rounded-full flex items-center justify-center touch-manipulation bg-md-surface-container border border-md-outline-variant text-md-on-surface-variant shadow-md-1"
+              className="absolute -top-3 -right-3 w-10 h-10 rounded-2xl flex items-center justify-center touch-manipulation bg-white text-slate-600 shadow-[0_8px_30px_rgb(0,0,0,0.12)] active:scale-95 transition-all duration-200"
             >
               <X className="w-4 h-4" />
             </button>

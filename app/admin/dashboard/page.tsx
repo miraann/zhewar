@@ -138,8 +138,8 @@ function Dashboard() {
       {/* Registers FCM token when running inside the Capacitor APK */}
       <PushNotificationInit />
 
-      {/* ── Header (M3 small top app bar) ── */}
-      <header className="sticky top-0 z-30 bg-md-surface/95 backdrop-blur-lg border-b border-md-outline-variant shadow-md-1">
+      {/* ── Header — blends into the #FAFAFC canvas ── */}
+      <header className="sticky top-0 z-30 bg-md-surface/80 backdrop-blur-xl border-b border-slate-200/40">
         <div className="max-w-lg mx-auto px-4">
           <div className="flex items-center gap-3 h-16">
 
@@ -166,21 +166,21 @@ function Dashboard() {
               </div>
             </div>
 
-            <p className="flex-1 text-[0.9rem] font-bold text-md-on-surface leading-tight tracking-wide">
+            <p className="flex-1 text-lg font-black text-slate-900 leading-tight">
               پانێڵی ئەدمین
             </p>
 
             {/* Refresh + logout */}
-            <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <button
                 onClick={() => window.location.reload()}
-                className="w-9 h-9 rounded-full flex items-center justify-center text-md-on-surface-variant active:bg-md-surface-container-high active:text-md-on-surface touch-manipulation transition-colors"
+                className="w-11 h-11 rounded-2xl flex items-center justify-center bg-white border border-slate-100/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] text-slate-600 active:scale-95 touch-manipulation transition-all duration-200"
               >
                 <RefreshCw className="w-[18px] h-[18px]" />
               </button>
               <button
                 onClick={adminLogout}
-                className="w-9 h-9 rounded-full flex items-center justify-center text-md-error active:bg-md-error-container/60 touch-manipulation transition-colors"
+                className="w-11 h-11 rounded-2xl flex items-center justify-center bg-rose-50 text-rose-600 active:scale-95 active:bg-rose-100 touch-manipulation transition-all duration-200"
               >
                 <LogOut className="w-[18px] h-[18px]" />
               </button>

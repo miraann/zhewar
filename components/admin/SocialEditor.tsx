@@ -163,8 +163,8 @@ export default function SocialEditor() {
   return (
     <div className="px-4 py-6 space-y-5">
       <div>
-        <h2 className="text-md-on-surface font-semibold text-lg">پۆستەکانی سۆشیاڵ میدیا</h2>
-        <p className="text-md-on-surface-variant text-sm mt-0.5">    </p>
+        <h2 className="text-2xl font-black text-slate-900 leading-tight">پۆستەکانی سۆشیاڵ میدیا</h2>
+        <p className="text-slate-500 text-sm mt-1">    </p>
       </div>
 
       {/* Add form */}
@@ -204,7 +204,7 @@ export default function SocialEditor() {
         <input
           type="text" value={title} onChange={(e) => setTitle(e.target.value)}
           placeholder="ناونیشان (ئارەزوومەند)"
-          className="w-full bg-md-surface-container border border-md-outline rounded-md-sm px-4 py-3 text-md-on-surface text-sm placeholder-md-on-surface-variant/60 outline-none focus:border-md-primary focus:border-2 transition-colors"
+          className="admin-input"
         />
 
         <div className="relative">
@@ -212,7 +212,7 @@ export default function SocialEditor() {
           <input
             type="url" value={url} onChange={(e) => setUrl(e.target.value)}
             placeholder="https://..."
-            className="w-full bg-md-surface-container border border-md-outline rounded-md-sm ps-10 pe-4 py-3 text-md-on-surface text-sm placeholder-md-on-surface-variant/60 outline-none focus:border-md-primary focus:border-2 transition-colors"
+            className="admin-input ps-10"
           />
         </div>
 
@@ -316,7 +316,7 @@ export default function SocialEditor() {
                 type="text" value={editing.title}
                 onChange={(e) => setEditing({ ...editing, title: e.target.value })}
                 placeholder="ناونیشان"
-                className="w-full bg-md-surface border border-md-outline rounded-md-sm px-4 py-3 text-md-on-surface text-sm placeholder-md-on-surface-variant/60 outline-none focus:border-md-primary focus:border-2 transition-colors"
+                className="admin-input"
               />
             </div>
 
@@ -328,7 +328,7 @@ export default function SocialEditor() {
                   type="url" value={editing.url}
                   onChange={(e) => setEditing({ ...editing, url: e.target.value })}
                   placeholder="https://..."
-                  className="w-full bg-md-surface border border-md-outline rounded-md-sm ps-10 pe-4 py-3 text-md-on-surface text-sm placeholder-md-on-surface-variant/60 outline-none focus:border-md-primary focus:border-2 transition-colors"
+                  className="admin-input ps-10"
                 />
               </div>
             </div>

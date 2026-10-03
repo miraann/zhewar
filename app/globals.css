@@ -12,54 +12,62 @@
 }
 
 /* ── Admin panel: static Material 3 tonal design tokens ──────────────────
-   Seeded from the app's existing brand colors (blue #2563eb primary, red
-   #ef4444 tertiary) — not live device wallpaper color (unreachable from a
-   web page in a remote-URL Capacitor WebView). RGB triplets (not hex) so
-   Tailwind's bg-md-primary/40-style opacity modifiers work. */
+   Premium native-app palette: #FAFAFC canvas, white surface cards with soft
+   ambient shadows, indigo primary, emerald for positive status and rose for
+   cancellations/destructive actions. RGB triplets (not hex) so Tailwind's
+   bg-md-primary/40-style opacity modifiers work. Only the admin uses these. */
 :root {
-  --md-primary: 37 99 235;
+  --md-primary: 79 70 229;               /* indigo-600 */
   --md-on-primary: 255 255 255;
-  --md-primary-container: 219 234 254;
-  --md-on-primary-container: 30 58 138;
+  --md-primary-container: 238 242 255;   /* indigo-50 */
+  --md-on-primary-container: 67 56 202;  /* indigo-700 */
 
   --md-secondary: 71 85 105;
-  --md-secondary-container: 226 232 240;
-  --md-on-secondary-container: 30 41 59;
+  --md-secondary-container: 238 242 255;
+  --md-on-secondary-container: 67 56 202;
 
-  --md-tertiary: 239 68 68;
-  --md-tertiary-container: 254 226 226;
-  --md-on-tertiary-container: 127 29 29;
+  --md-tertiary: 244 63 94;              /* rose-500 */
+  --md-tertiary-container: 255 228 230;
+  --md-on-tertiary-container: 159 18 57;
 
-  --md-error: 220 38 38;
+  --md-error: 225 29 72;                 /* rose-600 */
   --md-on-error: 255 255 255;
-  --md-error-container: 254 242 242;
-  --md-on-error-container: 153 27 27;
+  --md-error-container: 255 241 242;     /* rose-50 */
+  --md-on-error-container: 190 18 60;    /* rose-700 */
 
   --md-warning: 217 119 6;
   --md-warning-container: 255 251 235;
   --md-on-warning-container: 146 64 14;
 
-  --md-success: 5 150 105;
-  --md-success-container: 209 250 229;
-  --md-on-success-container: 6 95 70;
+  --md-success: 5 150 105;               /* emerald-600 */
+  --md-success-container: 236 253 245;   /* emerald-50 */
+  --md-on-success-container: 4 120 87;   /* emerald-700 */
 
-  --md-surface: 248 250 252;
-  --md-surface-container: 255 255 255;
+  --md-surface: 250 250 252;             /* #FAFAFC canvas */
+  --md-surface-container: 255 255 255;   /* white cards */
   --md-surface-container-high: 241 245 249;
   --md-surface-container-highest: 226 232 240;
-  --md-on-surface: 15 23 42;
-  --md-on-surface-variant: 100 116 139;
+  --md-on-surface: 15 23 42;             /* slate-900 */
+  --md-on-surface-variant: 100 116 139;  /* slate-500 */
   --md-outline: 203 213 225;
-  --md-outline-variant: 226 232 240;
+  --md-outline-variant: 241 245 249;     /* slate-100 hairlines */
 
-  --md-shape-sm: 8px;
-  --md-shape-md: 12px;
-  --md-shape-lg: 16px;
-  --md-shape-xl: 28px;
+  --md-shape-sm: 12px;
+  --md-shape-md: 16px;                   /* rounded-2xl */
+  --md-shape-lg: 24px;                   /* rounded-3xl */
+  --md-shape-xl: 32px;
   --md-shape-full: 9999px;
 
-  --md-elevation-1: 0 1px 2px rgb(15 23 42 / 0.06), 0 1px 3px rgb(15 23 42 / 0.08);
-  --md-elevation-2: 0 1px 2px rgb(15 23 42 / 0.08), 0 3px 6px rgb(15 23 42 / 0.10);
+  --md-elevation-1: 0 8px 30px rgb(0 0 0 / 0.04);
+  --md-elevation-2: 0 12px 40px rgb(0 0 0 / 0.08);
+}
+
+@layer components {
+  /* Every admin text input / textarea (ui/TextField and the editors' raw
+     inputs). Utilities still override it, e.g. ps-10 for a leading icon. */
+  .admin-input {
+    @apply w-full rounded-2xl border border-transparent bg-slate-100/60 px-4 py-3.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-all duration-200 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 disabled:cursor-not-allowed disabled:opacity-50;
+  }
 }
 
 @layer base {
@@ -98,11 +106,10 @@
   .text-balance {
     text-wrap: balance;
   }
-  /* Clears the fixed BottomNav (row height + safe area) — kept separate from
-     .safe-bottom (which the nav itself uses) so the two padding-bottom rules
-     never stack on the same element. */
+  /* Clears the floating BottomNav (1rem gap + 3.75rem bar + breathing room +
+     safe area), so the last card can scroll fully above it. */
   .admin-bottomnav-clearance {
-    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 16px));
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
   }
 }
 

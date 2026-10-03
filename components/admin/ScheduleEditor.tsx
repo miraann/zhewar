@@ -49,22 +49,22 @@ export default function ScheduleEditor() {
   return (
     <div className="px-4 py-6 space-y-4">
       <div className="mb-6">
-        <h2 className="text-md-on-surface font-semibold text-lg">خشتەی کاری</h2>
-        <p className="text-md-on-surface-variant text-sm mt-0.5">ڕۆژ و کاتی کارکردن دیاری بکە</p>
+        <h2 className="text-2xl font-black text-slate-900 leading-tight">خشتەی کاری</h2>
+        <p className="text-slate-500 text-sm mt-1">ڕۆژ و کاتی کارکردن دیاری بکە</p>
       </div>
 
       {schedule.map((day) => (
         <div
           key={day.day_of_week}
           className={[
-            'rounded-md-lg p-4 transition-colors duration-200',
+            'rounded-3xl p-5 border transition-all duration-300',
             day.is_active
-              ? 'bg-md-primary-container/40 border border-md-primary-container'
-              : 'bg-md-surface-container border border-md-outline-variant shadow-md-1',
+              ? 'bg-white border-indigo-100 shadow-[0_8px_30px_rgb(79,70,229,0.08)]'
+              : 'bg-white border-slate-100/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)]',
           ].join(' ')}
         >
           <div className="flex items-center justify-between mb-3">
-            <span className={`font-semibold text-sm ${day.is_active ? 'text-md-on-surface' : 'text-md-on-surface-variant'}`}>
+            <span className={`font-bold text-[0.95rem] ${day.is_active ? 'text-slate-900' : 'text-slate-400'}`}>
               {DAY_NAMES[day.day_of_week]}
             </span>
             <Switch
@@ -82,7 +82,7 @@ export default function ScheduleEditor() {
                     type="time"
                     value={day.start_time}
                     onChange={(e) => update(day.day_of_week, { start_time: e.target.value })}
-                    className="mt-1 w-full bg-md-surface border border-md-outline rounded-md-sm px-3 py-2.5 text-md-on-surface text-sm outline-none focus:border-md-primary focus:border-2 [color-scheme:light] transition-colors"
+                    className="admin-input mt-1 px-3 py-2.5 [color-scheme:light]"
                   />
                 </div>
                 <div>
@@ -91,7 +91,7 @@ export default function ScheduleEditor() {
                     type="time"
                     value={day.end_time}
                     onChange={(e) => update(day.day_of_week, { end_time: e.target.value })}
-                    className="mt-1 w-full bg-md-surface border border-md-outline rounded-md-sm px-3 py-2.5 text-md-on-surface text-sm outline-none focus:border-md-primary focus:border-2 [color-scheme:light] transition-colors"
+                    className="admin-input mt-1 px-3 py-2.5 [color-scheme:light]"
                   />
                 </div>
               </div>
@@ -104,10 +104,10 @@ export default function ScheduleEditor() {
                       key={min}
                       onClick={() => update(day.day_of_week, { slot_interval: min })}
                       className={[
-                        'flex-1 py-2 rounded-md-full text-xs font-semibold border transition-all touch-manipulation',
+                        'flex-1 h-10 rounded-xl text-xs border transition-all duration-200 touch-manipulation active:scale-95',
                         day.slot_interval === min
-                          ? 'border-md-secondary-container bg-md-secondary-container text-md-on-secondary-container'
-                          : 'border-md-outline-variant bg-md-surface-container-high text-md-on-surface-variant active:bg-md-surface-container-highest',
+                          ? 'border-indigo-100 bg-indigo-50 text-indigo-600 font-bold'
+                          : 'border-transparent bg-slate-100/60 text-slate-500 font-semibold',
                       ].join(' ')}
                     >
                       {min} خ

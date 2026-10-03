@@ -63,6 +63,7 @@ const config: Config = {
         'spin-slow': 'spin 3s linear infinite',
         'pop-in':    'popIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both',
         draw:        'draw 0.4s 0.25s ease-out both',
+        'nav-label-in': 'navLabelIn 0.28s ease-out both',
       },
       keyframes: {
         shimmer: {
@@ -85,6 +86,11 @@ const config: Config = {
         draw: {
           '0%':   { strokeDashoffset: '1' },
           '100%': { strokeDashoffset: '0' },
+        },
+        // Admin BottomNav: the active tab's label easing in beside its icon.
+        navLabelIn: {
+          '0%':   { opacity: '0', transform: 'scale(0.85)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
         },
       },
     },

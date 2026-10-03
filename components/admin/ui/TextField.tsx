@@ -1,11 +1,11 @@
 'use client';
 
 export function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <p className="text-md-on-surface-variant text-[0.65rem] tracking-wider font-semibold">{children}</p>;
+  return <p className="text-slate-500 text-[0.7rem] tracking-wide font-bold">{children}</p>;
 }
 
 export default function TextField({
-  icon: Icon, iconColor = 'text-md-on-surface-variant', label, value, onChange, placeholder,
+  icon: Icon, iconColor = 'text-slate-400', label, value, onChange, placeholder,
   type = 'text', dir, trailing, disabled,
 }: {
   icon?: React.ElementType;
@@ -21,10 +21,10 @@ export default function TextField({
 }) {
   return (
     <div>
-      {label && <p className="text-md-on-surface text-xs font-medium mb-1.5">{label}</p>}
+      {label && <p className="text-slate-700 text-xs font-bold mb-2">{label}</p>}
       <div className="relative">
         {Icon && (
-          <Icon className={`absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${iconColor} pointer-events-none`} />
+          <Icon className={`absolute start-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] ${iconColor} pointer-events-none`} />
         )}
         <input
           type={type}
@@ -34,8 +34,8 @@ export default function TextField({
           dir={dir}
           disabled={disabled}
           className={[
-            'w-full h-12 bg-md-surface border border-md-outline rounded-md-sm text-md-on-surface text-sm placeholder-md-on-surface-variant/60 outline-none focus:border-md-primary focus:border-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
-            Icon ? 'ps-10 pe-4' : 'px-4',
+            'admin-input',
+            Icon ? 'ps-11' : '',
             trailing ? 'pe-12' : '',
           ].join(' ')}
         />

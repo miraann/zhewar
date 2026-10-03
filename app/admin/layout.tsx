@@ -2,10 +2,10 @@ import type { Viewport } from 'next';
 
 // Overrides just the Android status-bar tint for /admin/* — the root
 // layout's themeColor (#2563eb) is shared with the customer booking PWA
-// and must stay untouched. Matches the new md-surface tone the admin
-// header now uses instead of the old white/blue header.
+// and must stay untouched. Matches the #FAFAFC md-surface canvas the
+// admin header blends into.
 export const viewport: Viewport = {
-  themeColor: '#f8fafc',
+  themeColor: '#fafafc',
 };
 
 // middleware.ts gives every /admin response a CSP with a fresh nonce, which

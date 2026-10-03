@@ -110,7 +110,7 @@ export default function AdminLoginForm() {
           required
           disabled={isBlocked}
           dir="ltr"
-          className="w-full h-14 bg-md-surface border border-md-outline rounded-md-sm ps-12 pe-5 py-4 text-md-on-surface placeholder-md-on-surface-variant/60 text-base outline-none focus:border-md-primary focus:border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="admin-input h-14 ps-12 pe-5 py-4 text-base"
         />
         <button
           type="button"

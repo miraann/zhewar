@@ -3,10 +3,10 @@
 type Variant = 'card' | 'row' | 'circle' | 'text';
 
 const VARIANT_CLASSES: Record<Variant, string> = {
-  card:   'h-16 rounded-md-lg',
-  row:    'h-12 rounded-md-sm',
-  circle: 'rounded-full',
-  text:   'h-5 rounded-md-sm',
+  card:   'h-16 rounded-3xl bg-white border border-slate-100/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)]',
+  row:    'h-12 rounded-2xl bg-slate-100/80',
+  circle: 'rounded-full bg-slate-100',
+  text:   'h-5 rounded-xl bg-slate-100',
 };
 
 export default function Skeleton({
@@ -22,7 +22,7 @@ export default function Skeleton({
         <div
           key={i}
           className={[
-            'bg-md-surface-container-high border border-md-outline-variant animate-pulse',
+            'animate-pulse',
             VARIANT_CLASSES[variant],
             className,
           ].join(' ')}

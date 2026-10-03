@@ -85,8 +85,8 @@ export default function SettingsEditor() {
   return (
     <div className="px-4 py-6 space-y-5">
       <div>
-        <h2 className="text-md-on-surface font-semibold text-lg">ڕێکخستنەکان</h2>
-        <p className="text-md-on-surface-variant text-sm mt-0.5">ڕووکارەکانی بوکینگ بەڕێوە ببە</p>
+        <h2 className="text-2xl font-black text-slate-900 leading-tight">ڕێکخستنەکان</h2>
+        <p className="text-slate-500 text-sm mt-1">ڕووکارەکانی بوکینگ بەڕێوە ببە</p>
       </div>
 
       <ToggleListItem
@@ -120,7 +120,7 @@ export default function SettingsEditor() {
 
       <button
         onClick={adminLogout}
-        className="w-full flex items-center gap-3 px-4 py-3.5 rounded-md-lg text-md-error font-semibold text-sm active:bg-md-error-container/60 transition-colors touch-manipulation"
+        className="w-full min-h-[52px] flex items-center justify-center gap-2.5 px-4 rounded-2xl bg-rose-50 text-rose-600 font-bold text-sm active:scale-95 active:bg-rose-100 transition-all duration-200 touch-manipulation"
       >
         <LogOut className="w-[18px] h-[18px]" />
         دەرچوون

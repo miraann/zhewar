@@ -150,8 +150,8 @@ export default function WhatsAppEditor() {
   return (
     <div className="px-4 py-6 space-y-6">
       <div>
-        <h2 className="text-md-on-surface font-semibold text-lg">پەیامەکانی واتساپ</h2>
-        <p className="text-md-on-surface-variant text-sm mt-0.5 leading-relaxed">
+        <h2 className="text-2xl font-black text-slate-900 leading-tight">پەیامەکانی واتساپ</h2>
+        <p className="text-slate-500 text-sm mt-1 leading-relaxed">
           دوای پەسەندکردن یان هەڵوەشاندنی کاتێک، یەکێک لەم پەیامانە بۆ واتساپی کڕیار ئامادە دەکرێت.
           یەکەمی هەر بەشێک بنەڕەتە؛ بە ڕاکێشان ڕیزبەندی بگۆڕە.
         </p>
@@ -414,7 +414,7 @@ function TemplateSheet({
             maxLength={WA_TITLE_MAX}
             onChange={(e) => onChange({ ...draft, title: e.target.value })}
             placeholder="بۆ نموونە: پەسەندکردنی ئاسایی"
-            className="w-full bg-md-surface border border-md-outline rounded-md-sm px-4 py-3 text-md-on-surface text-sm placeholder-md-on-surface-variant/60 outline-none focus:border-md-primary focus:border-2 transition-colors"
+            className="admin-input"
           />
           <p className="text-md-on-surface-variant text-[0.68rem] mt-1">
             ناونیشان بۆ کڕیار نانێردرێت؛ تەنها بۆ هەڵبژاردنی پەیامەکەیە.
@@ -434,7 +434,7 @@ function TemplateSheet({
             onChange={(e) => onChange({ ...draft, body: e.target.value })}
             rows={8}
             dir="rtl"
-            className="w-full bg-md-surface border border-md-outline rounded-md-sm px-4 py-3 text-md-on-surface text-sm leading-relaxed placeholder-md-on-surface-variant/60 outline-none focus:border-md-primary focus:border-2 transition-colors resize-y"
+            className="admin-input leading-relaxed resize-y"
           />
         </div>
 

@@ -70,8 +70,8 @@ export default function ProfileEditor() {
   return (
     <div className="px-4 py-6 space-y-6">
       <div>
-        <h2 className="text-md-on-surface font-semibold text-lg">پرۆفایلی دوکان</h2>
-        <p className="text-md-on-surface-variant text-sm mt-0.5">زانیارییەکانت نوێ بکەرەوە</p>
+        <h2 className="text-2xl font-black text-slate-900 leading-tight">پرۆفایلی دوکان</h2>
+        <p className="text-slate-500 text-sm mt-1">زانیارییەکانت نوێ بکەرەوە</p>
       </div>
 
       {/* Identity */}
@@ -143,7 +143,7 @@ function LogoUpload({ value, onChange }: { value: string; onChange: (url: string
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
 
       {value ? (
-        <div className="flex items-center gap-3 p-3 rounded-md-sm border border-md-outline bg-md-surface-container">
+        <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-100/60">
           <img src={value} alt="لۆگۆ" className="w-14 h-14 rounded-full object-cover border-2 border-md-primary-container flex-shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-md-on-surface-variant text-xs truncate">{value.split('/').pop()}</p>

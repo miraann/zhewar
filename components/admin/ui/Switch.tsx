@@ -1,7 +1,7 @@
 'use client';
 
-import { Check } from 'lucide-react';
-
+// iOS-style switch. The knob slides along inset-inline-start, so "on" sits at
+// the inline end in both LTR and the admin's RTL.
 export default function Switch({
   checked, onChange, disabled,
 }: {
@@ -17,19 +17,19 @@ export default function Switch({
       onClick={onChange}
       disabled={disabled}
       className={[
-        'relative w-[52px] h-8 rounded-md-full transition-colors duration-200 touch-manipulation flex-shrink-0',
-        disabled ? 'opacity-50 cursor-not-allowed' : '',
-        checked ? 'bg-md-primary' : 'bg-md-surface-container-highest border-2 border-md-outline',
+        'relative w-12 h-7 rounded-full flex-shrink-0 touch-manipulation transition-colors duration-300 ease-out',
+        'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-500/20',
+        checked ? 'bg-indigo-600' : 'bg-slate-200',
+        disabled ? 'opacity-50 cursor-not-allowed' : 'active:scale-95',
       ].join(' ')}
     >
       <span
         className={[
-          'absolute top-1/2 -translate-y-1/2 rounded-full transition-all duration-200 flex items-center justify-center',
-          checked ? 'end-1 w-6 h-6 bg-md-on-primary' : 'start-1.5 w-4 h-4 bg-md-outline',
+          'absolute top-0.5 w-6 h-6 rounded-full bg-white shadow-[0_2px_6px_rgb(0,0,0,0.18)]',
+          'transition-[inset-inline-start] duration-300 ease-[cubic-bezier(.34,1.4,.64,1)]',
+          checked ? 'start-[22px]' : 'start-0.5',
         ].join(' ')}
-      >
-        {checked && <Check className="w-3.5 h-3.5 text-md-primary" strokeWidth={3} />}
-      </span>
+      />
     </button>
   );
 }

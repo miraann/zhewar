@@ -3,11 +3,11 @@
 type Variant = 'filled' | 'tonal' | 'outlined' | 'error' | 'success';
 
 const VARIANT_CLASSES: Record<Variant, string> = {
-  filled:   'bg-md-primary text-md-on-primary shadow-md-1 active:bg-md-primary/90',
-  tonal:    'bg-md-secondary-container text-md-on-secondary-container active:bg-md-secondary-container/80',
-  outlined: 'border border-md-outline text-md-on-surface bg-transparent active:bg-md-surface-container-high',
-  error:    'bg-md-error-container text-md-on-error-container active:bg-md-error-container/80',
-  success:  'bg-md-success-container text-md-on-success-container border-2 border-md-success/30',
+  filled:   'bg-gradient-to-l from-indigo-600 to-violet-600 text-white shadow-[0_10px_24px_-8px_rgb(79,70,229,0.55)]',
+  tonal:    'bg-indigo-50 text-indigo-700 active:bg-indigo-100',
+  outlined: 'border border-slate-200 text-slate-700 bg-white active:bg-slate-50',
+  error:    'bg-rose-50 text-rose-600 active:bg-rose-100',
+  success:  'bg-emerald-50 text-emerald-700 border border-emerald-200',
 };
 
 export default function Button({
@@ -27,9 +27,9 @@ export default function Button({
       onClick={onClick}
       disabled={disabled}
       className={[
-        'flex items-center justify-center gap-2 py-4 rounded-md-full font-semibold text-sm tracking-wide transition-all touch-manipulation active:scale-[0.98]',
+        'flex items-center justify-center gap-2 min-h-[48px] px-5 py-3.5 rounded-2xl font-bold text-sm tracking-wide touch-manipulation transition-all duration-200',
+        disabled ? 'opacity-60 cursor-not-allowed' : 'active:scale-95',
         fullWidth ? 'w-full' : '',
-        disabled ? 'opacity-60 cursor-not-allowed' : '',
         VARIANT_CLASSES[variant],
         className,
       ].join(' ')}

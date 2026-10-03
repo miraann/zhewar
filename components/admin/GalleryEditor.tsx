@@ -165,8 +165,8 @@ export default function GalleryEditor() {
   return (
     <div className="px-4 py-6 space-y-5">
       <div>
-        <h2 className="text-md-on-surface font-semibold text-lg">گەلەری</h2>
-        <p className="text-md-on-surface-variant text-sm mt-0.5">کۆکراوەی وێنەی کارەکانت بەڕێوە ببە</p>
+        <h2 className="text-2xl font-black text-slate-900 leading-tight">گەلەری</h2>
+        <p className="text-slate-500 text-sm mt-1">کۆکراوەی وێنەی کارەکانت بەڕێوە ببە</p>
       </div>
 
       {/* Add form */}
@@ -177,7 +177,7 @@ export default function GalleryEditor() {
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
           placeholder="پێناس (ئارەزوومەند)"
-          className="w-full bg-md-surface-container border border-md-outline rounded-md-sm px-4 py-3 text-md-on-surface text-sm placeholder-md-on-surface-variant/60 outline-none focus:border-md-primary focus:border-2 transition-colors"
+          className="admin-input"
         />
         <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={handleUpload} />
         <button
@@ -266,7 +266,7 @@ export default function GalleryEditor() {
                 onChange={(e) => setEditing({ ...editing, caption: e.target.value })}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleSaveEdit(); if (e.key === 'Escape') setEditing(null); }}
                 placeholder="پێناس بنووسە..."
-                className="w-full bg-md-surface border border-md-outline rounded-md-sm px-4 py-3 text-md-on-surface text-sm placeholder-md-on-surface-variant/60 outline-none focus:border-md-primary focus:border-2 transition-colors"
+                className="admin-input"
               />
             </div>
             <div className="flex gap-3">

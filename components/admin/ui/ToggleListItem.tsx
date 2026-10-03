@@ -15,7 +15,7 @@ export function StatusBadge({ text, tone }: { text: string; tone: 'success' | 'n
     error:   'bg-md-error',
   }[tone];
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md-full text-[0.65rem] font-semibold ${toneClasses}`}>
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[0.68rem] font-bold ${toneClasses}`}>
       <span className={`w-1.5 h-1.5 rounded-full ${dotClasses}`} />
       {text}
     </span>
@@ -45,25 +45,25 @@ export default function ToggleListItem({
   return (
     <div
       className={[
-        'rounded-md-lg p-5 transition-colors duration-200',
+        'rounded-3xl p-5 border transition-all duration-300',
         value
-          ? 'bg-md-primary-container/40 border border-md-primary-container'
-          : 'bg-md-surface-container border border-md-outline-variant shadow-md-1',
+          ? 'bg-white border-indigo-100 shadow-[0_8px_30px_rgb(79,70,229,0.08)]'
+          : 'bg-white border-slate-100/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)]',
       ].join(' ')}
     >
       <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 flex-1 min-w-0">
+        <div className="flex items-center gap-3.5 flex-1 min-w-0">
           <div
             className={[
-              'w-10 h-10 rounded-md-md flex items-center justify-center flex-shrink-0 transition-colors',
-              value ? 'bg-md-primary-container' : 'bg-md-surface-container-high',
+              'p-3 rounded-2xl flex items-center justify-center flex-shrink-0 transition-colors duration-300',
+              value ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-100/80 text-slate-500',
             ].join(' ')}
           >
-            <Icon className={`w-5 h-5 ${value ? 'text-md-on-primary-container' : 'text-md-on-surface-variant'}`} />
+            <Icon className="w-5 h-5" />
           </div>
           <div className="min-w-0">
-            <p className={`font-semibold text-sm ${value ? 'text-md-on-surface' : 'text-md-on-surface-variant'}`}>{label}</p>
-            <p className="text-md-on-surface-variant text-xs mt-0.5 leading-snug">{description}</p>
+            <p className="font-bold text-[0.95rem] text-slate-900">{label}</p>
+            <p className="text-slate-500 text-xs mt-1 leading-relaxed">{description}</p>
           </div>
         </div>
         <Switch checked={value} onChange={onToggle} disabled={disabled} />

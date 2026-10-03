@@ -1,5 +1,8 @@
 'use client';
 
+// Floating native tab bar, detached from the screen edge. The active tab grows
+// into an indigo pill that shows its label; the rest stay icon-only so all
+// seven tabs fit on a narrow phone. z-40 keeps the bottom sheets (z-50) above it.
 export default function BottomNav<T extends string>({
   tabs, active, badges, onSelect,
 }: {
@@ -9,41 +12,41 @@ export default function BottomNav<T extends string>({
   onSelect: (id: T) => void;
 }) {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 bg-md-surface-container-high border-t border-md-outline-variant safe-bottom">
-      <div className="max-w-lg mx-auto flex items-stretch justify-around px-1 pt-1.5">
+    <nav
+      className="fixed inset-x-4 z-40 mx-auto max-w-[480px] rounded-full bg-white/80 backdrop-blur-xl border border-slate-200/60 shadow-[0_12px_40px_rgb(0,0,0,0.08)]"
+      style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}
+    >
+      <div className="flex items-center gap-0.5 p-1.5">
         {tabs.map(({ id, short, icon: Icon }) => {
           const isActive = active === id;
           const badge    = badges?.[id] ?? 0;
           return (
             <button
               key={id}
+              type="button"
               onClick={() => onSelect(id)}
-              className="flex-1 flex flex-col items-center justify-center gap-1 py-1.5 min-h-[52px] touch-manipulation select-none active:scale-95 transition-transform duration-150"
+              aria-label={short}
+              aria-current={isActive ? 'page' : undefined}
+              className={[
+                'relative h-12 flex items-center justify-center gap-1.5 rounded-full touch-manipulation select-none transition-all duration-300 ease-out active:scale-90',
+                isActive
+                  ? 'flex-none px-4 bg-indigo-50 text-indigo-600 font-bold'
+                  : 'flex-1 min-w-0 text-slate-400 active:bg-slate-100/80',
+              ].join(' ')}
             >
-              <span
-                className={[
-                  'relative w-full max-w-[4rem] h-8 rounded-md-full flex items-center justify-center transition-colors duration-200',
-                  isActive ? 'bg-md-primary-container' : 'bg-transparent',
-                ].join(' ')}
-              >
-                <Icon className={`w-[18px] h-[18px] ${isActive ? 'text-md-on-primary-container' : 'text-md-on-surface-variant'}`} />
+              <span className="relative flex-shrink-0">
+                <Icon className="w-5 h-5" strokeWidth={isActive ? 2.4 : 2} />
                 {badge > 0 && (
-                  <span
-                    className="absolute -top-1 -start-1.5 min-w-[15px] h-[15px] rounded-full bg-md-error text-md-on-error flex items-center justify-center leading-none font-bold px-[3px]"
-                    style={{ fontSize: '9px' }}
-                  >
+                  <span className="absolute -top-2 -start-2.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold leading-none flex items-center justify-center ring-2 ring-white">
                     {badge > 9 ? '9+' : badge}
                   </span>
                 )}
               </span>
-              <span
-                className={[
-                  'leading-none transition-colors duration-200 text-[10px]',
-                  isActive ? 'font-bold text-md-on-primary-container' : 'font-medium text-md-on-surface-variant',
-                ].join(' ')}
-              >
-                {short}
-              </span>
+              {isActive && (
+                <span key={id} className="text-xs leading-none whitespace-nowrap animate-nav-label-in">
+                  {short}
+                </span>
+              )}
             </button>
           );
         })}

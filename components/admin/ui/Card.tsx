@@ -10,10 +10,10 @@ export default function Card({
   return (
     <div
       className={[
-        'rounded-md-lg p-4 transition-colors duration-200',
+        'rounded-3xl p-5 transition-colors duration-200',
         emphasized
-          ? 'bg-md-primary-container/40 border border-md-primary-container'
-          : 'bg-md-surface-container border border-md-outline-variant shadow-md-1',
+          ? 'bg-indigo-50/60 border border-indigo-100'
+          : 'bg-white border border-slate-100/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)]',
         className,
       ].join(' ')}
     >
