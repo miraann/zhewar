@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { serverError } from '@/lib/apiResponse';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 
 const MAX_RANGE_MS = 26 * 60 * 60 * 1000; // one day + DST slack
@@ -28,6 +29,6 @@ export async function GET(req: NextRequest) {
     .lte('appointment_time', new Date(endMs).toISOString())
     .neq('status', 'cancelled');
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return serverError('available-slots', error);
   return NextResponse.json(data ?? []);
 }

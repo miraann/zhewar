@@ -47,7 +47,8 @@ async function registerAgain(cached: Customer): Promise<Customer | null> {
     try {
       if (typeof json.access_token === 'string') localStorage.setItem('luxe_customer_token', json.access_token);
     } catch {}
-    return json as Customer;
+    // Without this device's access token only the id comes back
+    return { ...cached, ...json } as Customer;
   } catch {
     return null;
   }
@@ -165,6 +166,19 @@ export default function BookingFlow({ settings }: Props) {
         setConfirming(false);
         setCustomer(null);
         setBookingError('تکایە سەرەتا سکانی ڕووخسارت بکە');
+        return;
+      }
+      // The slot passed or the schedule changed meanwhile — pick another
+      if (json?.error === 'invalid_time') {
+        setConfirming(false);
+        setSelectedTime(null);
+        router.replace(STEP_URL.datetime);
+        setBookingError('ئەم کاتە بەردەست نییە. تکایە کاتێکی تر هەڵبژێرە');
+        return;
+      }
+      if (json?.error === 'rate_limited') {
+        setConfirming(false);
+        setBookingError('تکایە چەند خولەکێک چاوەڕێ بکە و دووبارە هەوڵبدەرەوە');
         return;
       }
     } catch {}

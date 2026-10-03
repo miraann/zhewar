@@ -30,6 +30,14 @@ const nextConfig = {
           { key: 'Referrer-Policy',           value: 'strict-origin-when-cross-origin' },
           { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
           { key: 'Permissions-Policy',        value: 'camera=(self), microphone=(), geolocation=()' },
+        ],
+      },
+      {
+        // Public pages are statically rendered, so they can't carry the
+        // per-request nonce /admin gets from middleware.ts — hence
+        // 'unsafe-inline' here ('unsafe-eval' is for face-api's TensorFlow.js).
+        source: '/((?!admin).*)',
+        headers: [
           {
             key: 'Content-Security-Policy',
             value: [
@@ -39,6 +47,7 @@ const nextConfig = {
               "img-src 'self' data: blob: https://slzwrleegalwijdsvcwy.supabase.co",
               "font-src 'self'",
               "connect-src 'self' https://slzwrleegalwijdsvcwy.supabase.co wss://slzwrleegalwijdsvcwy.supabase.co https://graph.facebook.com https://cdn.jsdelivr.net",
+              "object-src 'none'",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",

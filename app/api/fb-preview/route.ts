@@ -1,6 +1,7 @@
 import { promises as dns } from 'node:dns';
 import net from 'node:net';
 import { NextRequest, NextResponse } from 'next/server';
+import { checkRateLimit, getRequestIp, rateLimitResponse } from '@/lib/rateLimit';
 
 function extractMeta(html: string, property: string): string | null {
   const patterns = [
@@ -89,7 +90,17 @@ async function isSafeUrl(urlStr: string): Promise<boolean> {
   }
   if (u.protocol !== 'https:' && u.protocol !== 'http:') return false;
   if (u.username || u.password) return false;
+  // Only Facebook's own hosts, on every hop — otherwise this is an open proxy
+  // anyone could point at any site
+  if (!isFacebookHost(u.hostname)) return false;
   return resolvesToPublicAddress(u.hostname);
+}
+
+function isFacebookHost(hostname: string): boolean {
+  const host = hostname.toLowerCase();
+  return host === 'facebook.com' || host.endsWith('.facebook.com')
+    || host === 'fb.com' || host.endsWith('.fb.com')
+    || host === 'm.me' || host === 'fb.me';
 }
 
 const MAX_REDIRECTS = 3;
@@ -97,6 +108,9 @@ const MAX_REDIRECTS = 3;
 export async function GET(req: NextRequest) {
   const raw = req.nextUrl.searchParams.get('url') ?? '';
   if (!raw) return NextResponse.json({ error: 'no url' }, { status: 400 });
+
+  const limited = rateLimitResponse(await checkRateLimit('fb-preview-ip', getRequestIp(req), 30, '10 m'));
+  if (limited) return limited;
 
   let url = normaliseUrl(raw);
 

@@ -1,25 +1,16 @@
-import { timingSafeEqual } from 'crypto';
-import { cookies } from 'next/headers';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { requireAdmin } from '@/lib/adminSession';
+import { serverError, unauthorized } from '@/lib/apiResponse';
 import { NextRequest, NextResponse } from 'next/server';
 
-function isAdmin(): boolean {
-  const session = cookies().get('admin_session');
-  const token   = process.env.ADMIN_TOKEN ?? '';
-  if (!session?.value || !token) return false;
-  const bufA = Buffer.from(session.value);
-  const bufB = Buffer.from(token);
-  if (bufA.length !== bufB.length) return false;
-  return timingSafeEqual(bufA, bufB);
-}
-
 export async function PUT(req: NextRequest) {
-  if (!isAdmin()) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await requireAdmin(req))) return unauthorized();
 
   let days: unknown[];
   try { days = await req.json(); } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
+  if (!Array.isArray(days)) return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
 
   const supabase = getSupabaseAdmin();
   const results  = await Promise.all(
@@ -35,7 +26,7 @@ export async function PUT(req: NextRequest) {
   );
 
   const failed = results.find((r) => r.error);
-  if (failed?.error) return NextResponse.json({ error: failed.error.message }, { status: 500 });
+  if (failed?.error) return serverError('admin-schedule', failed.error);
 
   return NextResponse.json({ ok: true });
 }

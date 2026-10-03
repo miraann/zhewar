@@ -1,25 +1,18 @@
-import { timingSafeEqual } from 'crypto';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import Image from 'next/image';
 import AdminLoginForm from '@/components/admin/LoginForm';
-
-function isValidSession(value: string): boolean {
-  const expected = process.env.ADMIN_TOKEN ?? '';
-  try {
-    const bufA = Buffer.from(value);
-    const bufB = Buffer.from(expected);
-    if (bufA.length !== bufB.length) return false;
-    return timingSafeEqual(bufA, bufB);
-  } catch { return false; }
-}
+import { ADMIN_COOKIE, getAdminSession } from '@/lib/adminSession';
 
 export default async function AdminLoginPage() {
-  const session = cookies().get('admin_session');
-  if (session?.value && isValidSession(session.value)) {
-    redirect('/admin/dashboard');
+  let signedIn = false;
+  try {
+    signedIn = !!(await getAdminSession(cookies().get(ADMIN_COOKIE)?.value));
+  } catch {
+    // Session store unreachable — show the login form; signing in reports it
   }
+  if (signedIn) redirect('/admin/dashboard');
 
   let logoUrl: string | null = null;
   try {

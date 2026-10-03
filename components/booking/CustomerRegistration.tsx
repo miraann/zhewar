@@ -184,6 +184,14 @@ export default function CustomerRegistration({ settings, onComplete }: Props) {
     setSaving(true);
     let saved: Customer | null = null;
     let savedToken: string | null = null;
+    let errorCode: string | null = null;
+    const submitted = {
+      full_name:    name.trim(),
+      phone_number: phone.trim(),
+      photo_url:    photoUrl || null,
+      facebook_id:  fbId || messengerUrl.trim() || null,
+      notes:        notes.trim() || null,
+    };
     try {
       let storedToken: string | null = null;
       try { storedToken = localStorage.getItem('luxe_customer_token'); } catch {}
@@ -191,26 +199,22 @@ export default function CustomerRegistration({ settings, onComplete }: Props) {
       const res = await fetch('/api/register-customer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          full_name:    name.trim(),
-          phone_number: phone.trim(),
-          photo_url:    photoUrl || null,
-          facebook_id:  fbId || messengerUrl.trim() || null,
-          notes:        notes.trim() || null,
-          access_token: storedToken || undefined,
-        }),
+        body: JSON.stringify({ ...submitted, access_token: storedToken || undefined }),
       });
       const json = await res.json();
       if (res.ok && json?.id) {
-        saved = json as Customer;
+        // A second phone booking under an existing number gets only the
+        // record's id back (it lacks the access token), so what was just
+        // typed fills in the rest for the next steps to show.
+        saved = { created_at: '', ...submitted, ...json } as Customer;
         savedToken = typeof json.access_token === 'string' ? json.access_token : null;
+      } else {
+        errorCode = typeof json?.error === 'string' ? json.error : null;
       }
     } catch {}
     setSaving(false);
     if (saved) {
-      // A second phone booking under an existing number gets the old record
-      // back unchanged (it lacks the access token), photo included — so the
-      // scan just taken wins over whatever the server returned.
+      // The scan just taken wins over whatever the server returned
       if (photoUrl) saved = { ...saved, photo_url: photoUrl };
       const bookingPhoto = photoUrl && faceScanPath(photoUrl) ? photoUrl : null;
       try {
@@ -220,6 +224,8 @@ export default function CustomerRegistration({ settings, onComplete }: Props) {
         if (savedToken) localStorage.setItem('luxe_customer_token', savedToken);
       } catch {}
       onComplete(saved, bookingPhoto);
+    } else if (errorCode === 'invalid_facebook_id') {
+      setError('لینکی فەیسبووک دروست نییە');
     } else {
       setError('هەڵەیەک ڕوویدا. تکایە دووبارە هەوڵبدەرەوە.');
     }

@@ -3,6 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { waitUntil } from '@vercel/functions';
 import { notifyAdmins } from '@/lib/firebaseAdmin';
 import { faceScanPath } from '@/lib/faceScans';
+import { checkSlot, parseAppointmentTime, type ScheduleDay } from '@/lib/bookingRules';
+import { checkRateLimit, getRequestIp, rateLimitResponse } from '@/lib/rateLimit';
+import { serverError } from '@/lib/apiResponse';
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const KURDISH_DAYS = ['یەکشەممە','دووشەممە','سێشەممە','چوارشەممە','پێنجشەممە','هەینی','شەممە'];
 
@@ -17,12 +22,31 @@ function formatDateTime(iso: string) {
 }
 
 export async function POST(req: NextRequest) {
+  // Every booking pushes a notification to the admin's phone, so this is
+  // the endpoint a spammer would hammer
+  const limited = rateLimitResponse(await checkRateLimit('book-appointment-ip', getRequestIp(req), 5, '10 m'));
+  if (limited) return limited;
+
   const body = await req.json().catch(() => null);
   if (!body?.customer_id || !body?.appointment_time) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
   }
+  if (typeof body.customer_id !== 'string' || !UUID_RE.test(body.customer_id)) {
+    return NextResponse.json({ error: 'invalid_customer' }, { status: 400 });
+  }
+  const when = parseAppointmentTime(body.appointment_time);
+  if (!when) return NextResponse.json({ error: 'invalid_time' }, { status: 400 });
 
   const supabase = getSupabaseAdmin();
+
+  // Only a slot the booking calendar could have offered (lib/bookingRules.ts)
+  const { data: schedule, error: scheduleError } = await supabase
+    .from('working_schedule')
+    .select('day_of_week, is_active, start_time, end_time, slot_interval');
+  if (scheduleError) return serverError('book-appointment-schedule', scheduleError);
+  const slotProblem = checkSlot(when, (schedule ?? []) as ScheduleDay[]);
+  if (slotProblem) return NextResponse.json({ error: 'invalid_time', reason: slotProblem }, { status: 400 });
+  const appointmentTime = when.toISOString();
 
   // The face scan taken for this booking. It's stored on the appointment,
   // not the customer, because a second phone can book under an existing
@@ -52,7 +76,7 @@ export async function POST(req: NextRequest) {
     .from('appointments')
     .insert({
       customer_id:      body.customer_id,
-      appointment_time: body.appointment_time,
+      appointment_time: appointmentTime,
       status:           'pending',
       photo_url:        photoUrl,
     })
@@ -65,7 +89,7 @@ export async function POST(req: NextRequest) {
   if (error?.code === '23503') {
     return NextResponse.json({ error: 'customer_not_found' }, { status: 404 });
   }
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return serverError('book-appointment-insert', error);
 
   // Fetch customer name for the notification
   const { data: customer } = await supabase
@@ -84,7 +108,7 @@ export async function POST(req: NextRequest) {
     waitUntil(
       notifyAdmins(
         'داواکاری نوێ 📅',
-        `${customer?.full_name ?? 'کڕیار'} — ${formatDateTime(body.appointment_time)}`,
+        `${customer?.full_name ?? 'کڕیار'} — ${formatDateTime(appointmentTime)}`,
         { appointmentId: data.id, tab: 'appointments' },
       )
         .then(({ total }) => {

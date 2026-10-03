@@ -1,30 +1,14 @@
-import { createHmac, timingSafeEqual } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { checkRateLimit, getRequestIp } from '@/lib/rateLimit';
+import { checkRateLimit, getRequestIp, rateLimitResponse } from '@/lib/rateLimit';
+import { customerAccessToken, isCustomerAccessToken } from '@/lib/customerToken';
+import { normalizeFacebookId } from '@/lib/facebook';
+import { serverError } from '@/lib/apiResponse';
 
-// There's no OTP/SMS verification in this app, so phone_number alone can't
-// prove ownership. Instead, the FIRST registration for a phone number mints
-// an opaque access_token (HMAC of the phone, keyed by a server secret) that
-// the client stores locally and must present to modify that record again —
-// unauthenticated requests can still book under the existing identity, they
-// just can't overwrite it. The token is only ever returned at creation time;
-// it is never echoed back on a lookup, or it would stop being a secret.
-function customerAccessToken(phoneNumber: string): string {
-  return createHmac('sha256', process.env.BOOKING_HMAC_SECRET!)
-    .update(`customer_access:${phoneNumber}`)
-    .digest('hex');
-}
-
-function safeEqualHex(a: string, b: string): boolean {
-  try {
-    const bufA = Buffer.from(a, 'hex');
-    const bufB = Buffer.from(b, 'hex');
-    return bufA.length === bufB.length && timingSafeEqual(bufA, bufB);
-  } catch {
-    return false;
-  }
-}
+// See lib/customerToken.ts: the first registration for a phone number mints
+// an access_token the device keeps. Without it, callers can still book under
+// the existing identity — they get its id back — but they can't overwrite
+// the record or read anything in it.
 
 export async function POST(req: NextRequest) {
   let body: unknown;
@@ -46,18 +30,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'invalid phone_number' }, { status: 400 });
   }
 
-  const ip = getRequestIp(req);
-  const { limited, secondsLeft } = await checkRateLimit('register-customer-ip', ip, 15, '10 m');
-  if (limited) {
-    return NextResponse.json({ error: 'rate_limited', secondsLeft }, { status: 429 });
+  // Shown to the admin as a link, so only a real Facebook id or link is kept
+  let facebookId: string | null = null;
+  if (typeof facebook_id === 'string' && facebook_id.trim()) {
+    facebookId = normalizeFacebookId(facebook_id);
+    if (!facebookId) return NextResponse.json({ error: 'invalid_facebook_id' }, { status: 400 });
   }
+
+  const limited = rateLimitResponse(await checkRateLimit('register-customer-ip', getRequestIp(req), 15, '10 m'));
+  if (limited) return limited;
 
   const phone = phone_number.trim();
   const supabase = getSupabaseAdmin();
 
   const { data: existing } = await supabase
     .from('customers')
-    .select('*')
+    .select('id')
     .eq('phone_number', phone)
     .maybeSingle();
 
@@ -65,25 +53,20 @@ export async function POST(req: NextRequest) {
     full_name:    full_name.trim(),
     phone_number: phone,
     photo_url:    typeof photo_url === 'string' && photo_url ? photo_url : null,
-    facebook_id:  typeof facebook_id === 'string' && facebook_id ? facebook_id : null,
+    facebook_id:  facebookId,
     notes:        typeof notes === 'string' && notes.trim() ? notes.trim().slice(0, 100) : null,
   };
 
   if (!existing) {
     const { data, error } = await supabase.from('customers').insert(fields).select().single();
-    if (error || !data) {
-      return NextResponse.json({ error: error?.message ?? 'db error' }, { status: 500 });
-    }
+    if (error || !data) return serverError('register-customer-insert', error);
     return NextResponse.json({ ...data, access_token: customerAccessToken(phone) });
   }
 
-  const providedToken = typeof access_token === 'string' ? access_token : '';
-  const recognized = providedToken && safeEqualHex(providedToken, customerAccessToken(phone));
-
-  if (!recognized) {
-    // Unrecognized caller for an existing phone number — hand back the
-    // existing record so booking can proceed, but don't apply their edits.
-    return NextResponse.json(existing);
+  if (!isCustomerAccessToken(access_token, phone)) {
+    // Unrecognized caller for an existing phone number: just the id, so
+    // booking can proceed — no name, photo or notes, and no edits applied.
+    return NextResponse.json({ id: existing.id });
   }
 
   // No photo means the customer chose not to save this face scan (it still
@@ -96,9 +79,6 @@ export async function POST(req: NextRequest) {
     .select()
     .single();
 
-  if (error || !data) {
-    return NextResponse.json({ error: error?.message ?? 'db error' }, { status: 500 });
-  }
-
+  if (error || !data) return serverError('register-customer-update', error);
   return NextResponse.json({ ...data, access_token: customerAccessToken(phone) });
 }

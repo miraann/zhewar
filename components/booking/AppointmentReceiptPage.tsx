@@ -1,6 +1,7 @@
 'use client';
 
 import type { AppointmentFull } from '@/lib/types';
+import { facebookProfileUrl } from '@/lib/facebook';
 import { Calendar, CheckCircle, Clock, Download, ExternalLink, Home, RotateCcw, Scissors, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { QRCodeCanvas } from 'qrcode.react';
@@ -37,8 +38,6 @@ interface Props {
   appointment: AppointmentFull;
   shopName: string;
   logoUrl: string | null;
-  confirmUrl: string;
-  cancelUrl: string;
 }
 
 export default function AppointmentReceiptPage({ appointment, shopName, logoUrl }: Props) {
@@ -62,18 +61,7 @@ export default function AppointmentReceiptPage({ appointment, shopName, logoUrl 
   const statusStyle = STATUS_COLOR[appointment.status] ?? STATUS_COLOR.pending;
   const photoUrl    = appointment.photo_url ?? appointment.customers.photo_url;
 
-  const rawFb = (appointment.customers as any).facebook_id as string | null;
-  const fbUrl = (() => {
-    if (!rawFb?.trim()) return null;
-    const s = rawFb.trim();
-    const mme = s.match(/m\.me\/([^/?&#\s]+)/);
-    if (mme) return `https://m.me/${mme[1]}`;
-    const fb = s.match(/facebook\.com\/(?:profile\.php\?id=)?([^/?&#\s]+)/);
-    if (fb) return `https://www.facebook.com/${fb[1]}`;
-    if (s.startsWith('http')) return s;
-    if (/^\d+$/.test(s)) return `https://www.facebook.com/profile.php?id=${s}`;
-    return null;
-  })();
+  const fbUrl       = facebookProfileUrl(appointment.customers.facebook_id);
 
   async function handleDownload() {
     if (!cardRef.current) return;

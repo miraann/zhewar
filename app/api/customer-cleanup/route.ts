@@ -1,27 +1,14 @@
-import { timingSafeEqual } from 'crypto';
-import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-function safeEqual(a: string, b: string): boolean {
-  const bufA = Buffer.from(a);
-  const bufB = Buffer.from(b);
-  if (bufA.length !== bufB.length) return false;
-  return timingSafeEqual(bufA, bufB);
-}
+import { NextRequest, NextResponse } from 'next/server';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { requireAdmin } from '@/lib/adminSession';
+import { unauthorized } from '@/lib/apiResponse';
 
 const MAX_CUSTOMERS = 1000;
 
-export async function POST() {
-  const session = cookies().get('admin_session');
-  if (!session?.value || !safeEqual(session.value, process.env.ADMIN_TOKEN ?? '')) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+export async function POST(req: NextRequest) {
+  if (!(await requireAdmin(req))) return unauthorized();
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  );
+  const supabase = getSupabaseAdmin();
 
   const { count } = await supabase
     .from('customers')
@@ -44,7 +31,7 @@ export async function POST() {
   await supabase
     .from('customers')
     .delete()
-    .in('id', oldest.map(r => r.id));
+    .in('id', oldest.map((r: { id: string }) => r.id));
 
   return NextResponse.json({ deleted: oldest.length });
 }

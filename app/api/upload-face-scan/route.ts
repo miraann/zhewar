@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { checkRateLimit, getRequestIp } from '@/lib/rateLimit';
+import { checkRateLimit, getRequestIp, rateLimitResponse } from '@/lib/rateLimit';
 import { faceScanUrl, newFaceScanPath } from '@/lib/faceScans';
 
 // Face scans are uploaded through here with the service-role key rather
@@ -9,11 +9,8 @@ import { faceScanUrl, newFaceScanPath } from '@/lib/faceScans';
 const MAX_BYTES = 300 * 1024;
 
 export async function POST(req: NextRequest) {
-  const ip = getRequestIp(req);
-  const { limited, secondsLeft } = await checkRateLimit('upload-face-scan-ip', ip, 20, '10 m');
-  if (limited) {
-    return NextResponse.json({ error: 'rate_limited', secondsLeft }, { status: 429 });
-  }
+  const limited = rateLimitResponse(await checkRateLimit('upload-face-scan-ip', getRequestIp(req), 20, '10 m'));
+  if (limited) return limited;
 
   const bytes = new Uint8Array(await req.arrayBuffer());
   // JPEG files start with FF D8 FF

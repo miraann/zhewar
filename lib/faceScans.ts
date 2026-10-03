@@ -8,8 +8,10 @@ const BUCKET_BASE =
   `${(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').replace(/\/+$/, '')}/storage/v1/object/public/${BUCKET}/`;
 const PATH_RE     = /^customer-\d+(?:-[a-z0-9]+)?\.jpg$/;
 
+// The bucket is public, so the name is what keeps a scan private: 122 random
+// bits (hyphens dropped so PATH_RE, which older names also match, still fits).
 export function newFaceScanPath(): string {
-  return `customer-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+  return `customer-${Date.now()}-${crypto.randomUUID().replace(/-/g, '')}.jpg`;
 }
 
 export function isFaceScanPath(path: string): boolean {

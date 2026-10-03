@@ -10,6 +10,12 @@ function toAr(n: number) {
   return String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[+d]);
 }
 
+// Minted when this device registered a phone number (CustomerRegistration);
+// /api/my-bookings only lists that number's bookings to a device holding it.
+function storedCustomerToken(): string | undefined {
+  try { return localStorage.getItem('luxe_customer_token') ?? undefined; } catch { return undefined; }
+}
+
 function normalizeDigits(s: string): string {
   return s.replace(/[٠١٢٣٤٥٦٧٨٩]/g, d => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)));
 }
@@ -82,7 +88,7 @@ export default function MyBookingsPage() {
         const res = await fetch('/api/my-bookings', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone: phoneToPoll }),
+          body: JSON.stringify({ phone: phoneToPoll, access_token: storedCustomerToken() }),
         });
         if (res.ok) setBookings(await res.json());
       } catch {}
@@ -101,20 +107,23 @@ export default function MyBookingsPage() {
 
     let data: Booking[] = [];
     let fetchErr = false;
+    let notThisDevice = false;
     try {
       const res = await fetch('/api/my-bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: p }),
+        body: JSON.stringify({ phone: p, access_token: storedCustomerToken() }),
       });
       const json = await res.json();
-      if (!res.ok) fetchErr = true;
+      if (res.status === 401) notThisDevice = true;
+      else if (!res.ok) fetchErr = true;
       else data = json as Booking[];
     } catch { fetchErr = true; }
 
     setLoading(false);
     setSearched(true);
 
+    if (notThisDevice) { setError('ئەم ژمارەیە لەم مۆبایلەوە تۆمار نەکراوە'); return; }
     if (fetchErr) { setError('کێشەیەک ڕوویدا، تکایە دووبارە هەوڵبدە'); return; }
     searchedPhoneRef.current = p;
     setBookings(data);

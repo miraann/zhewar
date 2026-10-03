@@ -8,6 +8,11 @@ export const viewport: Viewport = {
   themeColor: '#f8fafc',
 };
 
+// middleware.ts gives every /admin response a CSP with a fresh nonce, which
+// Next.js can only stamp onto its scripts when the page renders per request.
+// A prerendered page would carry no nonce, and the CSP would block it.
+export const dynamic = 'force-dynamic';
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return children;
 }

@@ -1,26 +1,11 @@
-import { timingSafeEqual } from 'crypto';
-import { cookies } from 'next/headers';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { requireAdmin } from '@/lib/adminSession';
+import { serverError, unauthorized } from '@/lib/apiResponse';
 import { DEFAULT_NOTIFICATION_SOUND, isNotificationSound } from '@/lib/notificationSounds';
 import { NextRequest, NextResponse } from 'next/server';
 
-function safeEqual(a: string, b: string): boolean {
-  const bufA = Buffer.from(a);
-  const bufB = Buffer.from(b);
-  if (bufA.length !== bufB.length) return false;
-  return timingSafeEqual(bufA, bufB);
-}
-
-function isAdmin(req: NextRequest): boolean {
-  const token = process.env.ADMIN_TOKEN ?? '';
-  if (!token) return false;
-  const cookie = cookies().get('admin_session')?.value ?? '';
-  const header = req.headers.get('X-Admin-Token') ?? '';
-  return safeEqual(cookie, token) || safeEqual(header, token);
-}
-
 export async function GET(req: NextRequest) {
-  if (!isAdmin(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await requireAdmin(req))) return unauthorized();
 
   const { data, error } = await getSupabaseAdmin()
     .from('barber_profile')
@@ -29,7 +14,7 @@ export async function GET(req: NextRequest) {
     .select('*')
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return serverError('admin-settings-read', error);
   return NextResponse.json({
     face_scan_enabled: data?.face_scan_enabled ?? true,
     facebook_required: data?.facebook_required ?? true,
@@ -38,9 +23,10 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!isAdmin(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!(await requireAdmin(req))) return unauthorized();
 
-  const body = await req.json();
+  const body = await req.json().catch(() => null);
+  if (!body || typeof body !== 'object') return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   const patch: Record<string, boolean | string> = {};
 
   if ('face_scan_enabled' in body) {
@@ -69,6 +55,6 @@ export async function POST(req: NextRequest) {
     .update(patch)
     .not('id', 'is', null);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return serverError('admin-settings-update', error);
   return NextResponse.json({ ok: true });
 }

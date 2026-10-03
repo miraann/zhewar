@@ -11,36 +11,33 @@ import WhatsAppSendSheet from './WhatsAppSendSheet';
 import BookingConfirmSheet from './BookingConfirmSheet';
 import { adminFetch } from '@/lib/adminFetch';
 import { waLink, type WaMessageValues } from '@/lib/whatsapp';
+import { facebookProfileUrl } from '@/lib/facebook';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+// facebook_id is whatever the customer typed, so links are only ever built
+// from facebookProfileUrl's parsed https facebook.com / m.me URL — never the
+// raw string, which could be a "javascript:" link that runs in this page.
 function getFbLinks(raw: string): { fbUrl: string; messengerUrl: string } | null {
-  if (!raw) return null;
-  const s = raw.trim();
+  const url = facebookProfileUrl(raw);
+  if (!url) return null;
+  const u = new URL(url);
 
   // m.me/username → direct messenger link
-  const mme = s.match(/m\.me\/([^/?&#\s]+)/);
-  if (mme) return { fbUrl: `https://www.facebook.com/${mme[1]}`, messengerUrl: `https://m.me/${mme[1]}` };
+  if (u.hostname === 'm.me') {
+    return { fbUrl: `https://www.facebook.com${u.pathname}`, messengerUrl: url };
+  }
 
   // profile.php?id=NUMERIC → numeric ID works for m.me too
-  const numId = s.match(/facebook\.com\/profile\.php\?id=(\d+)/);
-  if (numId) return { fbUrl: s, messengerUrl: `https://m.me/${numId[1]}` };
-
-  // facebook.com/share/... — obfuscated share link, no username available
-  if (/facebook\.com\/share\//i.test(s)) return { fbUrl: s, messengerUrl: s };
+  const numId = u.pathname === '/profile.php' ? u.searchParams.get('id') : null;
+  if (numId && /^\d+$/.test(numId)) return { fbUrl: url, messengerUrl: `https://m.me/${numId}` };
 
   // facebook.com/USERNAME (regular profile)
-  const fb = s.match(/facebook\.com\/([^/?&#\s]+)/);
-  if (fb) return { fbUrl: `https://www.facebook.com/${fb[1]}`, messengerUrl: `https://m.me/${fb[1]}` };
+  const user = u.pathname.match(/^\/([\w.]+)\/?$/)?.[1];
+  if (user) return { fbUrl: `https://www.facebook.com/${user}`, messengerUrl: `https://m.me/${user}` };
 
-  // bare numeric ID
-  if (/^\d+$/.test(s)) return {
-    fbUrl: `https://www.facebook.com/profile.php?id=${s}`,
-    messengerUrl: `https://m.me/${s}`,
-  };
-
-  if (s.startsWith('http')) return { fbUrl: s, messengerUrl: s };
-  return null;
+  // facebook.com/share/... and other links — no username available
+  return { fbUrl: url, messengerUrl: url };
 }
 
 function formatCreatedAt(iso: string) {

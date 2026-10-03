@@ -1,9 +1,12 @@
 import { adminFetch } from './adminFetch';
 
-// Navigate instead of fetch so the cookie is sent with the request
-// (Capacitor WebView doesn't send cookies in JS fetch() calls).
-// The GET handler on /api/admin/logout clears the cookie and redirects.
-export function adminLogout() {
+// First revoke the session server-side with a fetch that carries the
+// X-Admin-Token header — the APK's WebView may have lost its cookie, and the
+// token is then the only thing naming its session. Then navigate, which
+// always sends the cookie: the GET handler on /api/admin/logout revokes and
+// clears it and redirects.
+export async function adminLogout() {
+  await adminFetch('/api/admin/logout', { method: 'POST' }).catch(() => {});
   localStorage.removeItem('admin_token');
   window.location.href = '/api/admin/logout';
 }

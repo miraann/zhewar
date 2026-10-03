@@ -1,59 +1,106 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { requireAdmin } from '@/lib/adminSession';
 
-function safeEqual(a: string, b: string): boolean {
-  const enc = new TextEncoder();
-  const bufA = enc.encode(a);
-  const bufB = enc.encode(b);
-  if (bufA.length !== bufB.length) return false;
-  let diff = 0;
-  for (let i = 0; i < bufA.length; i++) diff |= bufA[i] ^ bufB[i];
-  return diff === 0;
-}
+// The site's own origins. The APK loads the live site (capacitor.config.ts
+// server.url), so its requests come from these too — nothing else is let in.
+const TRUSTED_ORIGINS = ['https://zhewar.shop', 'https://www.zhewar.shop'];
 
-// Origins the Capacitor WebView may use when making JS fetch() calls.
-const CORS_ORIGINS = ['https://zhewar.shop', 'capacitor://localhost', 'https://localhost', 'http://localhost'];
+// Admin API routes that work without a session
+const PUBLIC_API = new Set(['/api/admin/login', '/api/admin/logout']);
+const STATE_CHANGING = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
-function buildCorsHeaders(origin: string | null) {
-  const allowed = origin && CORS_ORIGINS.includes(origin) ? origin : null;
-  if (!allowed) return {} as Record<string, string>;
+const SUPABASE_ORIGIN = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').replace(/\/+$/, '');
+
+function corsHeaders(origin: string | null): Record<string, string> {
+  if (!origin || !TRUSTED_ORIGINS.includes(origin)) return {};
   return {
-    'Access-Control-Allow-Origin':      allowed,
+    'Access-Control-Allow-Origin':      origin,
     'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Allow-Headers':     'Content-Type, X-Admin-Token',
-    'Access-Control-Allow-Methods':     'GET, POST, PATCH, DELETE, OPTIONS',
+    'Access-Control-Allow-Methods':     'GET, POST, PUT, PATCH, DELETE, OPTIONS',
   };
 }
 
-export function middleware(request: NextRequest) {
+// Browsers send Origin on every non-GET request, so a write whose Origin
+// isn't this site came from another site's page riding on the admin's
+// session (CSRF) — or from a non-browser client, which has no business here.
+function isSameOrigin(request: NextRequest): boolean {
   const origin = request.headers.get('origin');
-  const cors   = buildCorsHeaders(origin);
-  const isApi  = request.nextUrl.pathname.startsWith('/api/');
+  return !!origin && (origin === request.nextUrl.origin || TRUSTED_ORIGINS.includes(origin));
+}
+
+// Admin pages get a strict per-request CSP: scripts only run with this
+// response's nonce (Next.js adds it to its own scripts), so injected markup —
+// or a javascript: link — can't execute where the admin session lives. The
+// APK's Capacitor bridge is injected by the WebView itself
+// (addDocumentStartJavaScript), which a page's CSP doesn't apply to.
+function adminCsp(nonce: string): string {
+  const dev = process.env.NODE_ENV !== 'production';
+  return [
+    "default-src 'self'",
+    // Dev only: React Refresh needs eval
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${dev ? " 'unsafe-eval'" : ''}`,
+    "style-src 'self' 'unsafe-inline'",
+    `img-src 'self' data: blob: ${SUPABASE_ORIGIN}`,
+    "font-src 'self'",
+    `connect-src 'self' ${SUPABASE_ORIGIN} ${SUPABASE_ORIGIN.replace(/^https:/, 'wss:')}`,
+    "worker-src 'self'",
+    "object-src 'none'",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join('; ');
+}
+
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const isApi = pathname.startsWith('/api/');
+  const cors  = corsHeaders(request.headers.get('origin'));
 
   // Answer CORS preflights immediately (no auth needed for OPTIONS).
   if (request.method === 'OPTIONS') {
     return new NextResponse(null, { status: 204, headers: cors });
   }
 
-  const token     = process.env.ADMIN_TOKEN ?? '';
-  const cookieVal = request.cookies.get('admin_session')?.value ?? '';
-  const headerVal = request.headers.get('X-Admin-Token') ?? '';
-  const authed    = token && (safeEqual(cookieVal, token) || safeEqual(headerVal, token));
-
-  if (!authed) {
-    if (isApi) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: cors });
-    }
-    return NextResponse.redirect(new URL('/admin', request.url));
+  if (STATE_CHANGING.has(request.method) && !isSameOrigin(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403, headers: cors });
   }
 
-  // Attach CORS headers to every authenticated response so the WebView
-  // can read the body of cross-origin API calls.
-  const response = NextResponse.next();
-  Object.entries(cors).forEach(([k, v]) => response.headers.set(k, v));
+  // The route handlers check the session again themselves; this keeps
+  // the dashboard page itself behind the login too.
+  const needsSession = isApi ? !PUBLIC_API.has(pathname) : pathname.startsWith('/admin/dashboard');
+  if (needsSession) {
+    let authed = false;
+    try {
+      authed = !!(await requireAdmin(request));
+    } catch (e) {
+      console.error('[middleware] session store unavailable', e);
+      if (isApi) return NextResponse.json({ error: 'service_unavailable' }, { status: 503, headers: cors });
+    }
+    if (!authed) {
+      if (isApi) return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: cors });
+      return NextResponse.redirect(new URL('/admin', request.url));
+    }
+  }
+
+  if (isApi) {
+    const response = NextResponse.next();
+    Object.entries(cors).forEach(([k, v]) => response.headers.set(k, v));
+    return response;
+  }
+
+  // Admin page: Next.js reads the nonce from the request's CSP header
+  const nonce = btoa(crypto.randomUUID());
+  const csp   = adminCsp(nonce);
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-nonce', nonce);
+  requestHeaders.set('Content-Security-Policy', csp);
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
+  response.headers.set('Content-Security-Policy', csp);
   return response;
 }
 
 export const config = {
-  matcher: ['/admin/dashboard/:path*', '/api/admin/((?!login|logout).*)'],
+  matcher: ['/admin/:path*', '/api/admin/:path*', '/api/revalidate', '/api/customer-cleanup'],
 };

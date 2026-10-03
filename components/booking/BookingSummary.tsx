@@ -4,17 +4,11 @@ import type { Customer } from '@/lib/types';
 import { Calendar, CheckCircle, ChevronRight, Clock, ExternalLink, Loader2, Scissors } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { facebookProfileUrl } from '@/lib/facebook';
 import { formatTimeFull } from './DateTimePicker';
 
 function formatDate(d: Date) {
   return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
-}
-
-function normalizeFbUrl(raw: string | null): string | null {
-  if (!raw) return null;
-  if (raw.startsWith('http')) return raw;
-  if (/^\d+$/.test(raw)) return `https://www.facebook.com/profile.php?id=${raw}`;
-  return `https://www.facebook.com/${raw}`;
 }
 
 interface Props {
@@ -27,7 +21,7 @@ interface Props {
 }
 
 export default function BookingSummary({ customer, date, time, confirming, onBack, onConfirm }: Props) {
-  const fbUrl   = normalizeFbUrl(customer?.facebook_id ?? null);
+  const fbUrl   = facebookProfileUrl(customer?.facebook_id);
   const [shopName, setShopName]     = useState('');
   const [logoUrl,  setLogoUrl]      = useState<string | null>(null);
 

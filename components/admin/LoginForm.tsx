@@ -31,7 +31,7 @@ export default function AdminLoginForm() {
           window.location.replace('/admin/dashboard');
           return;
         }
-        // ADMIN_TOKEN was changed on the server, so the saved one is dead
+        // The saved session was revoked or expired
         if (res.status === 401) localStorage.removeItem('admin_token');
         setLoading(false);
       })
@@ -76,8 +76,12 @@ export default function AdminLoginForm() {
 
       if (res.ok) {
         const data = await res.json().catch(() => ({}));
-        if (data.token) localStorage.setItem('admin_token', data.token);
+        // Only the APK gets a token (see /api/admin/login); a browser's
+        // session lives in its httpOnly cookie, out of reach of scripts
+        if (isCapacitor && data.token) localStorage.setItem('admin_token', data.token);
         window.location.href = '/admin/dashboard';
+      } else if (res.status === 503) {
+        setError('کێشەی تۆڕ. دووبارە هەوڵبدەرەوە.');
       } else if (res.status === 429) {
         const data = await res.json();
         startCountdown(data.secondsLeft ?? 60);
