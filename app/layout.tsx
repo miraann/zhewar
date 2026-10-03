@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { createClient } from '@supabase/supabase-js';
 import RegisterSW from '@/components/RegisterSW';
+import NavProgress from '@/components/NavProgress';
 import './globals.css';
 
 const inter = Inter({
@@ -98,6 +99,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           @keyframes ringRotate   { from { transform: rotate(0deg); }  to { transform: rotate(360deg); } }
         `}</style>
         <RegisterSW />
+        <NavProgress />
         {children}
       </body>
     </html>

@@ -111,6 +111,12 @@
   to   { transform: rotate(360deg); }
 }
 
+/* Route-change progress bar (components/NavProgress.tsx) */
+@keyframes nav-progress {
+  from { width: 8%; }
+  to   { width: 90%; }
+}
+
 /* Grain texture overlay */
 .grain::after {
   content: '';
