@@ -23,6 +23,37 @@ const DEFAULT: EditableFields = {
   instagram_url: '', facebook_url: '', whatsapp_number: '', tiktok_url: '', maps_url: '',
 };
 
+const SAVE_FAILED = 'پاشەکەوتکردن سەرکەوتوو نەبوو';
+// Same rule and text as /api/admin/upload, checked here so a bad file is
+// caught when it's picked rather than on save
+const LOGO_TYPES     = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_LOGO_BYTES = 5 * 1024 * 1024;
+const INVALID_LOGO   = 'تەنها وێنەی JPG، PNG یان WEBP تا ٥MB';
+
+// An error whose message comes from our API, shown as-is
+class ApiError extends Error {}
+
+async function uploadLogo(file: File): Promise<string> {
+  const body = new FormData();
+  body.append('file', file);
+  body.append('bucket', 'uploads');
+  const res  = await fetch('/api/admin/upload', { method: 'POST', body });
+  const json = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
+  if (!res.ok || !json.url) throw new ApiError(json.error ?? 'هەڵەی بارکردن');
+  return json.url;
+}
+
+function useObjectUrl(file: File | null): string | null {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!file) { setUrl(null); return; }
+    const objectUrl = URL.createObjectURL(file);
+    setUrl(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [file]);
+  return url;
+}
+
 export default function ProfileEditor() {
   const [form, setForm]       = useState<EditableFields>(DEFAULT);
   const [id, setId]           = useState<string | null>(null);
@@ -30,6 +61,11 @@ export default function ProfileEditor() {
   const [saving, setSaving]   = useState(false);
   const [saved, setSaved]     = useState(false);
   const [saveError, setSaveError] = useState('');
+  // A picked logo is only uploaded on save, so trying files out doesn't
+  // leave the unsaved ones in the uploads bucket. The server deletes the
+  // logo a save replaces (/api/admin/profile).
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const logoPreview             = useObjectUrl(logoFile);
 
   useEffect(() => {
     supabase.from('barber_profile').select('*').single().then(({ data }) => {
@@ -49,19 +85,31 @@ export default function ProfileEditor() {
   async function handleSave() {
     setSaving(true);
     setSaveError('');
-    const res = await fetch('/api/admin/profile', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, ...form }),
-    });
-    const json = await res.json().catch(() => ({}));
-    setSaving(false);
-    if (!res.ok) {
-      setSaveError(json.error ?? 'پاشەکەوتکردن سەرکەوتوو نەبوو');
-    } else {
+    try {
+      let logoUrl = form.logo_url;
+      if (logoFile) {
+        logoUrl = await uploadLogo(logoFile);
+        // Kept even if the save below fails, so a retry doesn't upload it again
+        setForm((prev) => ({ ...prev, logo_url: logoUrl }));
+        setLogoFile(null);
+      }
+
+      const res = await fetch('/api/admin/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, ...form, logo_url: logoUrl }),
+      });
+      const json = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) throw new ApiError(json.error ?? SAVE_FAILED);
+
       await fetch('/api/revalidate', { method: 'POST' });
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
+    } catch (e) {
+      // Anything else is a dropped connection — not worth showing its text
+      setSaveError(e instanceof ApiError ? e.message : SAVE_FAILED);
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -78,8 +126,10 @@ export default function ProfileEditor() {
       <div className="space-y-3">
         <FieldLabel>ناسنامە</FieldLabel>
         <LogoUpload
-          value={form.logo_url ?? ''}
-          onChange={(v) => set('logo_url', v)}
+          src={logoPreview ?? form.logo_url ?? ''}
+          name={logoFile?.name ?? form.logo_url?.split('/').pop() ?? ''}
+          onPick={setLogoFile}
+          onClear={() => { setLogoFile(null); set('logo_url', ''); }}
         />
         <TextField icon={User}   iconColor="text-blue-500"   label="ناوی دوکان" value={form.name}         onChange={(v) => set('name', v)}    placeholder="ژێوار عزیز"    />
         <TextField icon={User}   iconColor="text-violet-500" label="بایۆ"  value={form.tagline ?? ''} onChange={(v) => set('tagline', v)} placeholder="چاکسازی بەرز..." />
@@ -112,67 +162,56 @@ export default function ProfileEditor() {
   );
 }
 
-function LogoUpload({ value, onChange }: { value: string; onChange: (url: string) => void }) {
+function LogoUpload({ src, name, onPick, onClear }: {
+  src:     string;
+  name:    string;
+  onPick:  (file: File) => void;
+  onClear: () => void;
+}) {
   const fileRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError]         = useState('');
+  const [error, setError] = useState('');
 
-  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (!file) return;
-    setError('');
-    setUploading(true);
-    const form = new FormData();
-    form.append('file', file);
-    form.append('bucket', 'uploads');
-    const res = await fetch('/api/admin/upload', { method: 'POST', body: form });
-    if (!res.ok) {
-      const j = await res.json().catch(() => ({}));
-      setError(j.error ?? 'هەڵەی بارکردن');
-    } else {
-      const { url } = await res.json();
-      onChange(url);
-    }
-    setUploading(false);
     e.target.value = '';
+    if (!file) return;
+    if (!LOGO_TYPES.includes(file.type) || file.size > MAX_LOGO_BYTES) {
+      setError(INVALID_LOGO);
+      return;
+    }
+    setError('');
+    onPick(file);
   }
 
   return (
     <div>
       <p className="text-md-on-surface text-xs font-medium mb-1.5">وێنەی لۆگۆ</p>
-      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+      <input ref={fileRef} type="file" accept={LOGO_TYPES.join(',')} className="hidden" onChange={handleFile} />
 
-      {value ? (
+      {src ? (
         <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-100/60">
-          <img src={value} alt="لۆگۆ" className="w-14 h-14 rounded-full object-cover border-2 border-md-primary-container flex-shrink-0" />
+          <img src={src} alt="لۆگۆ" className="w-14 h-14 rounded-full object-cover border-2 border-md-primary-container flex-shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-md-on-surface-variant text-xs truncate">{value.split('/').pop()}</p>
+            <p className="text-md-on-surface-variant text-xs truncate">{name}</p>
             <button
               onClick={() => fileRef.current?.click()}
-              disabled={uploading}
               className="mt-1.5 flex items-center gap-1.5 text-md-primary text-xs font-medium touch-manipulation"
             >
-              {uploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
-              {uploading ? 'بارکردن...' : 'گۆڕینی وێنە'}
+              <Upload className="w-3 h-3" />
+              گۆڕینی وێنە
             </button>
           </div>
-          <button onClick={() => onChange('')} className="text-md-on-surface-variant active:text-md-error transition-colors touch-manipulation">
+          <button onClick={onClear} className="text-md-on-surface-variant active:text-md-error transition-colors touch-manipulation">
             <X className="w-4 h-4" />
           </button>
         </div>
       ) : (
         <button
           onClick={() => fileRef.current?.click()}
-          disabled={uploading}
           className="w-full flex flex-col items-center justify-center gap-2 py-6 rounded-md-sm border-2 border-dashed border-md-outline bg-md-surface-container-high active:bg-md-surface-container-highest transition-colors touch-manipulation"
         >
-          {uploading
-            ? <Loader2 className="w-6 h-6 text-md-primary animate-spin" />
-            : <Upload className="w-6 h-6 text-md-on-surface-variant" />
-          }
-          <span className="text-md-on-surface-variant text-xs">
-            {uploading ? 'بارکردن...' : 'کرتە بکە بۆ بارکردنی لۆگۆ'}
-          </span>
+          <Upload className="w-6 h-6 text-md-on-surface-variant" />
+          <span className="text-md-on-surface-variant text-xs">کرتە بکە بۆ بارکردنی لۆگۆ</span>
         </button>
       )}
 
