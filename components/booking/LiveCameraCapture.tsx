@@ -23,8 +23,14 @@ const EAR_BLINK_THRESHOLD = 0.21;
 // Auto-capture after face held steady for this long (ms)
 const AUTO_CAPTURE_MS = 2500;
 
-// Run face detection every N animation frames (~5fps on a 30fps device)
-const DETECT_EVERY_N_FRAMES = 6;
+// Pause between detections (~5fps). A timer loop, unlike a requestAnimationFrame
+// chain, keeps running even if the browser throttles rAF
+const DETECT_INTERVAL_MS = 180;
+
+// A single detection taking longer than this means the GPU backend is stuck
+// (seen on iPhones on the second camera open) — surface a retry instead of
+// sitting on "searching" forever
+const DETECT_STALL_MS = 8000;
 
 // Camera + model init must finish within this long, else show retry (guards against
 // a stalled getUserMedia or a slow/stuck CDN fetch on poor mobile networks)
@@ -34,6 +40,34 @@ const INIT_TIMEOUT_MS = 20000;
 // (e.g. a lost WebGL context after the tab is backgrounded — every subsequent
 // detectSingleFace() call throws, otherwise silently, forever)
 const MAX_CONSECUTIVE_DETECT_ERRORS = 25;
+
+// Models are loaded and warmed up once per page load and reused on every open.
+// Reloading them on each open replaced weight tensors under the GPU backend
+// and could leave detection hanging until a full page refresh
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let faceApiPromise: Promise<any> | null = null;
+
+function loadFaceApi(onStep: (s: string) => void) {
+  if (!faceApiPromise) {
+    faceApiPromise = (async () => {
+      const faceapi = await import('@vladmandic/face-api');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const fa = faceapi as any;
+      onStep('ناسینی ڕووخسار بارکردن...');
+      await fa.nets.tinyFaceDetector.loadFromUri(MODEL_CDN);
+      onStep('دیاریکردنی چاوەکان...');
+      await fa.nets.faceLandmark68TinyNet.loadFromUri(MODEL_CDN);
+      // Warm-up run compiles the GPU shaders now, behind the loading spinner
+      // and init watchdog, instead of freezing the first live frame
+      const warm = document.createElement('canvas');
+      warm.width = 224; warm.height = 224;
+      await fa.detectSingleFace(warm, new fa.TinyFaceDetectorOptions({ inputSize: 224 }))
+        .withFaceLandmarks(true);
+      return fa;
+    })().catch((err) => { faceApiPromise = null; throw err; });
+  }
+  return faceApiPromise;
+}
 
 // ── Geometry helpers ──────────────────────────────────────────────────────────
 type Pt = { x: number; y: number };
@@ -105,7 +139,7 @@ function validateFace(result: any, videoW: number, videoH: number): FaceValidity
 export default function LiveCameraCapture({ onCapture, onCancel, onRetake }: Props) {
   const videoRef   = useRef<HTMLVideoElement>(null);
   const streamRef  = useRef<MediaStream | null>(null);
-  const rafRef     = useRef<number>(0);
+  const timerRef   = useRef<number>(0);
   const phaseRef   = useRef<Phase>('loading');
 
   // face-lock timing
@@ -136,7 +170,7 @@ export default function LiveCameraCapture({ onCapture, onCancel, onRetake }: Pro
 
   // ── stop camera ─────────────────────────────────────────────────────────────
   const stopStream = useCallback(() => {
-    cancelAnimationFrame(rafRef.current);
+    clearTimeout(timerRef.current);
     streamRef.current?.getTracks().forEach(t => t.stop());
     streamRef.current = null;
   }, []);
@@ -170,11 +204,14 @@ export default function LiveCameraCapture({ onCapture, onCancel, onRetake }: Pro
   // ── main effect ──────────────────────────────────────────────────────────────
   useEffect(() => {
     let mounted = true;
+    let detectStartedAt = 0;
+    let stallWatchdog = 0;
 
     // Guards against a stalled getUserMedia / stuck CDN fetch that would
     // otherwise leave the UI spinning on "loading" forever
     const initWatchdog = window.setTimeout(() => {
       if (mounted && phaseRef.current === 'loading') {
+        faceApiPromise = null; // don't hand a hung load to the next attempt
         setError('کامێرا یان مۆدێل بارنەبوو. دووبارە هەوڵ بدەرەوە');
         setPhaseSync('error');
         stopStream();
@@ -210,17 +247,9 @@ export default function LiveCameraCapture({ onCapture, onCancel, onRetake }: Pro
         await v.play();
         if (!mounted) return;
 
-        // ── load face-api models from CDN ──────────────────────────────────────
-        if (mounted) setLoadStep('ناسینی ڕووخسار بارکردن...');
-        const faceapi = await import('@vladmandic/face-api');
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const fa = faceapi as any;
-
-        await fa.nets.tinyFaceDetector.loadFromUri(MODEL_CDN);
-        if (!mounted) return;
-
-        if (mounted) setLoadStep('دیاریکردنی چاوەکان...');
-        await fa.nets.faceLandmark68TinyNet.loadFromUri(MODEL_CDN);
+        // ── load face-api models from CDN (cached after the first open) ────────
+        setLoadStep('ناسینی ڕووخسار بارکردن...');
+        const fa = await loadFaceApi((s) => { if (mounted) setLoadStep(s); });
         if (!mounted) return;
 
         clearTimeout(initWatchdog);
@@ -232,26 +261,37 @@ export default function LiveCameraCapture({ onCapture, onCancel, onRetake }: Pro
           scoreThreshold: 0.5,
         });
 
-        let frame = 0;
+        // Frames are copied to a 2D canvas before detection: iOS WebKit can
+        // stall uploading a live camera <video> straight into a WebGL texture
+        const frameCanvas = document.createElement('canvas');
+        const frameCtx    = frameCanvas.getContext('2d');
 
         const loop = (): void => {
           if (!mounted || phaseRef.current === 'captured') return;
-          rafRef.current = requestAnimationFrame(async () => {
-            frame++;
-
-            // Throttle — only run heavy detection every N frames
-            if (frame % DETECT_EVERY_N_FRAMES !== 0) { loop(); return; }
-
+          timerRef.current = window.setTimeout(async () => {
             const video = videoRef.current;
-            if (!video || video.readyState < 2) { loop(); return; }
+            if (!video || video.readyState < 2 || !frameCtx) { loop(); return; }
+
+            // iOS pauses the preview when the page is briefly hidden — resume
+            if (video.paused) video.play().catch(() => {});
+
+            const vw = video.videoWidth  || 640;
+            const vh = video.videoHeight || 480;
+            if (frameCanvas.width !== vw || frameCanvas.height !== vh) {
+              frameCanvas.width = vw; frameCanvas.height = vh;
+            }
+            frameCtx.drawImage(video, 0, 0, vw, vh);
 
             let result: unknown;
             try {
+              detectStartedAt = Date.now();
               result = await fa
-                .detectSingleFace(video, detectorOptions)
+                .detectSingleFace(frameCanvas, detectorOptions)
                 .withFaceLandmarks(/* tiny= */ true);
+              detectStartedAt = 0;
               detectErrorsRef.current = 0;
             } catch {
+              detectStartedAt = 0;
               // A one-off frame-level detection error is non-fatal — skip it.
               // But a run of failures (e.g. WebGL context lost after the tab
               // was backgrounded) will otherwise fail silently forever, so
@@ -360,8 +400,19 @@ export default function LiveCameraCapture({ onCapture, onCancel, onRetake }: Pro
             }
 
             loop();
-          });
+          }, DETECT_INTERVAL_MS);
         };
+
+        // A detection that never resolves would otherwise stop the loop
+        // silently — the "stuck on searching until refresh" bug
+        stallWatchdog = window.setInterval(() => {
+          if (mounted && detectStartedAt && Date.now() - detectStartedAt > DETECT_STALL_MS) {
+            setError('کێشەیەک لە کامێراکە ڕوویدا. تکایە دووبارە هەوڵ بدەرەوە');
+            setPhaseSync('error');
+            stopStream();
+            clearInterval(stallWatchdog);
+          }
+        }, 1000);
 
         loop();
       } catch (err: unknown) {
@@ -378,10 +429,17 @@ export default function LiveCameraCapture({ onCapture, onCancel, onRetake }: Pro
     }
 
     init();
-    return () => { mounted = false; clearTimeout(initWatchdog); stopStream(); };
+    return () => {
+      mounted = false;
+      clearTimeout(initWatchdog);
+      clearInterval(stallWatchdog);
+      stopStream();
+    };
   }, [captureNow, stopStream, setPhaseSync]);
 
-  const retry = () => window.location.reload();
+  // Remount the scanner (fresh camera + loop) when the parent supports it;
+  // a full reload is the last resort
+  const retry = () => (onRetake ?? (() => window.location.reload()))();
 
   // ── Derived UI values ─────────────────────────────────────────────────────
   const ringColor =
@@ -622,7 +680,7 @@ export default function LiveCameraCapture({ onCapture, onCancel, onRetake }: Pro
             بەردەوام بە ✓
           </button>
           <button
-            onClick={() => { stopStream(); (onRetake ?? retry)(); }}
+            onClick={() => { stopStream(); retry(); }}
             aria-label="دووبارە سکان"
             className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 text-white flex items-center justify-center active:scale-95 transition-transform touch-manipulation"
           >
