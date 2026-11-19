@@ -2,7 +2,7 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const cookie = cookies().get('fb_auth');
+  const cookie = (await cookies()).get('fb_auth');
   if (!cookie) return NextResponse.json(null);
 
   try {

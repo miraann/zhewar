@@ -8,7 +8,7 @@ import { ADMIN_COOKIE, getAdminSession } from '@/lib/adminSession';
 export default async function AdminLoginPage() {
   let signedIn = false;
   try {
-    signedIn = !!(await getAdminSession(cookies().get(ADMIN_COOKIE)?.value));
+    signedIn = !!(await getAdminSession((await cookies()).get(ADMIN_COOKIE)?.value));
   } catch {
     // Session store unreachable — show the login form; signing in reports it
   }

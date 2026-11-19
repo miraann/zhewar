@@ -1,6 +1,11 @@
 import { randomBytes } from 'crypto';
 import { NextResponse } from 'next/server';
 
+// Never prerender or cache: the CSRF state must be new for every login.
+// (On Next.js 14 this handler was built once, so every visitor got the same
+// state and a cookie that had already expired.)
+export const dynamic = 'force-dynamic';
+
 export function GET() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   const state   = randomBytes(16).toString('hex');

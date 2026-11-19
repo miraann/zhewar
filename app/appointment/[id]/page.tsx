@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 // This page is public to anyone holding the link. Everything passed to
 // AppointmentReceiptPage (a client component) is serialized into the HTML,
 // whether the component uses it or not — so never pass it anything secret.
-export default async function AppointmentPage({ params }: { params: { id: string } }) {
+export default async function AppointmentPage({ params }: { params: Promise<{ id: string }> }) {
   // Service role required — anon SELECT is blocked on customers table for privacy
   const supabase = getSupabaseAdmin();
 
@@ -19,7 +19,7 @@ export default async function AppointmentPage({ params }: { params: { id: string
         id, appointment_time, status, photo_url, created_at,
         customers(full_name, phone_number, photo_url, facebook_id)
       `)
-      .eq('id', params.id)
+      .eq('id', (await params).id)
       .single(),
     supabase.from('barber_profile').select('name, logo_url').single(),
   ]);
