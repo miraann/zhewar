@@ -4,7 +4,7 @@ import { serverError, unauthorized } from '@/lib/apiResponse';
 import { parseTemplateFields } from '@/lib/whatsapp';
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!(await requireAdmin(req))) return unauthorized();
 
   const fields = parseTemplateFields(await req.json().catch(() => null));
@@ -14,7 +14,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const { data: current } = await supabase
     .from('whatsapp_templates')
     .select('kind')
-    .eq('id', params.id)
+    .eq('id', (await params).id)
     .maybeSingle();
   if (!current) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
@@ -35,7 +35,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const { data, error } = await supabase
     .from('whatsapp_templates')
     .update(patch)
-    .eq('id', params.id)
+    .eq('id', (await params).id)
     .select()
     .single();
 
@@ -43,13 +43,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   return NextResponse.json(data);
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!(await requireAdmin(req))) return unauthorized();
 
   const { error } = await getSupabaseAdmin()
     .from('whatsapp_templates')
     .delete()
-    .eq('id', params.id);
+    .eq('id', (await params).id);
 
   if (error) return serverError('admin-wa-template-delete', error);
   return NextResponse.json({ ok: true });

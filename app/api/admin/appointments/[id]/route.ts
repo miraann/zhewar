@@ -7,7 +7,7 @@ const VALID_STATUSES = new Set(['confirmed', 'cancelled', 'pending']);
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   if (!(await requireAdmin(req))) return unauthorized();
 
@@ -19,7 +19,7 @@ export async function PATCH(
   const { error } = await getSupabaseAdmin()
     .from('appointments')
     .update({ status })
-    .eq('id', params.id);
+    .eq('id', (await params).id);
 
   if (error) return serverError('admin-appointment-update', error);
   return NextResponse.json({ ok: true });
