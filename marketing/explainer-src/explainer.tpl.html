@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="ckb" dir="ltr"><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Kufi;src:url(assets/noto-kufi-arabic-arabic-400-normal.woff2);font-weight:400}
+@font-face{font-family:Kufi;src:url(assets/noto-kufi-arabic-arabic-700-normal.woff2);font-weight:700}
+@font-face{font-family:Kufi;src:url(assets/noto-kufi-arabic-arabic-900-normal.woff2);font-weight:900}
+@font-face{font-family:Kufi;src:url(assets/noto-kufi-arabic-latin-400-normal.woff2);font-weight:400;unicode-range:U+0000-00FF}
+@font-face{font-family:Kufi;src:url(assets/noto-kufi-arabic-latin-700-normal.woff2);font-weight:700;unicode-range:U+0000-00FF}
+@font-face{font-family:Kufi;src:url(assets/noto-kufi-arabic-latin-900-normal.woff2);font-weight:900;unicode-range:U+0000-00FF}
+:root{--ink:#1e1b4b;--blue:#4f6cf0;--sky:#38bdf8;--vio:#7c3aed;--mut:#64748b;--green:#10b981;--red:#ef4444;--amber:#f59e0b}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:clip;font-family:Kufi,sans-serif;color:var(--ink)}
+body{background:
+  radial-gradient(900px 700px at 85% 5%,#cdeafd 0%,transparent 65%),
+  radial-gradient(800px 800px at 5% 75%,#dcdcfb 0%,transparent 65%),
+  linear-gradient(170deg,#f5f8ff 0%,#eaf1fd 50%,#e3ebfc 100%)}
+.abs{position:absolute}
+#dots{position:absolute;inset:0;background-image:radial-gradient(#9fb2d6 1.6px,transparent 1.8px);background-size:36px 36px;opacity:.32}
+.scene{position:absolute;inset:0}
+.grad{background:linear-gradient(90deg,#1e1b4b 0%,#3b45d6 55%,#7c3aed 100%);-webkit-background-clip:text;color:transparent}
+.kicker{display:flex;align-items:center;justify-content:center;gap:22px;color:#0ea5e9;font-weight:700;font-size:38px}
+.kicker i{display:block;width:90px;height:3px;background:#38a5e8;border-radius:2px}
+.card{background:#fff;border-radius:34px;box-shadow:0 26px 60px -24px rgba(60,70,160,.38)}
+.tile{border-radius:110px;background:linear-gradient(145deg,#38bdf8 0%,#4f6cf0 50%,#7c3aed 100%);
+ box-shadow:0 50px 90px -20px rgba(79,70,229,.55),inset 0 4px 0 rgba(255,255,255,.35);overflow:hidden}
+
+/* header per scene */
+.head{position:absolute;left:0;right:0;top:70px;text-align:center}
+.head h2{font-weight:900;font-size:64px;line-height:1.5}
+
+/* caption */
+#cap{position:absolute;left:60px;right:60px;top:1560px;height:150px;display:flex;align-items:center;gap:28px;padding:0 34px;
+ background:rgba(255,255,255,.92);border:2px solid #c7d7f5;border-radius:40px;box-shadow:0 26px 50px -24px rgba(60,70,160,.4)}
+#capN{width:92px;height:92px;flex:none;border-radius:28px;background:linear-gradient(145deg,#38bdf8,#4f6cf0 55%,#7c3aed);
+ color:#fff;font-weight:900;font-size:50px;display:flex;align-items:center;justify-content:center}
+#capT{font-weight:900;font-size:44px;line-height:1.35;color:var(--ink)}
+#capS{font-weight:700;font-size:28px;color:var(--mut)}
+
+/* phone */
+.phone{position:absolute;width:600px;height:1230px;border-radius:92px;background:#0f172a;padding:20px;
+ box-shadow:0 60px 120px -30px rgba(30,27,75,.55),inset 0 0 0 3px #334155}
+.screen{position:relative;width:100%;height:100%;border-radius:74px;overflow:hidden;background:#fff}
+.island{position:absolute;top:22px;left:50%;width:170px;height:46px;margin-left:-85px;background:#0f172a;border-radius:30px;z-index:20}
+.status{position:absolute;top:26px;left:0;right:0;height:40px;padding:0 54px;display:flex;justify-content:space-between;
+ font:700 26px/40px Kufi;direction:ltr;z-index:19;color:#0f172a}
+.urlbar{position:absolute;top:84px;left:26px;right:26px;height:70px;border-radius:24px;background:#f1f5f9;display:flex;align-items:center;
+ justify-content:center;gap:10px;direction:ltr;font:700 28px Kufi;color:#334155;z-index:18}
+.load{position:absolute;top:160px;left:26px;height:6px;border-radius:3px;background:linear-gradient(90deg,#38bdf8,#7c3aed);z-index:18}
+.view{position:absolute;top:172px;left:0;right:0;bottom:0;overflow:hidden}
+.sec{position:relative;width:560px;height:1018px;overflow:hidden}
+
+/* hero (real site look) */
+.hero{background:repeating-linear-gradient(135deg,#fff 0 26px,#fef2f2 26px 30px,#fff 30px 56px,#eff6ff 56px 60px)}
+.logo{width:250px;height:250px;border-radius:50%;padding:7px;background:conic-gradient(#ef4444 0 110deg,#f8fafc 135deg,#3b82f6 160deg 290deg,#f8fafc 315deg,#ef4444 360deg)}
+.logo img{width:100%;height:100%;border-radius:50%;display:block;background:#fff}
+.btn{border-radius:26px;color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center;gap:14px}
+.secT{font-weight:900;font-size:40px;text-align:center;padding-top:40px}
+.secS{font-weight:700;font-size:22px;color:var(--mut);text-align:center}
+.ph{position:absolute;border-radius:24px;overflow:hidden;background-size:cover;background-position:center;box-shadow:0 10px 24px -10px rgba(0,0,0,.35)}
+.soc{height:96px;border-radius:26px;margin:0 34px 18px;display:flex;align-items:center;gap:20px;padding:0 26px;font-weight:900;font-size:30px;color:#fff}
+.soc b{width:56px;height:56px;border-radius:18px;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:28px}
+
+/* booking */
+.chip{display:inline-flex;align-items:center;gap:10px;padding:6px 18px;border-radius:999px;font-weight:700;font-size:20px}
+.day{width:62px;height:104px;border-radius:20px;border:2px solid #e2e8f0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:30px;color:#334155;background:#fff}
+.day small{font-size:13px;font-weight:700;color:#94a3b8}
+.slot{height:68px;border-radius:22px;color:#fff;font-weight:900;font-size:26px;display:flex;align-items:center;justify-content:center}
+
+/* notif */
+.notif{position:absolute;left:22px;right:22px;top:80px;border-radius:34px;background:rgba(255,255,255,.97);padding:22px 26px;z-index:30;
+ box-shadow:0 30px 60px -18px rgba(15,23,42,.45);border:1px solid #e2e8f0}
+.nb{height:72px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:28px}
+
+/* touch */
+#touch{position:absolute;width:86px;height:86px;margin:-43px 0 0 -43px;border-radius:50%;background:rgba(79,108,240,.35);border:5px solid rgba(255,255,255,.95);
+ box-shadow:0 8px 24px rgba(30,27,75,.35);z-index:200}
+#ripple{position:absolute;width:86px;height:86px;margin:-43px 0 0 -43px;border-radius:50%;border:5px solid rgba(79,108,240,.7);z-index:199}
+
+.feat{display:flex;align-items:center;gap:22px;padding:24px 30px;border-radius:30px;background:#fff;box-shadow:0 20px 44px -22px rgba(60,70,160,.4);font-weight:900;font-size:36px}
+.feat b{width:76px;height:76px;flex:none;border-radius:22px;display:flex;align-items:center;justify-content:center}
+.confetti{position:absolute;width:18px;height:28px;border-radius:5px}
+</style></head><body><div id="stage" dir="rtl" style="position:fixed;left:0;top:0;width:1080px;height:1920px;overflow:hidden">
+<div id="dots"></div>
+
+<!-- ═════════ 1. INTRO ═════════ -->
+<div class="scene" id="intro">
+  <div class="abs" id="introGlow" style="left:540px;top:760px;width:900px;height:900px;margin:-450px 0 0 -450px;border-radius:50%;background:radial-gradient(circle,rgba(110,140,255,.38) 0%,rgba(140,190,255,.16) 40%,transparent 68%)"></div>
+  <div class="abs tile" id="introTile" style="left:310px;top:530px;width:460px;height:460px">
+    <svg viewBox="0 0 460 460" width="460" height="460">
+      <rect x="85" y="100" width="290" height="270" rx="36" fill="#fff"/>
+      <path d="M85 136a36 36 0 0 1 36-36h218a36 36 0 0 1 36 36v34H85z" fill="#e0e7ff"/>
+      <rect x="150" y="78" width="20" height="50" rx="10" fill="#4f6cf0"/><rect x="290" y="78" width="20" height="50" rx="10" fill="#4f6cf0"/>
+      <g fill="none" stroke-width="16" stroke-linecap="round">
+        <circle cx="170" cy="230" r="28" stroke="#38bdf8"/><circle cx="170" cy="318" r="28" stroke="#7c3aed"/>
+        <path d="M194 246L320 330" stroke="#4f6cf0"/><path d="M194 302L320 218" stroke="#4f6cf0"/>
+      </g>
+    </svg>
+  </div>
+  <div class="abs" id="introTxt" style="left:0;right:0;top:1100px;text-align:center">
+    <div class="kicker"><i></i>Barber &amp; Salon<i></i></div>
+    <h1 class="grad" style="white-space:nowrap;font-weight:900;font-size:86px;line-height:1.5;margin-top:6px">سیستەمی نۆرەگرتن</h1>
+    <div style="font-weight:700;font-size:40px;color:#475569;margin-top:6px">بۆ سەرتاشخانە و ساڵۆنەکان</div>
+  </div>
+</div>
+
+<!-- ═════════ 2. SHOP + QR ═════════ -->
+<div class="scene" id="shop">
+  <div class="head" id="shopHead"><div class="kicker"><i></i>هەنگاوی یەکەم<i></i></div><h2 class="grad">کڕیار دێتە سەرتاشخانە</h2></div>
+  <!-- storefront -->
+  <div class="abs card" id="store" style="left:70px;top:330px;width:940px;height:1130px;border-radius:50px;overflow:hidden;background:linear-gradient(180deg,#fff 0%,#f4f7ff 100%)">
+    <div style="height:150px;background:repeating-linear-gradient(90deg,#4f6cf0 0 78px,#fff 78px 156px);opacity:.92"></div>
+    <div style="position:absolute;top:150px;left:0;right:0;height:34px;background:radial-gradient(circle at 39px 0,#4f6cf0 38px,transparent 39px) 0 0/156px 34px repeat-x"></div>
+    <div style="position:absolute;top:212px;left:0;right:0;text-align:center;font-weight:900;font-size:54px">✂ ژێوار عزیز</div>
+    <div style="position:absolute;top:296px;left:0;right:0;text-align:center;font-weight:700;font-size:28px;color:var(--mut)">سەرتاشخانە</div>
+    <!-- barber pole -->
+    <div style="position:absolute;left:60px;top:380px;width:60px;height:300px;border-radius:30px;background:repeating-linear-gradient(160deg,#ef4444 0 22px,#fff 22px 44px,#3b82f6 44px 66px,#fff 66px 88px);box-shadow:inset 0 0 0 5px #e2e8f0"></div>
+    <div style="position:absolute;left:52px;top:362px;width:76px;height:30px;border-radius:15px;background:#cbd5e1"></div>
+    <div style="position:absolute;left:52px;top:672px;width:76px;height:30px;border-radius:15px;background:#cbd5e1"></div>
+    <div style="position:absolute;left:0;right:0;bottom:0;height:160px;background:#e8eefc"></div>
+  </div>
+  <!-- QR stand -->
+  <div class="abs" id="qrStand" style="left:560px;top:690px;width:380px">
+    <div class="card" style="padding:30px 30px 34px;text-align:center;border:4px solid #e0e7ff">
+      <div style="font-weight:900;font-size:34px;line-height:1.4">نۆرەکەت بگرە</div>
+      <div style="font-weight:700;font-size:22px;color:var(--mut);margin-bottom:16px">سکانی بکە 📱</div>
+      <div style="position:relative;width:260px;height:260px;margin:0 auto">
+        <svg viewBox="-2 -2 {{QN2}} {{QN2}}" width="260" height="260" shape-rendering="crispEdges"><rect x="-2" y="-2" width="{{QN2}}" height="{{QN2}}" fill="#fff"/><path d="{{QR}}" fill="#1e1b4b"/></svg>
+        <div id="scanLine" class="abs" style="left:-10px;right:-10px;height:8px;border-radius:4px;background:#38bdf8;box-shadow:0 0 24px 6px rgba(56,189,248,.7)"></div>
+        <div id="qrOk" class="abs" style="inset:0;border-radius:16px;background:rgba(16,185,129,.88);display:flex;align-items:center;justify-content:center;color:#fff;font-size:150px;font-weight:900">✓</div>
+      </div>
+      <div style="direction:ltr;font-weight:700;font-size:28px;color:var(--blue);margin-top:16px">zhewar.shop</div>
+    </div>
+    <div style="width:30px;height:120px;margin:0 auto;background:#cbd5e1"></div>
+    <div style="width:200px;height:24px;margin:0 auto;border-radius:12px;background:#94a3b8"></div>
+  </div>
+  <!-- customer -->
+  <div class="abs" id="cust" style="left:120px;top:700px;width:420px;height:860px">
+    <svg viewBox="0 0 420 860" width="420" height="860" overflow="visible">
+      <g id="cLegL"><rect x="150" y="560" width="54" height="230" rx="26" fill="#334155"/><rect x="128" y="770" width="82" height="40" rx="20" fill="#0f172a"/></g>
+      <g id="cLegR"><rect x="214" y="560" width="54" height="230" rx="26" fill="#3d4b63"/><rect x="210" y="770" width="82" height="40" rx="20" fill="#0f172a"/></g>
+      <path d="M118 330 Q120 270 180 262 L240 262 Q300 270 302 330 L310 600 Q210 620 110 600Z" fill="#4f6cf0"/>
+      <path d="M180 262 L210 318 L240 262" fill="#3b4fd0"/>
+      <rect x="168" y="420" width="84" height="70" rx="20" fill="#3b4fd0"/>
+      <g id="cArmL"><path d="M128 300 Q96 420 112 540" stroke="#4f6cf0" stroke-width="50" fill="none" stroke-linecap="round"/><circle cx="114" cy="548" r="25" fill="#e8b48a"/></g>
+      <rect x="190" y="215" width="40" height="56" rx="16" fill="#d9a074"/>
+      <ellipse cx="210" cy="160" rx="82" ry="94" fill="#e8b48a"/>
+      <ellipse cx="128" cy="168" rx="14" ry="22" fill="#d9a074"/><ellipse cx="292" cy="168" rx="14" ry="22" fill="#d9a074"/>
+      <path d="M128 150 Q118 64 206 56 Q300 54 294 150 Q282 104 236 98 Q200 92 168 108 Q140 120 128 150Z" fill="#1f2937"/>
+      <path d="M134 176 Q140 254 210 260 Q280 254 286 176 Q278 214 250 222 Q210 236 170 222 Q142 214 134 176Z" fill="#1f2937"/>
+      <path d="M186 214 Q210 226 234 214" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round" id="cSmile"/>
+      <ellipse cx="178" cy="158" rx="9" ry="11" fill="#1f2937"/><ellipse cx="242" cy="158" rx="9" ry="11" fill="#1f2937"/>
+      <path d="M162 134 Q178 126 194 134M226 134 Q242 126 258 134" stroke="#1f2937" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <g id="cArmR">
+        <path d="M292 300 Q330 420 312 540" stroke="#4f6cf0" stroke-width="50" fill="none" stroke-linecap="round"/>
+        <g transform="translate(312 548)"><rect x="-34" y="-96" width="68" height="124" rx="14" fill="#0f172a"/><rect x="-28" y="-90" width="56" height="112" rx="10" fill="#38bdf8" id="cPhoneScr"/><circle cx="0" cy="0" r="25" fill="#e8b48a"/></g>
+      </g>
+    </svg>
+  </div>
+  <div class="abs card" id="linkChip" style="left:120px;top:440px;padding:22px 34px;display:flex;align-items:center;gap:18px;border:3px solid #bfdbfe">
+    <span style="width:56px;height:56px;border-radius:50%;background:var(--green);color:#fff;font-size:32px;display:flex;align-items:center;justify-content:center">✓</span>
+    <span style="direction:ltr;font-weight:900;font-size:38px;color:var(--blue)">zhewar.shop</span>
+  </div>
+</div>
+
+<!-- ═════════ BIG CUSTOMER PHONE ═════════ -->
+<div class="phone" id="cPhone" style="left:240px;top:250px">
+ <div class="screen">
+  <div class="island"></div>
+  <div class="status"><span>9:41</span><span>●●● ▮</span></div>
+  <div class="urlbar"><span style="color:#16a34a">🔒</span><span id="urlTxt"></span><span id="caret" style="width:3px;height:34px;background:var(--blue)"></span></div>
+  <div class="load" id="loadBar"></div>
+  <div class="view"><div id="blank" class="abs" style="inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;color:#94a3b8;font-weight:700;font-size:26px"><div style="font-size:90px">🌐</div>لینکی سەرتاشخانەکە بنووسە</div>
+   <!-- SITE (scroll stack) -->
+   <div id="site" class="abs" style="left:0;top:0;width:560px">
+    <div class="sec hero" id="secHero">
+      <div class="logo" style="margin:70px auto 0"><img src="assets/logo.png"></div>
+      <div style="text-align:center;font-weight:900;font-size:56px;margin-top:26px">ژێوار عزیز</div>
+      <div style="width:120px;height:6px;margin:10px auto;border-radius:3px;background:linear-gradient(90deg,#ef4444 50%,#3b82f6 50%)"></div>
+      <div style="text-align:center;font-weight:700;font-size:23px;color:#475569;padding:0 50px;line-height:1.7">شێوازی تۆ، ناسنامەی تۆیە. لێرە کوالێتی و وردەکاری کۆدەبنەوە</div>
+      <div class="btn" id="bookBtn" style="margin:44px 50px 0;height:100px;background:#2563eb;font-size:34px;box-shadow:0 18px 30px -14px #2563eb">📅 نۆرە تۆمار کردن</div>
+      <div class="btn" style="margin:20px 50px 0;height:84px;background:#ef4444;font-size:24px">🔍 بینینی نۆرەکانم</div>
+      <div style="text-align:center;margin-top:70px;color:#94a3b8;font-size:40px">⌄</div>
+    </div>
+    <div class="sec" id="secGal" style="background:#f8fafc">
+      <div class="secT">گەلەری</div><div class="secS">کارەکانی ئێمە</div>
+      <div class="ph" style="left:30px;top:170px;width:240px;height:320px;background-image:url(assets/s0.jpg)"></div>
+      <div class="ph" style="left:290px;top:170px;width:240px;height:320px;background-image:url(assets/s1.jpg)"></div>
+      <div class="ph" style="left:30px;top:510px;width:240px;height:320px;background-image:url(assets/g0.jpg)"></div>
+      <div class="ph" style="left:290px;top:510px;width:240px;height:320px;background-image:url(assets/s3.jpg)"></div>
+    </div>
+    <div class="sec" id="secLinks" style="background:#fff">
+      <div class="secT">پۆستەکان</div><div class="secS">نوێترین ستایلەکان</div>
+      <div class="ph" style="left:40px;top:170px;width:480px;height:420px;background-image:url(assets/s2.jpg)"></div>
+      <div class="abs" style="left:40px;top:610px;width:480px;font-weight:900;font-size:28px">ستایلی نوێی ئەم هەفتەیە ✨</div>
+      <div class="ph" style="left:40px;top:680px;width:230px;height:250px;background-image:url(assets/g1.jpg)"></div>
+      <div class="ph" style="left:290px;top:680px;width:230px;height:250px;background-image:url(assets/s0.jpg);background-position:top"></div>
+    </div>
+    <div class="sec" id="secConn" style="background:#f8fafc">
+      <div class="secT">پەیوەندیمان پێوە بکە</div><div class="secS" style="margin-bottom:40px">لە هەموو تۆڕەکان</div>
+      <div class="soc" style="background:linear-gradient(90deg,#f97316,#db2777,#7c3aed)"><b>◎</b>Instagram</div>
+      <div class="soc" style="background:#1d4ed8"><b>f</b>Facebook</div>
+      <div class="soc" style="background:#16a34a"><b>✆</b>WhatsApp</div>
+      <div class="soc" style="background:#0f172a"><b>♪</b>TikTok</div>
+      <div class="soc" style="background:#ef4444"><b>⌖</b>شوێنی سەرتاشخانە</div>
+      <div class="abs" style="left:0;right:0;bottom:0;height:110px;background:#2563eb;color:#fff;text-align:center;padding-top:18px">
+        <div style="font-weight:700;font-size:22px">میران بەرزنجی © ٢٠٢٦</div>
+        <div style="font-size:15px;direction:ltr">Powered by Click Group</div></div>
+    </div>
+   </div>
+   <!-- BOOKING -->
+   <div id="book" class="abs" style="inset:0;background:#fff;padding:28px 34px 0">
+     <div style="color:var(--blue);font-weight:700;font-size:22px">هەنگاوی ٢ لە ٢</div>
+     <div style="font-weight:900;font-size:46px;line-height:1.5">ڕۆژ و کات هەڵبژێرە</div>
+     <div style="display:flex;align-items:center;gap:16px;margin:16px 0 22px;padding:14px 18px;border:2px solid #e2e8f0;border-radius:24px">
+       <div style="width:64px;height:64px;border-radius:50%;background:#e8b48a;display:flex;align-items:center;justify-content:center;font-size:34px">🧔</div>
+       <div><div style="font-weight:900;font-size:26px">ئاراس ئەحمەد</div><div style="direction:ltr;text-align:right;font-size:19px;color:var(--mut)">+964 750 123 4567</div></div>
+     </div>
+     <div style="font-weight:700;font-size:22px;color:var(--mut);margin-bottom:12px">ڕۆژ هەڵبژێرە</div>
+     <div id="days" style="display:flex;gap:10px;direction:rtl"></div>
+     <div style="display:flex;gap:22px;margin:22px 0 16px;font-weight:700;font-size:19px;color:var(--mut)">
+       <span><i style="display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--green)"></i> بەردەستە</span>
+       <span><i style="display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--red)"></i> گیراوە</span>
+       <span><i style="display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--amber)"></i> چاوەڕوان</span>
+     </div>
+     <div id="slots" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"></div>
+     <div class="btn" id="confirmBtn" style="position:absolute;left:34px;right:34px;bottom:30px;height:92px;background:#2563eb;font-size:34px">تۆمار کردن ←</div>
+   </div>
+   <!-- TICKET -->
+   <div id="ticket" class="abs" style="inset:0;background:linear-gradient(180deg,#eff6ff,#fff);padding:40px 40px 0">
+     <div style="text-align:center;font-weight:900;font-size:40px;margin-bottom:24px" id="tkTitle">داواکارییەکەت نێردرا</div>
+     <div class="card" style="padding:34px 30px;border-top:12px solid transparent;border-image:repeating-linear-gradient(90deg,#ef4444 0 30px,#fff 30px 45px,#3b82f6 45px 75px,#fff 75px 90px) 12">
+       <div style="width:130px;height:130px;margin:0 auto;border-radius:50%;background:#e8b48a;display:flex;align-items:center;justify-content:center;font-size:76px;border:6px solid #e0e7ff">🧔</div>
+       <div style="text-align:center;font-weight:900;font-size:36px;margin-top:14px">ئاراس ئەحمەد</div>
+       <div style="text-align:center;direction:ltr;font-size:22px;color:var(--mut)">+964 750 123 4567</div>
+       <div style="text-align:center;margin:18px 0 22px"><span class="chip" id="tkStatus"></span></div>
+       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+         <div style="background:#f1f5f9;border-radius:22px;padding:18px"><div style="color:var(--mut);font-size:19px;font-weight:700">بەروار</div><div style="font-weight:900;font-size:21px;white-space:nowrap">دووشەممە ٥/١٠</div></div>
+         <div style="background:#f1f5f9;border-radius:22px;padding:18px"><div style="color:var(--mut);font-size:19px;font-weight:700">کات</div><div style="font-weight:900;font-size:24px">١ دوا نیوەڕۆ</div></div>
+         <div style="background:#f1f5f9;border-radius:22px;padding:18px"><div style="color:var(--mut);font-size:19px;font-weight:700">سەرتاش</div><div style="font-weight:900;font-size:28px">ژێوار عزیز</div></div>
+         <div style="background:#f1f5f9;border-radius:22px;padding:18px"><div style="color:var(--mut);font-size:19px;font-weight:700">کۆد</div><div style="font-weight:900;font-size:28px;direction:ltr;text-align:right">#7F3A9C</div></div>
+       </div>
+       <div style="height:90px;margin-top:26px;background:repeating-linear-gradient(90deg,#1e1b4b 0 4px,#fff 4px 7px,#1e1b4b 7px 9px,#fff 9px 14px,#1e1b4b 14px 20px,#fff 20px 23px)"></div>
+     </div>
+   </div>
+  </div>
+  <!-- customer notification -->
+  <div class="notif" id="cNotif">
+    <div style="display:flex;align-items:center;gap:12px;font-size:20px;color:var(--mut);font-weight:700"><span style="width:40px;height:40px;border-radius:12px;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center">✂</span>ژێوار عزیز · ئێستا</div>
+    <div style="font-weight:900;font-size:32px;margin-top:8px">نۆرەکەت پەسەند کرا ✅</div>
+    <div style="font-weight:700;font-size:22px;color:#475569">دووشەممە ٥/١٠ — ١ دوا نیوەڕۆ. چاوەڕێتین!</div>
+  </div>
+ </div>
+</div>
+
+<!-- ═════════ ADMIN SCENE ═════════ -->
+<div class="scene" id="admin">
+  <div class="head" id="admHead"><div class="kicker"><i></i>لای سەرتاش<i></i></div><h2 class="grad">ئاگاداری ڕاستەوخۆ</h2></div>
+  <div class="abs" id="barber" style="left:-10px;top:690px;width:440px;height:880px">
+    <svg viewBox="0 0 420 860" width="440" height="880" overflow="visible">
+      <rect x="150" y="560" width="54" height="230" rx="26" fill="#1e293b"/><rect x="214" y="560" width="54" height="230" rx="26" fill="#1e293b"/>
+      <rect x="128" y="770" width="82" height="40" rx="20" fill="#0f172a"/><rect x="210" y="770" width="82" height="40" rx="20" fill="#0f172a"/>
+      <path d="M118 330 Q120 270 180 262 L240 262 Q300 270 302 330 L310 600 Q210 620 110 600Z" fill="#f8fafc"/>
+      <path d="M150 300 L270 300 L286 600 Q210 616 134 600Z" fill="#1e1b4b"/>
+      <path d="M150 300 Q160 262 180 262M270 300 Q260 262 240 262" stroke="#1e1b4b" stroke-width="10" fill="none"/>
+      <rect x="172" y="420" width="76" height="60" rx="14" fill="#312e81"/>
+      <g transform="translate(196 400) rotate(-20)" stroke="#cbd5e1" stroke-width="7" fill="none" stroke-linecap="round"><circle cx="0" cy="40" r="10"/><circle cx="22" cy="40" r="10"/><path d="M4 31 L22 -10M18 31 L0 -10"/></g>
+      <g><path d="M128 300 Q96 420 112 540" stroke="#f8fafc" stroke-width="50" fill="none" stroke-linecap="round"/><circle cx="114" cy="548" r="25" fill="#c98b5e"/></g>
+      <rect x="190" y="215" width="40" height="56" rx="16" fill="#b97a50"/>
+      <ellipse cx="210" cy="160" rx="82" ry="94" fill="#c98b5e"/>
+      <ellipse cx="128" cy="168" rx="14" ry="22" fill="#b97a50"/><ellipse cx="292" cy="168" rx="14" ry="22" fill="#b97a50"/>
+      <path d="M126 140 Q124 58 210 52 Q296 58 294 140 Q290 96 270 86 L150 86 Q130 96 126 140Z" fill="#111827"/>
+      <path d="M150 86 Q210 40 270 86 Q240 74 210 74 Q180 74 150 86Z" fill="#374151"/>
+      <path d="M176 200 Q210 186 244 200 Q236 212 210 208 Q184 212 176 200Z" fill="#111827"/>
+      <path d="M140 186 Q146 250 210 256 Q274 250 280 186 Q276 230 250 236 Q210 246 170 236 Q144 230 140 186Z" fill="#111827" opacity=".85"/>
+      <ellipse cx="178" cy="156" rx="9" ry="11" fill="#111827"/><ellipse cx="242" cy="156" rx="9" ry="11" fill="#111827"/>
+      <path d="M160 132 Q178 122 196 132M224 132 Q242 122 260 132" stroke="#111827" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <g id="bArmR"><path d="M292 300 Q330 420 312 540" stroke="#f8fafc" stroke-width="50" fill="none" stroke-linecap="round"/><circle cx="312" cy="548" r="25" fill="#c98b5e"/></g>
+    </svg>
+  </div>
+  <div class="abs" id="bubble" style="left:30px;top:600px;padding:16px 24px;border-radius:30px 30px 30px 6px;background:#fff;font-weight:900;font-size:30px;box-shadow:0 20px 40px -18px rgba(60,70,160,.4)">داواکارییەکی نوێ! 🔔</div>
+  <div class="phone" id="aPhone" style="left:440px;top:330px;transform-origin:0 0">
+   <div class="screen" style="background:#f8fafc">
+    <div class="island"></div>
+    <div class="status"><span>9:41</span><span>●●● ▮</span></div>
+    <div class="abs" style="top:96px;left:30px;right:30px;display:flex;align-items:center;gap:16px">
+      <div style="width:76px;height:76px;border-radius:50%;overflow:hidden;border:4px solid #e0e7ff"><img src="assets/logo.png" style="width:100%"></div>
+      <div><div style="font-weight:900;font-size:30px">بەخێربێیت ژێوار</div><div style="font-weight:700;font-size:19px;color:var(--mut)">ئەپی سەرتاش · ئەندرۆید</div></div>
+    </div>
+    <div class="abs" style="top:200px;left:30px;right:30px;display:flex;gap:10px">
+      <div class="chip" style="background:#2563eb;color:#fff;font-size:22px;padding:10px 22px">ئەمڕۆ</div>
+      <div class="chip" style="background:#e2e8f0;color:#475569;font-size:22px;padding:10px 22px">داهاتوو</div>
+      <div class="chip" style="background:#e2e8f0;color:#475569;font-size:22px;padding:10px 22px">هەموو</div>
+    </div>
+    <div class="abs" id="aList" style="top:280px;left:24px;right:24px"></div>
+   </div>
+   <div class="notif" id="aNotif" style="top:84px">
+    <div style="display:flex;align-items:center;gap:12px;font-size:20px;color:var(--mut);font-weight:700"><span style="width:40px;height:40px;border-radius:12px;overflow:hidden"><img src="assets/logo.png" style="width:100%"></span>ژێوار عزیز ئەدمین · ئێستا</div>
+    <div style="font-weight:900;font-size:32px;margin-top:8px">داواکاری نوێ 📅</div>
+    <div style="font-weight:700;font-size:22px;color:#475569">ئاراس ئەحمەد — دووشەممە ٥/١٠ — ١ دوا نیوەڕۆ</div>
+    <div style="display:flex;gap:14px;margin-top:16px">
+      <div class="nb" id="aOk" style="flex:1.4;background:#2563eb;color:#fff">✓ پەسەند</div>
+      <div class="nb" style="flex:1;background:#e2e8f0;color:#475569">دواتر</div>
+    </div>
+   </div>
+  </div>
+</div>
+
+<!-- ═════════ OUTRO ═════════ -->
+<div class="scene" id="outro">
+  <div class="abs" style="left:0;right:0;top:150px;text-align:center" id="oHead">
+    <div class="kicker"><i></i>Barber &amp; Salon<i></i></div>
+    <h2 class="grad" style="font-weight:900;font-size:56px;line-height:1.5;white-space:nowrap">هەموو شتێک لە یەک سیستەمدا</h2>
+  </div>
+  <div class="abs" id="feats" style="left:110px;right:110px;top:470px;display:flex;flex-direction:column;gap:30px">
+    <div class="feat"><b style="background:#e0f2fe;color:#0284c7">▦</b>سکانی QR و لینکی تایبەت</div>
+    <div class="feat"><b style="background:#ede9fe;color:#7c3aed">📅</b>نۆرەگرتنی ئۆنلاین ٢٤/٧</div>
+    <div class="feat"><b style="background:#dcfce7;color:#16a34a">🔔</b>ئاگاداری ڕاستەوخۆ بۆ سەرتاش</div>
+    <div class="feat"><b style="background:#ffedd5;color:#ea580c">📱</b>ئەپی ئەندرۆید بۆ بەڕێوەبردن</div>
+    <div class="feat"><b style="background:#fee2e2;color:#dc2626">🙂</b>سکانی ڕووخسار — بێ نۆرەی ساختە</div>
+  </div>
+  <div class="abs" id="cta" style="left:90px;right:90px;top:1330px;border-radius:44px;padding:40px 30px;text-align:center;color:#fff;
+    background:linear-gradient(135deg,#38bdf8 0%,#4f6cf0 50%,#7c3aed 100%);box-shadow:0 40px 80px -30px rgba(79,70,229,.7)">
+    <div style="font-weight:900;font-size:52px;line-height:1.45">سیستەمێکی وا بۆ دوکانەکەت دەوێت؟</div>
+    <div style="font-weight:700;font-size:34px;opacity:.95;margin-top:6px">ئێستا پەیوەندیمان پێوە بکە</div>
+    <div style="direction:ltr;font-weight:900;font-size:62px;margin-top:14px;letter-spacing:2px">0770 146 6787</div>
+  </div>
+  <div class="abs" id="brand" style="left:0;right:0;top:1790px;display:flex;align-items:center;justify-content:center;gap:24px;direction:ltr">
+    <span style="font-weight:900;font-size:44px;color:#1e1b4b">Miran Barzngy</span>
+    <span style="width:104px;height:104px;border-radius:50%;padding:5px;background:#3b82f6;box-shadow:0 10px 26px -10px rgba(37,99,235,.6)"><img src="assets/miran.jpg" style="width:100%;height:100%;border-radius:50%;display:block;border:4px solid #fff"></span>
+  </div>
+</div>
+
+<div id="confettiBox" class="abs" style="inset:0;pointer-events:none;overflow:hidden"></div>
+
+<div id="cap"><div id="capN">١</div><div><div id="capT"></div><div id="capS"></div></div></div>
+<div id="ripple"></div><div id="touch"></div>
+
+</div><script>
+const $=id=>document.getElementById(id);
+const cl=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const P=(t,a,b)=>cl((t-a)/(b-a));
+const eo=x=>1-Math.pow(1-x,3), eio=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const back=x=>{const c=1.7;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+const win=(t,a,b,f=.45)=>Math.min(P(t,a,a+f),1-P(t,b-f,b));
+function S(el,o){el=typeof el==='string'?$(el):el;for(const k in o)el.style[k]=o[k]}
+const DUR=41;
+window.STAGE_W=1080;window.STAGE_H=1920;
+
+// build days / slots
+const DAYS=[['شەممە','٣'],['یەکشەممە','٤'],['دووشەممە','٥'],['سێشەممە','٦'],['چوارشەممە','٧'],['پێنجشەممە','٨'],['هەینی','٩']];
+const SLOTS=[['١٠ بەیانی','r'],['١٠:٣٠ بەیانی','g'],['١١ بەیانی','y'],['١١:٣٠ بەیانی','g'],['١٢ نیوەڕۆ','r'],['١٢:٣٠ نیوەڕۆ','g'],['١ دوا نیوەڕۆ','g'],['١:٣٠ دوا نیوەڕۆ','r']];
+const COL={r:'#ef4444',g:'#10b981',y:'#f59e0b'};
+function init(){
+  $('days').innerHTML=DAYS.map((d,i)=>`<div class="day" id="d${i}"><small>${d[0]}</small>${d[1]}</div>`).join('');
+  $('slots').innerHTML=SLOTS.map((s,i)=>`<div class="slot" id="s${i}" style="background:${COL[s[1]]}">${s[0]}</div>`).join('');
+  const box=$('confettiBox');let h='';const cs=['#38bdf8','#4f6cf0','#7c3aed','#10b981','#f59e0b','#ef4444','#ec4899'];
+  for(let i=0;i<70;i++)h+=`<div class="confetti" id="cf${i}" style="background:${cs[i%7]}"></div>`;box.innerHTML=h;
+}
+const rnd=(i,k)=>{const x=Math.sin(i*127.1+k*311.7)*43758.5453;return x-Math.floor(x)};
+
+// touch helper: positions in page coords
+let touchList=[];
+function touch(t){
+  // list of [tStart,tEnd,x0,y0,x1,y1,tapTime]
+  let o=0,x=0,y=0,rip=0,rx=0,ry=0;
+  for(const [a,b,x0,y0,x1,y1,tap] of touchList){
+    if(t>=a-.25&&t<=b+.25){o=win(t,a-.25,b+.25,.25);const k=eio(P(t,a,b));x=x0+(x1-x0)*k;y=y0+(y1-y0)*k}
+    if(tap!=null&&t>=tap&&t<tap+.6){rip=P(t,tap,tap+.6);rx=x1;ry=y1}
+  }
+  const press=touchList.some(e=>e[6]!=null&&t>=e[6]-.08&&t<e[6]+.12)?.82:1;
+  S('touch',{opacity:o,left:x+'px',top:y+'px',transform:`scale(${press})`});
+  S('ripple',{opacity:rip?(1-rip):0,left:rx+'px',top:ry+'px',transform:`scale(${1+rip*1.6})`});
+}
+
+// caption
+const CAPS=[[3.6,9.4,'١','کۆدی QR سکان بکە','لە سەر مێزی سەرتاشخانەکە'],[10.0,12.6,'١','یان لینکەکە بکەرەوە','zhewar.shop — بێ دابەزاندنی ئەپ'],
+ [12.6,18.9,'٢','هەموو بەشەکانی پەیجەکە ببینە','گەلەری، پۆستەکان و پەیوەندی'],[18.9,25.3,'٣','ڕۆژ و کاتێکی بەتاڵ هەڵبژێرە','بە دوو هەنگاو نۆرەکەت تۆمار دەبێت'],
+ [25.6,31.6,'٤','سەرتاش ئاگادار دەکرێتەوە','بە یەک کلیک پەسەندی دەکات'],[31.8,35.6,'٥','نۆرەکەت جێگیر کرا!','کڕیار ڕاستەوخۆ ئاگادار دەکرێتەوە']];
+function caption(t){
+  let o=0;for(const [a,b,n,tt,s] of CAPS){if(t>=a&&t<b){o=win(t,a,b,.35);$('capN').textContent=n;$('capT').textContent=tt;$('capS').textContent=s;
+    const k=eo(P(t,a,a+.45));S('cap',{transform:`translateY(${(1-k)*60}px)`})}}
+  S('cap',{opacity:o});
+}
+
+const PH={x:240,y:250}; // customer phone page origin
+const SCR={x:PH.x+20,y:PH.y+20}; // screen origin
+const VIEW={x:SCR.x,y:SCR.y+172};
+
+function seek(t){
+  // ── intro
+  const iO=1-P(t,2.9,3.4);
+  S('intro',{opacity:iO,display:iO>0?'block':'none'});
+  const tk=back(P(t,.15,.9));S('introTile',{transform:`scale(${tk}) rotate(${(1-tk)*-14}deg)`,opacity:P(t,.1,.4)});
+  S('introTxt',{opacity:P(t,.7,1.2),transform:`translateY(${(1-eo(P(t,.7,1.3)))*50}px)`});
+  S('introGlow',{transform:`scale(${.9+.1*Math.sin(t*2)})`});
+
+  // ── shop
+  const sO=win(t,3.1,9.9,.4);
+  S('shop',{opacity:sO,display:sO>0?'block':'none'});
+  const walk=eo(P(t,3.3,5.0));
+  const cx=-420+walk*540;
+  const walking=t<5.0, ph=t*9;
+  S('cust',{transform:`translateX(${cx}px) translateY(${walking?Math.abs(Math.sin(ph))*-12:0}px)`});
+  S('cLegL',{transform:`rotate(${walking?Math.sin(ph)*14:0}deg)`,transformOrigin:'177px 570px'});
+  S('cLegR',{transform:`rotate(${walking?-Math.sin(ph)*14:0}deg)`,transformOrigin:'241px 570px'});
+  const raise=eo(P(t,5.0,5.7));
+  S('cArmR',{transform:`rotate(${-raise*62}deg)`,transformOrigin:'292px 300px'});
+  S('cArmL',{transform:`rotate(${walking?Math.sin(ph)*10:0}deg)`,transformOrigin:'128px 300px'});
+  const sc=P(t,5.8,7.2);
+  S('scanLine',{opacity:sc>0&&sc<1?1:0,top:(Math.sin(sc*Math.PI*3-Math.PI/2)*.5+.5)*252+'px'});
+  S('qrOk',{opacity:P(t,7.2,7.4)*(1-P(t,8.8,9.2)),transform:`scale(${back(P(t,7.2,7.6))})`});
+  $('cPhoneScr').setAttribute('fill',t>7.2?'#10b981':'#38bdf8');
+  S('linkChip',{opacity:P(t,7.5,7.8),transform:`translateY(${(1-back(P(t,7.5,8.0)))*40}px)`});
+  S('qrStand',{transform:`translateY(${(1-eo(P(t,3.2,3.9)))*60}px)`,opacity:P(t,3.2,3.6)});
+  S('shopHead',{opacity:P(t,3.3,3.8)});
+
+  // ── customer big phone (transition from hand)
+  const z=eio(P(t,9.2,10.1));
+  const handX=120+120+312-60, handY=700+548-260; // approx phone in hand
+  let cpO=P(t,9.2,9.5), cpS=.12+.88*z, cpX=(handX-PH.x-300)*(1-z), cpY=(handY-PH.y-615)*(1-z), cpR=-30*(1-z);
+  // admin scene: phone slides out
+  const away=eio(P(t,25.2,26.0)), back2=eio(P(t,31.4,32.1));
+  cpX+= -900*away + 900*back2*0; cpO*= (1-away)+back2;
+  if(t>31.4){cpX=-900*(1-back2);cpO=back2}
+  // outro: out
+  const out=eio(P(t,35.3,35.9)); cpO*=1-out; cpS*=1-out*.15;
+  S('cPhone',{opacity:cpO,display:cpO>0.001?'block':'none',transform:`translate(${cpX}px,${cpY+out*120}px) scale(${cpS}) rotate(${cpR}deg)`});
+
+  // url typing
+  const url='zhewar.shop', ty=P(t,10.4,11.5);
+  $('urlTxt').textContent=url.slice(0,Math.round(ty*url.length));
+  S('caret',{opacity:(t<11.8&&Math.floor(t*3)%2===0)?1:0});
+  const ld=P(t,11.7,12.4);S('loadBar',{width:ld*508+'px',opacity:ld>0&&ld<1?1:0});
+  // site visibility
+  const siteO=P(t,12.2,12.5);
+  S('site',{opacity:siteO});S('blank',{opacity:1-siteO});
+  // scroll positions (section index)
+  const H=1018;
+  const stops=[[13.6,14.3,0,1],[15.2,15.9,1,2],[16.6,17.3,2,3],[17.9,18.5,3,0]];
+  let pos=0;for(const [a,b,f,to] of stops){if(t>=a)pos=f+(to-f)*eio(P(t,a,b))}
+  S('site',{transform:`translateY(${-pos*H}px)`});
+  // book screen
+  const bk=eio(P(t,19.0,19.5));
+  S('book',{transform:`translateX(${(1-bk)*-560}px)`,opacity:t>18.95?1:0});
+  // day select at 20.6
+  for(let i=0;i<7;i++){const sel=(i===2&&t>20.6), pre=(i===0&&t<=20.6);
+    S('d'+i,{background:sel||pre?'#2563eb':'#fff',color:sel||pre?'#fff':'#334155',borderColor:sel||pre?'#2563eb':'#e2e8f0',transform:`scale(${i===2?1+.12*Math.sin(P(t,20.6,20.9)*Math.PI):1})`})}
+  const refresh=P(t,20.6,21.1);
+  for(let i=0;i<SLOTS.length;i++){const sel=i===6&&t>22.0;
+    const k=eo(cl(refresh*1.6-i*.06));
+    S('s'+i,{opacity:t<20.6?1:(.25+.75*k),transform:`scale(${sel?1+.06*Math.sin(P(t,22,22.3)*Math.PI):1})`,
+      background:sel?'#2563eb':COL[SLOTS[i][1]],boxShadow:sel?'0 0 0 6px #bfdbfe':'none'})}
+  S('confirmBtn',{opacity:t>22.0?1:.45,transform:`scale(${1-.05*Math.sin(P(t,23.4,23.65)*Math.PI)})`});
+  // ticket
+  const tkk=eo(P(t,23.8,24.3));
+  S('ticket',{transform:`translateY(${(1-tkk)*1018}px)`,opacity:t>23.75?1:0});
+  const ok=t>32.6;
+  $('tkTitle').textContent=ok?'نۆرەکەت جێگیر کرا 🎉':'داواکارییەکەت نێردرا';
+  S('tkStatus',{background:ok?'#dcfce7':'#fef3c7',color:ok?'#15803d':'#b45309',transform:`scale(${ok?1+.25*Math.sin(P(t,32.6,33.0)*Math.PI):1+.05*Math.sin(t*6)})`});
+  $('tkStatus').textContent=ok?'● پەسەندکراوە':'● چاوەڕوانی پەسەندکردن';
+  // customer notif
+  const cn=win(t,32.0,35.0,.4);S('cNotif',{opacity:cn,transform:`translateY(${(1-eo(P(t,32.0,32.45)))*-200}px)`});
+
+  // ── admin scene
+  const aO=win(t,25.2,31.7,.5);
+  S('admin',{opacity:aO,display:aO>0?'block':'none'});
+  S('barber',{transform:`translateX(${(1-eo(P(t,25.4,26.3)))*-460}px)`});
+  S('bArmR',{transform:`rotate(${-eo(P(t,26.3,26.8))*40}deg)`,transformOrigin:'292px 300px'});
+  S('aPhone',{transform:`translateX(${(1-eo(P(t,25.5,26.3)))*700}px) scale(.82)`});
+  S('bubble',{opacity:win(t,27.2,29.0,.25),transform:`scale(${back(P(t,27.2,27.6))})`});
+  const an=P(t,27.0,27.45), anOut=P(t,29.3,29.7);
+  S('aNotif',{opacity:an*(1-anOut),transform:`translateY(${(1-eo(an))*-240-anOut*60}px)`});
+  S('aOk',{transform:`scale(${1-.07*Math.sin(P(t,29.0,29.25)*Math.PI)})`});
+  // admin list
+  const approved=t>29.5, newK=eo(P(t,29.5,30.0));
+  const card=(n,ph,tm,st,c,bg,extra='')=>`<div class="card" style="padding:22px 24px;margin-bottom:16px;border-radius:28px;${extra}">
+     <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:900;font-size:28px">${n}</div><span class="chip" style="background:${bg};color:${c}">${st}</span></div>
+     <div style="direction:ltr;text-align:right;color:var(--mut);font-size:19px">${ph}</div>
+     <div style="display:flex;gap:10px;margin-top:10px"><span class="chip" style="background:#f1f5f9;color:#334155">📅 دووشەممە ٥/١٠</span><span class="chip" style="background:#f1f5f9;color:#334155">🕐 ${tm}</span></div></div>`;
+  let list='';
+  if(t>29.5) list+=card('ئاراس ئەحمەد','+964 750 123 4567','١ دوا نیوەڕۆ','پەسەندکراوە ✓','#15803d','#dcfce7',`transform:scale(${.9+.1*newK});opacity:${newK};box-shadow:0 0 0 ${4*(1-P(t,30.5,31.5))}px #86efac,0 26px 60px -24px rgba(60,70,160,.38)`);
+  list+=card('هێمن کەریم','+964 751 987 6543','١٢ نیوەڕۆ','پەسەندکراوە','#15803d','#dcfce7');
+  list+=card('دیار عومەر','+964 770 456 1122','١٠ بەیانی','پەسەندکراوە','#15803d','#dcfce7');
+  if($('aList')._k!==String(t>29.5)+Math.round(newK*20)+Math.round(P(t,30.5,31.5)*10)){$('aList').innerHTML=list;$('aList')._k=String(t>29.5)+Math.round(newK*20)+Math.round(P(t,30.5,31.5)*10)}
+  S('admHead',{opacity:P(t,25.4,25.9)});
+
+  // confetti
+  for(let i=0;i<70;i++){const st=32.6+rnd(i,1)*.3, k=P(t,st,st+2.4);
+    const x=540+(rnd(i,2)-.5)*300+(rnd(i,3)-.5)*1100*eo(k), y=700-900*eo(Math.min(k*1.6,1))*rnd(i,4)*.6+1500*k*k;
+    S('cf'+i,{opacity:k>0&&k<1?1-k*.3:0,left:x+'px',top:y+'px',transform:`rotate(${k*720*(rnd(i,5)-.5)*2}deg)`})}
+
+  // ── outro
+  const oO=P(t,35.6,36.0);
+  S('outro',{opacity:oO,display:oO>0?'block':'none'});
+  S('oHead',{transform:`translateY(${(1-eo(P(t,35.6,36.2)))*-40}px)`});
+  [...$('feats').children].forEach((el,i)=>{const k=P(t,36.0+i*.22,36.45+i*.22);S(el,{opacity:k,transform:`translateX(${(1-eo(k))*-140}px)`})});
+  const ck=P(t,37.4,37.9);S('cta',{opacity:ck,transform:`scale(${.85+.15*back(ck)})`});
+  S('brand',{opacity:P(t,38.0,38.4)});
+
+  // touches (page coords). screen origin SCR; view origin VIEW
+  touchList=[
+    [12.9,13.5,540,1250,540,1250,null],
+    [13.5,14.3,560,1300,560,700,null],[15.0,15.8,560,1300,560,700,null],[16.4,17.2,560,1300,560,700,null],
+    [17.8,18.5,560,600,560,1300,null],
+    [18.5,18.8,560,1100,VIEW.x+280,VIEW.y+564,18.75],
+    [20.0,20.6,VIEW.x+280,VIEW.y+600,VIEW.x+280,VIEW.y+371,20.55],
+    [21.4,22.0,VIEW.x+280,VIEW.y+400,VIEW.x+150,VIEW.y+838,21.95],
+    [22.8,23.4,VIEW.x+150,VIEW.y+838,VIEW.x+280,VIEW.y+928,23.35],
+    [28.2,29.0,700,1500,440+.82*(20+150),330+.82*(20+84+250),28.95],
+  ];
+  touch(t);
+  caption(t);
+}
+</script>
+</body></html>

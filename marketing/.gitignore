@@ -1,0 +1,5 @@
+# Regenerable render output and tooling. The finished videos are kept in
+# this folder; the scripts in video-src/ and explainer-src/ rebuild the rest.
+node_modules/
+out-*/
+stills-*/

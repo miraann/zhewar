@@ -1,0 +1,16 @@
+{
+  "name": "zhewar-promo-video",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "stills": "node render.mjs stills",
+    "render": "node render.mjs video 4 && python gen_audio.py out/sfx.json out/audio.wav && node mux.mjs out/video.mp4 out/audio.wav ../zhewar-booking-promo.mp4",
+    "render:wide": "python assemble.py && node render.mjs video 4 promo-wide.html && python gen_audio.py out-wide/sfx.json out-wide/audio.wav && node mux.mjs out-wide/video.mp4 out-wide/audio.wav ../zhewar-promo-16x9.mp4",
+    "render:tall": "python make_tall.py && node render.mjs video 4 promo-tall.html && python gen_audio.py out-tall/sfx.json out-tall/audio.wav && node mux.mjs out-tall/video.mp4 out-tall/audio.wav ../zhewar-promo-9x16.mp4",
+    "render:feed": "python make_tall.py && python make_feed.py && node render.mjs video 4 promo-feed.html && python gen_audio.py out-feed/sfx.json out-feed/audio.wav && node mux.mjs out-feed/video.mp4 out-feed/audio.wav ../zhewar-promo-4x5.mp4"
+  },
+  "dependencies": {
+    "ffmpeg-static": "^5.3.0",
+    "puppeteer-core": "^25.12.0"
+  }
+}

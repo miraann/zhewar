@@ -1,0 +1,1210 @@
+<!doctype html>
+<html lang="ckb" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Zhewar Booking Promo</title>
+<script src="icons.js"></script>
+<style>
+@font-face{font-family:'Kurdish';src:url('../../public/font/kurdish.ttf') format('truetype');font-weight:100 900;font-style:normal}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:540px;height:960px;overflow:hidden;background:#05070f}
+body{font-family:'Kurdish','Segoe UI',system-ui,sans-serif;color:#fff;-webkit-font-smoothing:antialiased}
+#stage{position:relative;width:540px;height:960px;overflow:hidden}
+.L{position:absolute;inset:0}
+.A{position:absolute}
+.fx{display:flex;align-items:center;justify-content:center}
+svg.i{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;display:block}
+img{display:block}
+.lat{font-family:'Segoe UI',sans-serif;font-weight:700}
+
+/* ── background ── */
+#bgBase{background:radial-gradient(120% 70% at 50% 0%,#15244d 0%,#0a1128 45%,#05070f 100%)}
+#bgStripes{background-image:repeating-linear-gradient(-45deg,transparent 0 24px,#ef4444 24px 38px,transparent 38px 62px,#3b82f6 62px 76px,transparent 76px 100px);background-size:141px 141px;opacity:.06}
+.blob{border-radius:50%;width:640px;height:640px;margin:-320px 0 0 -320px}
+#blobB{background:radial-gradient(circle,rgba(37,99,235,.40) 0%,rgba(37,99,235,0) 65%)}
+#blobR{background:radial-gradient(circle,rgba(239,68,68,.26) 0%,rgba(239,68,68,0) 65%)}
+#blobG{background:radial-gradient(circle,rgba(226,188,116,.22) 0%,rgba(226,188,116,0) 62%)}
+#bgScan{background:radial-gradient(70% 50% at 50% 46%,rgba(3,7,18,.35),rgba(2,4,10,.92))}
+#vignette{background:radial-gradient(120% 90% at 50% 45%,transparent 58%,rgba(0,0,0,.55) 100%)}
+
+/* ── intro / outro ── */
+.logoRing{position:absolute;border-radius:50%}
+.logoRing .cg{position:absolute;inset:0;border-radius:50%;background:conic-gradient(#ef4444 0deg,#ef4444 110deg,#f8fafc 135deg,#3b82f6 160deg,#3b82f6 290deg,#f8fafc 315deg,#ef4444 360deg)}
+.logoRing .in{position:absolute;inset:5px;border-radius:50%;background:#0b1020}
+.logoRing img{position:absolute;inset:9px;width:calc(100% - 18px);height:calc(100% - 18px);border-radius:50%}
+.orbit{position:absolute;border-radius:50%;border:1.5px dashed rgba(255,255,255,.16)}
+.bigName{font-size:64px;font-weight:700;line-height:1.15;text-align:center}
+.goldLbl{color:#e2bc74;font-size:18px;text-align:center}
+.tagline{color:#cbd5e1;font-size:21px;text-align:center}
+.divider{display:flex;align-items:center;gap:12px;justify-content:center}
+.divider i{display:block;height:2px;border-radius:2px;width:90px}
+.diamond{width:8px;height:8px;background:#94a3b8;transform:rotate(45deg)}
+.grad{background:linear-gradient(90deg,#93c5fd,#38bdf8 45%,#60a5fa);-webkit-background-clip:text;background-clip:text;color:transparent}
+.gradG{background:linear-gradient(90deg,#6ee7b7,#34d399);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* hook */
+.hookLine{position:absolute;left:0;right:0;text-align:center;font-size:42px;font-weight:700;line-height:1.3}
+.rmNode{position:absolute;width:86px;height:86px;margin:-43px 0 0 -43px;border-radius:28px;background:linear-gradient(160deg,#1b2645,#111a33);border:1.5px solid rgba(255,255,255,.15);color:#93c5fd}
+.rmNum{position:absolute;top:-10px;right:-10px;width:28px;height:28px;border-radius:50%;background:#2563eb;color:#fff;font-size:15px;font-weight:700;box-shadow:0 0 0 3px #0a1128}
+.rmLbl{position:absolute;width:130px;margin-left:-65px;text-align:center;font-size:17px;font-weight:700;color:#e2e8f0}
+#rmLine{position:absolute;height:3px;border-radius:3px;background:linear-gradient(90deg,rgba(96,165,250,.2),rgba(96,165,250,.8));transform-origin:100% 50%}
+
+/* headers */
+#segs{left:0;right:0;top:16px;display:flex;justify-content:center;gap:6px}
+.seg{width:54px;height:4px;border-radius:4px;background:rgba(255,255,255,.14);overflow:hidden;position:relative}
+.seg b{position:absolute;right:0;top:0;bottom:0;background:linear-gradient(90deg,#93c5fd,#3b82f6);width:0}
+.hdr{position:absolute;left:0;right:0;top:36px;display:flex;flex-direction:column;align-items:center}
+.pill{display:flex;align-items:center;gap:8px;padding:4px 6px 4px 16px;border-radius:999px;background:rgba(37,99,235,.2);border:1px solid rgba(96,165,250,.38);color:#bfdbfe;font-size:15px;font-weight:700}
+.pn{width:26px;height:26px;border-radius:50%;background:#2563eb;color:#fff;font-size:15px;display:flex;align-items:center;justify-content:center}
+.ht{margin-top:10px;font-size:37px;font-weight:700;line-height:1.25;text-align:center;white-space:nowrap}
+.hs{margin-top:4px;font-size:17px;color:#a5b4c8;text-align:center;padding:0 22px;line-height:1.5}
+.lg{display:flex;gap:8px;margin-top:10px}
+.lgi{display:flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;font-size:15px;font-weight:700}
+.lgi i{width:9px;height:9px;border-radius:50%;display:block}
+
+/* phone */
+#phone{left:105px;top:196px;width:330px;height:700px}
+#phoneGlow{left:40px;top:300px;width:460px;height:560px;border-radius:50%;background:radial-gradient(closest-side,rgba(37,99,235,.35),rgba(37,99,235,0))}
+.frame{position:absolute;inset:0;border-radius:54px;background:linear-gradient(150deg,#5b6474 0%,#1a2130 16%,#0b0f17 55%,#3a4252 100%);box-shadow:0 40px 90px rgba(0,0,0,.7)}
+.frame:before{content:'';position:absolute;inset:3px;border-radius:51px;background:#04060a}
+.pbtn{position:absolute;width:4px;border-radius:2px;background:#3a4252}
+.screen{position:absolute;left:9px;top:9px;width:312px;height:682px;border-radius:46px;overflow:hidden;background:#fafafa}
+.lg360{position:absolute;left:0;top:0;width:360px;height:787px;transform:scale(.8666667);transform-origin:0 0;direction:rtl;color:#0f172a}
+.sbar{position:absolute;left:0;right:0;top:0;height:46px;display:flex;align-items:center;justify-content:space-between;padding:4px 30px 0;direction:ltr;font-family:'Segoe UI',sans-serif;font-size:15px;font-weight:700;color:#0f172a;background:#fff;z-index:5}
+.island{position:absolute;left:50%;top:12px;width:104px;height:30px;margin-left:-52px;border-radius:20px;background:#000;z-index:6}
+.ubar{position:absolute;left:0;right:0;top:46px;height:46px;background:#fff;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;padding:0 14px;z-index:5;direction:ltr}
+.upill{height:34px;flex:1;border-radius:17px;background:#f1f3f6;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'Segoe UI',sans-serif;font-size:14px;color:#334155}
+.area{position:absolute;left:0;right:0;top:92px;bottom:0;overflow:hidden;background:#fafafa}
+.appstripes{position:absolute;inset:0;background-image:repeating-linear-gradient(-45deg,transparent 0 24px,#ef4444 24px 38px,transparent 38px 62px,#3b82f6 62px 76px,transparent 76px 100px);background-size:141px 141px;opacity:.045}
+.scr{position:absolute;inset:0;overflow:hidden}
+.homeInd{position:absolute;left:50%;bottom:8px;width:120px;height:5px;margin-left:-60px;border-radius:3px;background:#0f172a;opacity:.85;z-index:9}
+
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:56px;border-radius:16px;font-weight:700;font-size:16px;color:#fff;flex-shrink:0}
+.btn.blue{background:#2563eb;box-shadow:0 4px 10px rgba(147,197,253,.55)}
+.btn.red{background:#ef4444;height:50px;font-size:14px}
+.btn.em{background:#10b981;box-shadow:0 8px 20px rgba(16,185,129,.3)}
+.btn.dis{background:#f1f5f9;border:1px solid #e2e8f0;color:#94a3b8;box-shadow:none}
+.btn.load{background:#93c5fd;box-shadow:none}
+.spin{border-radius:50%;border:2.5px solid #fff;border-top-color:transparent}
+
+/* home */
+.home{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:0 30px 34px}
+.aring{position:relative;border-radius:50%;flex-shrink:0}
+.aring .cg{position:absolute;inset:0;border-radius:50%;background:conic-gradient(#ef4444 0deg,#ef4444 110deg,#f8fafc 135deg,#3b82f6 160deg,#3b82f6 290deg,#f8fafc 315deg,#ef4444 360deg)}
+.aring .w{position:absolute;inset:3px;border-radius:50%;background:#fff}
+.aring img{position:absolute;inset:5px;width:calc(100% - 10px);height:calc(100% - 10px);border-radius:50%}
+.hname{font-size:42px;font-weight:700;color:#171717;line-height:1.1}
+.htag{font-size:15px;color:#737373;font-weight:500}
+.hsmall{font-size:11px;color:#a3a3a3;margin-top:4px}
+.hdiv{display:flex;align-items:center;gap:10px}
+.hdiv i{display:block;height:2px;width:80px;border-radius:2px}
+
+/* registration card */
+.cardwrap{position:absolute;inset:0;padding:26px 16px}
+.card{background:rgba(255,255,255,.95);border:1px solid #f1f5f9;border-radius:24px;box-shadow:0 25px 50px -12px rgba(203,213,225,.8);padding:22px;display:flex;flex-direction:column;gap:18px}
+.ctop{display:flex;align-items:center;justify-content:space-between}
+.homebtn{width:40px;height:40px;border-radius:16px;border:1px solid #e2e8f0;background:#fff;color:#64748b;display:flex;align-items:center;justify-content:center}
+.wel{font-size:28px;font-weight:700;color:#0f172a;line-height:1.2;margin-top:12px}
+.wels{font-size:14px;color:#64748b;margin-top:4px;line-height:1.6}
+.sblock{display:flex;flex-direction:column;align-items:center;gap:18px;padding:14px 0 6px}
+.dash{width:112px;height:112px;border-radius:50%;background:#eff6ff;border:2px dashed #93c5fd;color:#60a5fa;display:flex;align-items:center;justify-content:center}
+.sbt{font-size:16px;font-weight:700;color:#0f172a;text-align:center}
+.sbd{font-size:12px;color:#94a3b8;text-align:center;line-height:1.6;margin-top:6px}
+.camov{position:absolute;inset:0;background:rgba(2,6,23,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;z-index:4}
+.camov .t{font-size:12px;color:rgba(255,255,255,.6)}
+.mring{position:relative;width:190px;height:190px}
+.mring .cg{position:absolute;inset:0;border-radius:50%;background:conic-gradient(#f59e0b 0deg,#f59e0b 180deg,transparent 180deg)}
+.mring .in{position:absolute;inset:3px;border-radius:50%;background:#0b1222}
+
+/* form */
+.av{position:relative;width:80px;height:80px;margin:0 auto}
+.avc{width:100%;height:100%;border-radius:50%;overflow:hidden;border:2px solid #bfdbfe;background:#eff6ff}
+.avc svg{width:100%;height:100%;display:block}
+.avb{position:absolute;top:-4px;right:-4px;width:26px;height:26px;border-radius:50%;background:#10b981;border:2px solid #fff;color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.chg{display:flex;align-items:center;justify-content:center;gap:4px;color:#3b82f6;font-size:12px;margin-top:6px}
+.fields{display:flex;flex-direction:column;gap:14px}
+.inp{position:relative;height:56px;border-radius:16px;border:1px solid #e2e8f0;background:#f8fafc;display:flex;align-items:center;padding:0 46px 0 16px;font-size:15px;color:#0f172a;white-space:nowrap}
+.inp .ico{position:absolute;right:16px;top:50%;margin-top:-8px;color:#94a3b8}
+.inp.focus{border-color:#60a5fa;background:#fff;box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+.ph{color:#94a3b8}
+.caret{display:inline-block;width:2px;height:20px;background:#2563eb;vertical-align:middle;margin:0 1px;border-radius:1px}
+.ta{height:80px;border-radius:16px;border:1px solid #e2e8f0;background:#f8fafc;padding:12px 16px;font-size:14px;line-height:1.6}
+.lblrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:12px}
+
+/* date/time */
+.stepbar{position:absolute;left:0;right:0;top:0;height:3px;background:#e2e8f0;z-index:2}
+.stepbar b{position:absolute;right:0;top:0;height:100%;background:#2563eb;border-radius:3px}
+.dtw{position:absolute;inset:0;padding:22px 16px 0}
+.stl{font-size:12px;color:#2563eb;font-weight:500;text-align:right}
+.h2{font-size:28px;font-weight:700;color:#0f172a;line-height:1.25;text-align:right;margin-top:2px}
+.cchip{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding:10px 12px;border-radius:16px;background:#fff;border:1px solid #e2e8f0;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.cav{width:40px;height:40px;border-radius:50%;overflow:hidden;border:2px solid #e2e8f0;flex-shrink:0}
+.cav svg{width:100%;height:100%;display:block}
+.cname{font-size:14px;font-weight:700;color:#0f172a;line-height:1.2}
+.cph{font-size:10.5px;color:#94a3b8;margin-top:2px;direction:ltr;text-align:right;font-family:'Segoe UI',sans-serif;white-space:nowrap}
+.mini{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.secl{font-size:10px;color:#64748b;margin:14px 0 8px;text-align:right}
+.strip{display:flex;gap:5px;direction:ltr}
+.day{flex:0 0 auto;width:42px;height:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:16px;border:1px solid #e2e8f0;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.day .dn{font-size:7.5px;font-weight:700;color:#64748b;text-align:center;line-height:1.2;width:100%;padding:0 1px;white-space:nowrap;overflow:hidden}
+.day .dd{font-size:17px;font-weight:700;color:#1e293b;line-height:1;font-family:'Segoe UI',sans-serif}
+.day .dt{width:6px;height:6px;border-radius:50%;background:transparent}
+.day.today{background:#eff6ff;border-color:#93c5fd}.day.today .dn{color:#2563eb}.day.today .dd{color:#1d4ed8}.day.today .dt{background:#3b82f6}
+.day.sel{background:#2563eb;border-color:#2563eb;box-shadow:0 4px 10px rgba(147,197,253,.6)}.day.sel .dn{color:rgba(255,255,255,.85)}.day.sel .dd{color:#fff}.day.sel .dt{background:rgba(255,255,255,.45)}
+.day.off{opacity:.35;background:#f8fafc;border-color:#f1f5f9}
+.legend{display:flex;justify-content:space-between;align-items:center;margin:14px 0 10px}
+.lgs{display:flex;gap:10px;font-size:10px;font-weight:500;color:#475569}
+.lgs span{display:flex;align-items:center;gap:4px}
+.lgs i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;position:relative}
+.slot{height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff}
+.slot.g{background:#10b981}.slot.a{background:#fbbf24}.slot.r{background:#dc2626}.slot.s{background:#2563eb;box-shadow:0 4px 12px rgba(59,130,246,.45)}
+.skel{height:56px;border-radius:16px;background:#e9eef4}
+.ctaw{position:absolute;left:0;right:0;bottom:0;padding:56px 16px 26px;background:linear-gradient(to top,#fff 0%,rgba(255,255,255,.85) 50%,rgba(255,255,255,0) 100%);z-index:3}
+.empty{position:absolute;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:14px}
+.ecirc{width:64px;height:64px;border-radius:50%;background:#eff6ff;border:1px solid #bfdbfe;color:#60a5fa;display:flex;align-items:center;justify-content:center}
+
+/* summary / receipt */
+.back{display:flex;align-items:center;gap:6px;color:#94a3b8;font-size:14px;margin-bottom:12px}
+.tkw{position:relative;margin-top:16px}
+.notch{position:absolute;width:24px;height:24px;border-radius:50%;background:#f1f5f9;border:1px solid rgba(226,232,240,.8);z-index:2}
+.tk{background:#fff;border-radius:24px;overflow:hidden;border:1px solid #f3f4f6;box-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.08)}
+.pole{height:10px;background-image:repeating-linear-gradient(-45deg,#ef4444,#ef4444 20px,#fff 20px,#fff 40px,#3b82f6 40px,#3b82f6 60px,#fff 60px,#fff 80px);background-size:113px 100%}
+.prof{display:flex;flex-direction:column;align-items:center;padding:18px 24px 14px;gap:3px}
+.bigav{width:84px;height:84px;border-radius:50%;padding:4px;background:#fff;box-shadow:0 0 0 4px rgba(59,130,246,.1),0 4px 8px rgba(0,0,0,.1)}
+.bigav>div{width:100%;height:100%;border-radius:50%;overflow:hidden}
+.bigav svg{width:100%;height:100%;display:block}
+.pn2{font-size:19px;font-weight:700;color:#1f2937;margin-top:6px}
+.pp{font-size:13px;color:#6b7280;direction:ltr;font-family:'Segoe UI',sans-serif}
+.tear{border-top:2px dashed #e5e7eb;margin:0 16px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px}
+.gc{display:flex;align-items:center;gap:10px;padding:10px;background:#f9fafb;border-radius:16px;border:1px solid #f3f4f6}
+.gi{width:34px;height:34px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.gl{font-size:10px;color:#9ca3af;font-weight:500}
+.gv{font-size:13px;font-weight:700;color:#374151;margin-top:1px;line-height:1.25;white-space:nowrap}
+.barcode{width:180px;height:30px;background:repeating-linear-gradient(90deg,#0f172a 0px,#0f172a 2px,transparent 2px,transparent 4px,#0f172a 4px,#0f172a 5px,transparent 5px,transparent 8px,#0f172a 8px,#0f172a 9px,transparent 9px,transparent 12px)}
+.okc{position:relative;width:76px;height:76px;border-radius:50%;background:#ecfdf5;border:2px solid #a7f3d0;color:#10b981;box-shadow:0 4px 8px rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center}
+.ping{position:absolute;inset:-8px;border-radius:50%;border:2px solid rgba(52,211,153,.55)}
+.badge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;border:1px solid}
+
+/* ── scanner ── */
+#scanWrap{left:80px;top:250px;width:380px;height:380px}
+.sring{position:absolute;inset:0;border-radius:50%}
+#sInner{position:absolute;inset:4px;border-radius:50%;background:#050a16}
+#sOuterA{position:absolute;inset:-14px;border-radius:50%;border:2px dashed rgba(245,158,11,.65);box-shadow:0 0 30px rgba(245,158,11,.15)}
+#sOuterG{position:absolute;inset:-14px;border-radius:50%;border:2px solid #10b981;box-shadow:0 0 50px rgba(16,185,129,.4),inset 0 0 30px rgba(16,185,129,.15)}
+#cam{position:absolute;left:16px;top:16px;width:348px;height:348px;border-radius:50%;overflow:hidden;background:#0f172a}
+#cam>svg{position:absolute;inset:0;width:100%;height:100%}
+.brk{position:absolute;width:40px;height:40px;border-radius:4px;border-style:solid;border-width:0}
+#sLine{position:absolute;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,rgba(251,191,36,.95),transparent);box-shadow:0 0 14px rgba(251,191,36,.7)}
+#sSweep{position:absolute;left:0;right:0;height:90px;background:linear-gradient(to bottom,rgba(16,185,129,0),rgba(16,185,129,.28) 70%,rgba(110,231,183,.7) 96%,rgba(16,185,129,0))}
+#sBadge{position:absolute;left:50%;bottom:-20px;display:flex;align-items:center;gap:8px;padding:6px 16px;border-radius:999px;background:rgba(6,40,30,.9);border:1px solid rgba(16,185,129,.5);white-space:nowrap;color:#6ee7b7;font-size:15px;font-weight:700}
+#sBadge i{width:8px;height:8px;border-radius:50%;background:#34d399;display:block}
+.stitle{left:0;right:0;top:212px;text-align:center;font-size:15px;color:rgba(255,255,255,.6)}
+.stx{position:absolute;left:0;right:0;top:668px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:0 34px}
+.stx .t1{font-size:25px;font-weight:700;line-height:1.4}
+.stx .t2{font-size:16px;color:rgba(255,255,255,.55);line-height:1.55}
+.stx .t3{font-size:14px;color:rgba(255,255,255,.4)}
+.dots{display:flex;gap:9px;margin-top:6px}
+.dots i{width:10px;height:10px;border-radius:50%;background:#fbbf24;display:block}
+.pbar{width:230px;height:6px;border-radius:6px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:8px}
+.pbar b{display:block;height:100%;background:#10b981;border-radius:6px}
+.fchip{position:absolute;left:50%;top:852px;display:flex;align-items:center;gap:10px;padding:8px 20px 8px 8px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);font-size:18px;font-weight:700;white-space:nowrap;color:#f1f5f9}
+.fchip .ci{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.sbtns{position:absolute;left:120px;width:300px;top:776px;display:flex;gap:12px}
+.sbtns .use{flex:1;height:54px;border-radius:18px;background:#10b981;display:flex;align-items:center;justify-content:center;gap:8px;font-size:18px;font-weight:700;box-shadow:0 8px 24px rgba(16,185,129,.35)}
+.sbtns .rt{width:54px;height:54px;border-radius:18px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center}
+.benT{left:0;right:0;top:462px;text-align:center;font-size:30px;font-weight:700}
+.ben{position:absolute;left:50px;width:440px;height:62px;display:flex;align-items:center;gap:14px;padding:0 14px;border-radius:20px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);font-size:18px;font-weight:700;color:#f1f5f9}
+.ben .ci{width:40px;height:40px;border-radius:50%;background:rgba(16,185,129,.18);color:#34d399;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* notification */
+#notif{left:22px;right:22px;top:24px}
+.ncap{display:flex;align-items:center;justify-content:center;gap:8px;color:#fbbf24;font-size:17px;font-weight:700;margin-bottom:10px}
+.ncard{background:rgba(248,250,252,.98);border-radius:26px;padding:14px 16px 14px;color:#0f172a;box-shadow:0 24px 60px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.4)}
+.nrow{display:flex;align-items:center;gap:8px;font-size:13px;color:#64748b}
+.nrow img{width:24px;height:24px;border-radius:50%}
+.nt{font-size:18px;font-weight:700;margin-top:6px}
+.nb{font-size:15px;color:#475569;margin-top:2px}
+.nbtns{display:flex;gap:8px;margin-top:12px}
+.nbtn{flex:1;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:15px;font-weight:700}
+
+/* outro */
+.cta{font-size:40px;font-weight:700;text-align:center;line-height:1.3}
+.url{display:flex;align-items:center;gap:12px;padding:14px 30px;border-radius:999px;background:linear-gradient(135deg,rgba(37,99,235,.45),rgba(37,99,235,.15));border:1.5px solid rgba(96,165,250,.6);box-shadow:0 0 40px rgba(37,99,235,.35);font-family:'Segoe UI',sans-serif;font-size:34px;font-weight:700;color:#fff;direction:ltr;white-space:nowrap}
+
+/* tap */
+#tap{width:54px;height:54px;margin:-27px 0 0 -27px;left:0;top:0}
+#tapDot{position:absolute;inset:0;border-radius:50%;background:rgba(255,255,255,.5);border:2.5px solid rgba(255,255,255,.95);box-shadow:0 4px 16px rgba(0,0,0,.35)}
+#tapRip{position:absolute;inset:0;border-radius:50%;border:3px solid rgba(255,255,255,.9)}
+#flash{background:#fff}
+#fade{background:#000}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+//  Helpers
+// ─────────────────────────────────────────────────────────────────────────────
+const DUR = 66.6;
+const $ = id => document.getElementById(id);
+const KD = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+const ic = (n, sz, st = '') => `<svg class="i" viewBox="0 0 24 24" style="width:${sz}px;height:${sz}px;${st}">${ICONS[n]}</svg>`;
+const clamp = (x, a = 0, b = 1) => x < a ? a : x > b ? b : x;
+const lerp = (a, b, t) => a + (b - a) * t;
+const E = {
+  lin: t => t,
+  out: t => 1 - Math.pow(1 - t, 3),
+  out5: t => 1 - Math.pow(1 - t, 5),
+  in: t => t * t * t,
+  io: t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2,
+  back: t => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); },
+};
+const P = (t, a, d, e = E.out) => e(clamp((t - a) / d));
+const env = (t, a, b, din = .5, dout = .4) => Math.min(P(t, a, din, E.out), 1 - P(t, b - dout, dout, E.in));
+function vis(el, o) {
+  if (typeof el === 'string') el = $(el);
+  el.style.opacity = o;
+  el.style.visibility = o <= 0.002 ? 'hidden' : 'visible';
+  return el;
+}
+function tf(el, s) { if (typeof el === 'string') el = $(el); el.style.transform = s; return el; }
+const bump = (t, t0, w = .14) => clamp(1 - Math.abs(t - t0) / w);
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Story data (mirrors the real app strings)
+// ─────────────────────────────────────────────────────────────────────────────
+const SHOP = 'ژێوار عزیز';
+const CUST = 'ئاراس ئەحمەد';
+const CPHONE = '+964 750 123 4567';
+const NOTE = 'قژ و ڕیش';
+const DAY_SHORT = ['یەکشەممە','دووشەممە','سێشەممە','چوارشەممە','پێنجشەممە','هەینی','شەممە'];
+function formatTimeFull(slot) {
+  const [h, m] = slot.split(':').map(Number);
+  let period;
+  if (h < 12) period = 'بەیانی';
+  else if (h === 12) period = 'نیوەڕۆ';
+  else if (h <= 16) period = 'دوا نیوەڕۆ';
+  else if (h <= 18) period = 'ئێوارە';
+  else period = 'شەو';
+  const display = h > 12 ? h - 12 : h === 0 ? 12 : h;
+  return `${display}${m ? `:${String(m).padStart(2, '0')}` : ''} ${period}`;
+}
+const DAYS = Array.from({ length: 7 }, (_, i) => ({ d: 3 + i, dow: (6 + i) % 7 }));   // Sat 3 Oct 2026 …
+const SEL_DAY = 2;                                                                     // Monday 5
+const SLOTS = ['10:00','10:30','11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30'];
+const SLOT_ST = ['r','r','a','g','g','r','g','a','g','g','r','g'];
+const SEL_SLOT = 6;                                                                    // 13:00
+const SEL_TIME = formatTimeFull(SLOTS[SEL_SLOT]);
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Timeline (seconds)
+// ─────────────────────────────────────────────────────────────────────────────
+const TL = {
+  hook: 5.0, s1: 10.2, s2: 15.0, s3: 31.8, s4: 39.2, s5: 47.2, s6: 53.2, outro: 60.6,
+};
+const SC = {
+  zoom: 18.35, in: 18.5, loadEnd: 20.0, faceIn: 19.1, partial: 20.8,
+  cA: 22.0, cB: 23.2, lock: 23.3, lmA: 23.5, meshA: 24.0,
+  pushA: 25.0, blink: 25.85, flash: 26.5, capt: 26.65, btns: 27.1, use: 27.9,
+  up: 28.25, benT: 28.7, ben: [28.95, 29.4, 29.85], out: 31.3, fly: 31.5, flyEnd: 32.45,
+};
+const TAPS = [
+  { t: 14.1,  id: 'btnBook' },
+  { t: 17.75, id: 'btnScan' },
+  { t: SC.use, id: 'btnUse' },
+  { t: 38.2,  id: 'btnStart' },
+  { t: 40.7,  id: 'day' + SEL_DAY },
+  { t: 43.9,  id: 'slot' + SEL_SLOT },
+  { t: 45.9,  id: 'ctaDT' },
+  { t: 51.9,  id: 'ctaSum' },
+  { t: 56.2,  id: 'nfBtn' },
+];
+const TYPE = [
+  { id: 'fName',  str: CUST,   a: 33.1, b: 34.3 },
+  { id: 'fPhone', str: CPHONE, a: 34.6, b: 35.9 },
+  { id: 'fNote',  str: NOTE,   a: 36.2, b: 36.9 },
+];
+
+// Sound-effect cue sheet (read by the audio generator)
+const SFX = [];
+const sfx = (name, t, vol = 1) => SFX.push({ name, t: +t.toFixed(3), vol });
+function buildSfx() {
+  sfx('impact', 0.25, .7); sfx('shimmer', 1.1, .5);
+  sfx('whoosh', 4.6, .6);
+  [0, 1, 2, 3].forEach(i => sfx('pop', 6.7 + i * .3, .7));
+  sfx('whoosh', 9.75, .7); sfx('whoosh', TL.s1, .8);
+  TAPS.forEach(tp => sfx('tap', tp.t, 1));
+  [14.75, TL.s3 - .1, TL.s4, TL.s5, TL.s6].forEach(t => sfx('whoosh', t, .55));
+  sfx('whooshBig', SC.zoom, 1);
+  for (let t = SC.loadEnd; t < SC.lock - .2; t += .6) sfx('blip', t, .55);
+  sfx('lock', SC.lock, 1);
+  for (let i = 0; i < 14; i++) sfx('tick', SC.lmA + i * .095, .45);
+  sfx('riser', SC.pushA, .9);
+  sfx('shutter', SC.flash, 1);
+  sfx('chime', SC.capt + .12, .8);
+  sfx('whoosh', SC.up, .6);
+  SC.ben.forEach(t => sfx('pop', t, .7));
+  sfx('whoosh', SC.fly, .8); sfx('pop', SC.flyEnd + .05, .8);
+  TYPE.forEach(f => { const n = Array.from(f.str).length; for (let i = 0; i < n; i++) sfx('type', f.a + (f.b - f.a) * (i + .5) / n, .6); });
+  sfx('success', 53.45, 1);
+  sfx('notif', 55.0, 1);
+  sfx('sparkle', 57.35, .9);
+  sfx('whoosh', 60.1, .7); sfx('impact', TL.outro + .2, .9); sfx('shimmer', 62.0, .6);
+  SFX.sort((a, b) => a.t - b.t);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Face illustration + 68-point landmark model (face-api order)
+// ─────────────────────────────────────────────────────────────────────────────
+const bz = (p0, p1, p2, p3, t) => {
+  const u = 1 - t;
+  return [u*u*u*p0[0] + 3*u*u*t*p1[0] + 3*u*t*t*p2[0] + t*t*t*p3[0],
+          u*u*u*p0[1] + 3*u*u*t*p1[1] + 3*u*t*t*p2[1] + t*t*t*p3[1]];
+};
+function landmarks(blink) {
+  const A = [[61,95],[61,112],[68,130],[82,141]], B = [[82,141],[88,146],[94,149.5],[100,149.5]];
+  const left = [[60,82],[60.5,92], bz(...A,.3), bz(...A,.6), bz(...A,.85), bz(...B,0), bz(...B,.4), bz(...B,.75), [100,149.5]];
+  const jaw = [...left];
+  for (let i = 7; i >= 0; i--) jaw.push([200 - left[i][0], left[i][1]]);
+  const up = lerp(85.8, 89.8, blink), lo = lerp(90.0, 90.1, blink);
+  const eye = cx => [[cx-8,88],[cx-3.5,up],[cx+3.5,up],[cx+8,88],[cx+3.5,lo],[cx-3.5,lo]];
+  return [
+    ...jaw,
+    [70,79],[75,75.2],[81,73.2],[87,73.3],[92,75.2],
+    [108,75.2],[113,73.3],[119,73.2],[125,75.2],[130,79],
+    [100,82],[100,89],[100,96],[100,103.5],
+    [93,107],[96.3,109.8],[100,111],[103.7,109.8],[107,107],
+    ...eye(82), ...eye(118),
+    [89.5,123.5],[93,122],[97,121.5],[100,122.3],[103,121.5],[107,122],[110.5,123.5],[107,126.6],[103.5,127.9],[100,128.2],[96.5,127.9],[93,126.6],
+    [91,123.8],[95,123.6],[100,124.2],[105,123.6],[109,123.8],[105,124.9],[100,125.2],[95,124.9],
+  ];
+}
+const rng = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
+const MESH = [
+  rng(0, 16), rng(17, 21), rng(22, 26), rng(27, 30), rng(31, 35), [30, 33],
+  [...rng(36, 41), 36], [...rng(42, 47), 42], [...rng(48, 59), 48], [...rng(60, 67), 60],
+  [17, 36], [21, 39], [22, 42], [26, 45], [21, 27], [22, 27], [27, 39], [27, 42],
+  [0, 36], [16, 45], [1, 41], [15, 46], [31, 48], [35, 54], [3, 48], [13, 54],
+  [5, 59], [11, 55], [57, 8], [39, 31], [42, 35], [30, 39], [30, 42], [33, 51], [2, 31], [14, 35],
+];
+function lidD(cx, b) { const c = 82.5 + b * 11; return `M${cx-8.6},88 Q${cx},79.4 ${cx+8.6},88 Q${cx},${c} ${cx-8.6},88 Z`; }
+function lashD(cx, b) { const c = 82.5 + b * 11; return `M${cx-8.4},88 Q${cx},${c} ${cx+8.4},88`; }
+function poseStr(tx, ty, r, s) { return `translate(${100 + tx} ${95 + ty}) rotate(${r}) scale(${s}) translate(-100 -95)`; }
+const CAPT_POSE = poseStr(0, 4, 0, 1.2);
+
+function faceSVG(p, { lm = false, pose = CAPT_POSE } = {}) {
+  const eye = (cx, sd) => `
+    <clipPath id="${p}c${sd}"><path d="M${cx-8},88 Q${cx},82.5 ${cx+8},88 Q${cx},93 ${cx-8},88 Z"/></clipPath>
+    <path d="M${cx-8},88 Q${cx},82.5 ${cx+8},88 Q${cx},93 ${cx-8},88 Z" fill="#f4ede6"/>
+    <g clip-path="url(#${p}c${sd})">
+      <circle cx="${cx}" cy="87.9" r="3.5" fill="#4a2c1a"/><circle cx="${cx}" cy="87.9" r="1.8" fill="#0b0705"/>
+      <circle cx="${cx + 1.2}" cy="86.6" r=".95" fill="#fff"/>
+    </g>
+    <path id="${p}lid${sd}" d="${lidD(cx, 0)}" fill="url(#${p}skin)"/>
+    <path id="${p}lash${sd}" d="${lashD(cx, 0)}" fill="none" stroke="#1a120d" stroke-width="1.4" stroke-linecap="round"/>
+    <path d="M${cx-7},84 Q${cx},80.6 ${cx+7},84" fill="none" stroke="#8f5a3c" stroke-width=".6" opacity=".45"/>
+    <path d="M${cx-6.5},89.9 Q${cx},92.6 ${cx+6.5},89.9" fill="none" stroke="#8f5a3c" stroke-width=".55" opacity=".55"/>`;
+  return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="${p}bg" cx="100" cy="70" r="150" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#4a5872"/><stop offset=".55" stop-color="#202b3f"/><stop offset="1" stop-color="#0b111d"/></radialGradient>
+    <radialGradient id="${p}lamp"><stop offset="0" stop-color="#fbbf24" stop-opacity=".55"/><stop offset="1" stop-color="#fbbf24" stop-opacity="0"/></radialGradient>
+    <radialGradient id="${p}lampb"><stop offset="0" stop-color="#60a5fa" stop-opacity=".5"/><stop offset="1" stop-color="#60a5fa" stop-opacity="0"/></radialGradient>
+    <radialGradient id="${p}skin" cx="98" cy="84" r="64" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#e2ab82"/><stop offset=".6" stop-color="#c98b63"/><stop offset="1" stop-color="#a3674a"/></radialGradient>
+    <linearGradient id="${p}shirt" x1="0" y1="150" x2="0" y2="205" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#3b76f2"/><stop offset="1" stop-color="#1b3a8f"/></linearGradient>
+    <linearGradient id="${p}hair" x1="0" y1="25" x2="0" y2="92" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#33241a"/><stop offset="1" stop-color="#130c08"/></linearGradient>
+  </defs>
+  <rect width="200" height="200" fill="url(#${p}bg)"/>
+  <circle cx="30" cy="38" r="36" fill="url(#${p}lamp)"/>
+  <circle cx="174" cy="56" r="28" fill="url(#${p}lampb)"/>
+  <circle cx="170" cy="164" r="32" fill="url(#${p}lamp)" opacity=".35"/>
+  <rect x="148" y="0" width="4" height="200" fill="#fff" opacity=".035"/>
+  <g id="${p}pose" transform="${pose}">
+    <path d="M10,206 C14,180 40,166 70,160 L87,155 C92,161 108,161 113,155 L130,160 C160,166 186,180 190,206 Z" fill="url(#${p}shirt)"/>
+    <path d="M87,155 C92,163.5 108,163.5 113,155" fill="none" stroke="#163282" stroke-width="3.2"/>
+    <path d="M85,124 L85,157 C92,163 108,163 115,157 L115,124 Z" fill="#a3674a"/>
+    <ellipse cx="100" cy="142" rx="16" ry="7" fill="#7a4a32" opacity=".55"/>
+    <ellipse cx="60.5" cy="93" rx="6.5" ry="11" fill="#b97a54"/><ellipse cx="60.9" cy="93" rx="3" ry="6.5" fill="#92583b"/>
+    <ellipse cx="139.5" cy="93" rx="6.5" ry="11" fill="#b97a54"/><ellipse cx="139.1" cy="93" rx="3" ry="6.5" fill="#92583b"/>
+    <path d="M100,44 C124,44 139,60 140,86 C141,106 134,124 122,136 C114,143 107,147 100,147 C93,147 86,143 78,136 C66,124 59,106 60,86 C61,60 76,44 100,44 Z" fill="url(#${p}skin)"/>
+    <ellipse cx="77" cy="101" rx="8" ry="5" fill="#eab892" opacity=".22"/><ellipse cx="123" cy="101" rx="8" ry="5" fill="#eab892" opacity=".22"/>
+    <path d="M59,92 C55,74 57,56 67,44 C77,32 92,26 108,27 C125,28 139,38 143,56 C145,68 143,80 141,92 C140,82 137,72 132,66 C125,60 115,57 104,58 C92,58 81,60 73,65 C66,70 61,80 59,92 Z" fill="url(#${p}hair)"/>
+    <path d="M70,56 C74,40 90,31 110,32 C126,33 136,42 139,53 C131,45 118,41 104,42 C90,43 78,48 70,56 Z" fill="#46342a" opacity=".65"/>
+    <path d="M78,50 C90,39 107,35 124,39 M84,55 C96,46 112,43 129,48 M92,58 C102,52 114,51 126,54" fill="none" stroke="#6a5040" stroke-width=".8" opacity=".6"/>
+    <path d="M70,78 Q80,69.5 92,74 L92,76.8 Q80,73 70,80 Z" fill="#1a120d"/>
+    <path d="M130,78 Q120,69.5 108,74 L108,76.8 Q120,73 130,80 Z" fill="#1a120d"/>
+    ${eye(82, 'R')}${eye(118, 'L')}
+    <path d="M97.5,84 C96.5,94 94.5,101 93.2,105.5" fill="none" stroke="#a3674a" stroke-width="1" opacity=".55"/>
+    <path d="M100.6,88 L100.9,102" stroke="#f0c09b" stroke-width="1.3" opacity=".45" stroke-linecap="round"/>
+    <path d="M93,106 C92.6,110 96,111.6 100,111.6 C104,111.6 107.4,110 107,106" fill="none" stroke="#8a5538" stroke-width="1.3" stroke-linecap="round"/>
+    <ellipse cx="96.5" cy="109.4" rx="1.7" ry=".9" fill="#6e4029"/><ellipse cx="103.5" cy="109.4" rx="1.7" ry=".9" fill="#6e4029"/>
+    <path d="M61,95 C61,112 68,130 82,141 C88,146 94,149.5 100,149.5 C106,149.5 112,146 118,141 C132,130 139,112 139,95 C137,103 133,110 127,115 C122,119 116,120 111,121 C108,118.5 104,117.5 100,117.5 C96,117.5 92,118.5 89,121 C84,120 78,119 73,115 C67,110 63,103 61,95 Z" fill="#1a120d" opacity=".25" stroke="#1a120d" stroke-width="2.4" stroke-opacity=".25"/>
+    <path d="M61,95 C61,112 68,130 82,141 C88,146 94,149.5 100,149.5 C106,149.5 112,146 118,141 C132,130 139,112 139,95 C137,103 133,110 127,115 C122,119 116,120 111,121 C108,118.5 104,117.5 100,117.5 C96,117.5 92,118.5 89,121 C84,120 78,119 73,115 C67,110 63,103 61,95 Z" fill="#1a120d" opacity=".9"/>
+    <path d="M85,120 C89,114.5 95,114 100,116.5 C105,114 111,114.5 115,120 C110,118.6 105,118.8 100,120 C95,118.8 90,118.6 85,120 Z" fill="#140d09"/>
+    <path d="M89.5,123.5 C93.5,121.8 97,121.4 100,122.3 C103,121.4 106.5,121.8 110.5,123.5 C106,124.3 103,124.4 100,124.6 C97,124.4 94,124.3 89.5,123.5 Z" fill="#7d3b2c"/>
+    <path d="M90,123.9 C94.5,128.6 105.5,128.6 110,123.9 C106,125 94,125 90,123.9 Z" fill="#a0503e"/>
+    ${lm ? `<g id="${p}mesh"></g><g id="${p}pts"></g>` : ''}
+  </g>
+  ${lm ? `<rect id="${p}box" fill="none" stroke-width="1" stroke-dasharray="4 3" rx="3"/>` : ''}
+</svg>`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  DOM
+// ─────────────────────────────────────────────────────────────────────────────
+function build() {
+  const logoRing = (id, sz, extra = '') => `<div class="aring" style="width:${sz}px;height:${sz}px;${extra}"><div class="cg" id="${id}"></div><div class="w"></div><img src="logo.png"></div>`;
+  const hdr = (id, n, word, title, sub) => `
+    <div class="hdr" id="${id}">
+      <div class="pill"><span class="pn">${KD(n)}</span><span>هەنگاوی ${word}</span></div>
+      <div class="ht">${title}</div>
+      ${sub}
+    </div>`;
+  const statusBar = `<div class="sbar"><span>9:41</span><span style="display:flex;gap:5px;align-items:center">${ic('signal', 16)}${ic('wifi', 16)}${ic('battery-full', 20)}</span></div><div class="island"></div>
+    <div class="ubar"><div class="upill">${ic('lock', 13, 'color:#16a34a')}<span>zhewar.shop</span></div></div>`;
+
+  const days = DAYS.map((d, i) => `
+    <div class="day ${i === 0 ? 'today' : ''} ${d.dow === 5 ? 'off' : ''}" id="day${i}">
+      <span class="dn">${DAY_SHORT[d.dow]}</span><span class="dd">${d.d}</span><span class="dt"></span>
+    </div>`).join('');
+  const slots = SLOTS.map((s, i) => `<div class="slot ${SLOT_ST[i]}" id="slot${i}">${formatTimeFull(s)}</div>`).join('');
+  const skels = Array.from({ length: 8 }, (_, i) => `<div class="skel" id="sk${i}"></div>`).join('');
+
+  const gc = (bg, fg, icon, label, val, id = '', cls = '') => `
+    <div class="gc ${cls}" id="${id}"><div class="gi" style="background:${bg};color:${fg}">${icon}</div>
+      <div style="min-width:0"><div class="gl" ${id ? `id="${id}L"` : ''}>${label}</div><div class="gv" ${id ? `id="${id}V"` : ''}>${val}</div></div></div>`;
+
+  $('stage').innerHTML = `
+  <div id="bg" class="L">
+    <div id="bgBase" class="L"></div>
+    <div id="bgStripes" class="L"></div>
+    <div id="blobB" class="A blob"></div>
+    <div id="blobR" class="A blob"></div>
+    <div id="blobG" class="A blob"></div>
+    <div id="bgScan" class="L"></div>
+    <div id="vignette" class="L"></div>
+  </div>
+
+  <!-- INTRO -->
+  <div id="intro" class="L">
+    <div id="iLogo" class="A" style="left:155px;top:215px;width:230px;height:230px">
+      <div class="A" style="inset:-70px;border-radius:50%;background:radial-gradient(circle,rgba(226,188,116,.32),rgba(226,188,116,0) 66%)"></div>
+      <div id="iOrbit1" class="orbit" style="inset:-24px"></div>
+      <div id="iOrbit2" class="orbit" style="inset:-46px;border-color:rgba(96,165,250,.16)"></div>
+      <div class="logoRing" style="inset:0"><div class="cg" id="iRing"></div><div class="in"></div><img src="logo.png"></div>
+    </div>
+    <div id="iGold" class="A goldLbl" style="left:0;right:0;top:482px">سیستەمی زیرەکی تۆمارکردنی کات</div>
+    <div id="iName" class="A bigName" style="left:0;right:0;top:512px">${SHOP}</div>
+    <div id="iDiv" class="A divider" style="left:0;right:0;top:604px"><i style="background:linear-gradient(to right,transparent,#ef4444)"></i><span class="diamond"></span><i style="background:linear-gradient(to left,transparent,#3b82f6)"></i></div>
+    <div id="iTag" class="A tagline" style="left:0;right:0;top:626px">ستایلێکی نوێ، متمانەیەکی نوێ</div>
+  </div>
+
+  <!-- HOOK -->
+  <div id="hook" class="L">
+    <div id="hk1" class="hookLine" style="top:292px">کاتی سەردانیکردنەکەت</div>
+    <div id="hk2" class="hookLine" style="top:348px">لە <span class="grad">چەند چرکەیەکدا</span> تۆمار بکە</div>
+    <div id="hk3" class="A" style="left:0;right:0;top:456px;text-align:center;font-size:19px;color:#94a3b8">تەنها بە چەند هەنگاوێکی سادە</div>
+    <div id="rmLine" style="left:100px;width:340px;top:573px"></div>
+    ${[['scan-face','سکانی ڕووخسار'],['user','زانیارییەکانت'],['calendar','ڕۆژ و کات'],['circle-check-big','پەسەندکردن']].map(([icn, lbl], i) => `
+      <div class="rmNode fx" id="rm${i}" style="left:${[440, 327, 213, 100][i]}px;top:575px">${ic(icn, 38)}<span class="rmNum fx">${KD(i + 1)}</span></div>
+      <div class="rmLbl" id="rl${i}" style="left:${[440, 327, 213, 100][i]}px;top:634px">${lbl}</div>`).join('')}
+  </div>
+
+  <!-- STEP HEADERS -->
+  <div id="segs" class="A">${[0,1,2,3,4,5].map(i => `<div class="seg"><b id="seg${i}"></b></div>`).join('')}</div>
+  ${hdr('h1', 1, 'یەکەم', 'سەردانی <span class="grad lat">zhewar.shop</span> بکە', `<div class="hs">دوگمەی «ناو تۆمار کردن» دابگرە</div>`)}
+  ${hdr('h2', 2, 'دووەم', 'سکانی <span class="grad">ڕووخسار</span>', `<div class="hs">ئەگەر چالاک بێت، سەرەتا ڕووخسارت سکان دەکرێت</div>`)}
+  ${hdr('h3', 3, 'سێیەم', 'زانیارییەکانت <span class="grad">بنووسە</span>', `<div class="hs">ناو و ژمارەی مۆبایل — تەنها بۆ یەکەمجار</div>`)}
+  ${hdr('h4', 4, 'چوارەم', '<span class="grad">ڕۆژ و کات</span> هەڵبژێرە', `<div class="lg">
+      <div class="lgi" style="background:rgba(16,185,129,.16);color:#6ee7b7"><i style="background:#10b981"></i>بەردەستە</div>
+      <div class="lgi" style="background:rgba(251,191,36,.16);color:#fcd34d"><i style="background:#fbbf24"></i>چاوەڕوان</div>
+      <div class="lgi" style="background:rgba(239,68,68,.16);color:#fca5a5"><i style="background:#ef4444"></i>پەسەندکراوە</div></div>`)}
+  ${hdr('h5', 5, 'پێنجەم', 'پشکنین و <span class="grad">پەسەندکردن</span>', `<div class="hs">زانیارییەکان بپشکنە و «پەسەندە» دابگرە</div>`)}
+  ${hdr('h6', 6, 'شەشەم', '<span class="gradG">تەواو!</span> داواکارییەکەت نێردرا', `<div class="hs" style="position:relative;height:26px;width:100%"><span id="h6a" class="A" style="left:0;right:0">سەرتاش ئاگادار دەکرێتەوە و کاتەکەت پەسەند دەکات</span><span id="h6b" class="A" style="left:0;right:0;color:#6ee7b7">سەرتاش کاتەکەتی پەسەند کرد</span></div>`)}
+
+  <!-- PHONE -->
+  <div id="phoneGlow" class="A"></div>
+  <div id="phone" class="A">
+    <div class="frame"></div>
+    <div class="pbtn" style="left:-3px;top:130px;height:34px"></div>
+    <div class="pbtn" style="left:-3px;top:180px;height:56px"></div>
+    <div class="pbtn" style="right:-3px;top:160px;height:80px"></div>
+    <div class="screen"><div class="lg360">
+      ${statusBar}
+      <div class="area">
+        <div class="appstripes" id="appStripes"></div>
+
+        <!-- home -->
+        <div class="scr" id="scHome"><div class="home">
+          ${logoRing('homeRing', 176)}
+          <div class="hname">${SHOP}</div>
+          <div class="hdiv"><i style="background:linear-gradient(to right,transparent,#ef4444)"></i><span class="diamond" style="background:#a3a3a3;width:6px;height:6px"></span><i style="background:linear-gradient(to left,transparent,#3b82f6)"></i></div>
+          <div class="htag">ستایلێکی نوێ، متمانەیەکی نوێ</div>
+          <div class="btn blue" id="btnBook" style="margin-top:6px">${ic('calendar-plus', 20)}<span>ناو تۆمار کردن</span></div>
+          <div class="hsmall">کلیک بکە بۆ بیبنی کاتی سەردانیکردن</div>
+          <div class="btn red">${ic('search', 16)}<span>بینین و دڵنیاکردنەوەی کاتی سەردانیکردن</span></div>
+        </div></div>
+
+        <!-- registration: scan step -->
+        <div class="scr" id="scReg"><div class="cardwrap"><div class="card">
+          <div><div class="ctop">${logoRing('regRing', 48)}<div class="homebtn">${ic('house', 16)}</div></div>
+            <div class="wel">بەخێربێیت</div>
+            <div class="wels">زانیارییەکانت داخڵ بکە بۆ تۆمارکردنی کاتی سەردانیکردن</div></div>
+          <div class="sblock">
+            <div class="dash">${ic('scan-face', 48)}</div>
+            <div><div class="sbt">سکانی ڕووخسارت بکە</div>
+              <div class="sbd">پێش داخڵکردنی زانیاریەکانت، تکایە وێنەی ڕووخسارت تۆمار بکە</div></div>
+            <div class="btn blue" id="btnScan">${ic('scan-face', 20)}<span>سکانی ڕووخسار</span></div>
+          </div>
+        </div></div>
+          <div class="camov" id="camOv">
+            <div class="t">دڵنیاکردنەوەی ناسنامە</div>
+            <div class="mring"><div class="cg" id="miniRing"></div><div class="in fx"><div class="spin" id="miniSpin" style="width:40px;height:40px;border-color:#60a5fa;border-top-color:transparent"></div></div></div>
+            <div style="font-size:14px;color:rgba(255,255,255,.8);font-weight:700">بارکردن...</div>
+          </div>
+        </div>
+
+        <!-- registration: form step -->
+        <div class="scr" id="scForm"><div class="cardwrap"><div class="card" style="gap:16px">
+          <div><div class="ctop">${logoRing('formRing', 48)}<div class="homebtn">${ic('house', 16)}</div></div>
+            <div class="wel">بەخێربێیت</div>
+            <div class="wels">زانیارییەکانت داخڵ بکە بۆ تۆمارکردنی کاتی سەردانیکردن</div></div>
+          <div>
+            <div class="av"><div class="avc" id="formAv"><div id="formAvImg" style="width:100%;height:100%">${faceSVG('fa')}</div></div>
+              <div class="avb" id="formBadge">${ic('check', 14, 'stroke-width:3')}</div></div>
+            <div class="chg">${ic('refresh-cw', 12)}<span>گۆڕینی وێنە</span></div>
+          </div>
+          <div class="fields">
+            <div class="inp" id="fNameBox"><span class="ico">${ic('user', 16)}</span><span id="fName"></span></div>
+            <div class="inp" id="fPhoneBox" style="direction:ltr;justify-content:flex-end;padding:0 46px 0 16px;font-family:'Segoe UI',sans-serif"><span class="ico">${ic('phone', 16)}</span><span id="fPhone"></span></div>
+            <div><div class="lblrow"><span style="color:#334155;font-weight:500">تێبینی</span><span style="color:#94a3b8">ئارەزوومەند</span></div>
+              <div class="ta" id="fNoteBox"><span id="fNote"></span></div></div>
+          </div>
+          <div class="btn blue" id="btnStart"><span id="btnStartTxt" style="display:flex;align-items:center;gap:8px">دەستپێبکە ${ic('arrow-left', 18)}</span></div>
+        </div></div></div>
+
+        <!-- date & time -->
+        <div class="scr" id="scDT">
+          <div class="stepbar"><b style="width:50%"></b></div>
+          <div class="dtw">
+            <div class="stl">هەنگاوی ١ لە ٢</div>
+            <div class="h2">ڕۆژ و کات هەڵبژێرە</div>
+            <div class="cchip">
+              <div style="display:flex;align-items:center;gap:10px"><div class="cav">${faceSVG('ca')}</div>
+                <div><div class="cname">${CUST}</div><div class="cph">${CPHONE}</div></div></div>
+              <div style="display:flex;gap:6px">
+                <span class="mini" style="background:#f1f5f9;border:1px solid #e2e8f0;color:#64748b">${ic('pencil', 10)}دەستکاری</span>
+                <span class="mini" style="background:#eff6ff;border:1px solid #bfdbfe;color:#2563eb">کاتی سەردانیکردن</span>
+              </div>
+            </div>
+            <div class="secl">ڕۆژ هەڵبژێرە</div>
+            <div class="strip">${days}</div>
+            <div class="legend">
+              <div class="lgs"><span><i style="background:#fbbf24"></i>چاوەڕوان</span><span><i style="background:#f87171"></i>پەسەندکراوە</span><span><i style="background:#10b981"></i>بەردەستە</span></div>
+              <div style="position:relative;font-size:10px;color:#64748b;width:120px;height:14px"><span id="dtLblA" class="A" style="left:0;right:0;text-align:left">سەرەتا ڕۆژێک هەڵبژێرە</span><span id="dtLblB" class="A" style="left:0;right:0;text-align:left">کاتە بەردەستەکان</span></div>
+            </div>
+            <div style="position:relative">
+              <div class="empty" id="dtEmpty" style="top:24px"><div class="ecirc">${ic('clock', 28)}</div><div style="font-size:14px;color:#64748b">ڕۆژێک هەڵبژێرە بۆ بینینی کاتە بەردەستەکان</div></div>
+              <div class="grid" id="dtSkel" style="position:absolute;left:0;right:0;top:0">${skels}</div>
+              <div class="grid" id="dtGrid">${slots}</div>
+            </div>
+          </div>
+          <div class="ctaw"><div class="btn dis" id="ctaDT"><span id="ctaDTa">ڕۆژ و کات هەڵبژێرە</span><span id="ctaDTb" style="display:none;align-items:center;gap:8px">${ic('arrow-left', 18)}تۆمار کردن</span></div></div>
+        </div>
+
+        <!-- summary -->
+        <div class="scr" id="scSum">
+          <div class="stepbar"><b style="width:100%"></b></div>
+          <div class="dtw">
+            <div class="back">${ic('chevron-right', 16)}گۆڕینی کات</div>
+            <div class="stl">هەنگاوی ٢ لە ٢</div>
+            <div class="h2">پشکنین و <span style="color:#2563eb">دڵنیاکردنەوە</span></div>
+            <div class="tkw" id="sumTk">
+              <div class="notch" style="left:-12px;top:52%"></div><div class="notch" style="right:-12px;top:52%"></div>
+              <div class="tk">
+                <div class="pole" id="pole1"></div>
+                <div class="prof" id="sumProf"><div class="bigav"><div>${faceSVG('sa')}</div></div>
+                  <div class="pn2">${CUST}</div><div class="pp">${CPHONE}</div></div>
+                <div class="tear"></div>
+                <div class="g2" id="sumGrid">
+                  ${gc('rgba(59,130,246,.1)', '#2563eb', ic('calendar', 18), 'بەروار', '5/10/2026')}
+                  ${gc('rgba(16,185,129,.1)', '#059669', ic('clock', 18), 'کات', SEL_TIME)}
+                  ${gc('rgba(245,158,11,.1)', '#d97706', '<img src="logo.png" style="width:20px;height:20px;border-radius:6px">', 'سەرتاش', SHOP)}
+                  ${gc('rgba(245,158,11,.1)', '#d97706', ic('circle-check-big', 18), '<span style="color:rgba(217,119,6,.7)">دۆخ</span>', '<span style="color:#d97706">چاوەڕوان</span>', '', '" style="background:rgba(255,251,235,.6);border-color:#fef3c7')}
+                </div>
+                <div class="tear"></div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 0 18px">
+                  <div class="barcode"></div>
+                  <div style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:#334155">${ic('scissors', 11)}${SHOP}${ic('scissors', 11, 'transform:scaleX(-1)')}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="ctaw"><div class="btn blue" id="ctaSum"><span id="ctaSumA">پەسەندە</span><span id="ctaSumB" style="display:none;align-items:center;gap:10px"><span class="spin" id="sumSpin" style="width:20px;height:20px"></span>دڵنیاکردنەوە...</span></div></div>
+        </div>
+
+        <!-- receipt / success -->
+        <div class="scr" id="scOk"><div style="position:absolute;inset:0;padding:30px 16px 0;display:flex;flex-direction:column;align-items:center">
+          <div class="okc" id="okC"><div class="ping" id="okPing"></div>${ic('circle-check-big', 36)}</div>
+          <div id="okTx" style="text-align:center;margin-top:14px">
+            <div style="font-size:20px;font-weight:700;color:#0f172a">داواکارییەکەت تۆمار کرا</div>
+            <div style="font-size:14px;color:#64748b;margin-top:4px">چاوەڕوان بە تا پەسەند دەکرێت</div>
+          </div>
+          <div class="tkw" id="okTk" style="width:100%;margin-top:22px">
+            <div class="notch" style="left:-12px;top:46%"></div><div class="notch" style="right:-12px;top:46%"></div>
+            <div class="tk">
+              <div class="pole" id="pole2"></div>
+              <div class="prof"><div class="bigav" style="width:76px;height:76px"><div>${faceSVG('ra')}</div></div>
+                <div class="pn2" style="font-size:18px">${CUST}</div><div class="pp">${CPHONE}</div>
+                <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+                  <span style="font-family:Consolas,monospace;font-size:12px;font-weight:700;color:#2563eb">#7F3A9C2E</span>
+                  <span style="position:relative;display:inline-block;height:24px;width:92px">
+                    <span class="badge A fx" id="bdgP" style="inset:0;background:rgba(255,251,235,.8);color:#d97706;border-color:#fef3c7">چاوەڕوان</span>
+                    <span class="badge A fx" id="bdgC" style="inset:0;background:#ecfdf5;color:#059669;border-color:#d1fae5">بەسەندکراوە</span>
+                  </span>
+                </div>
+              </div>
+              <div class="tear"></div>
+              <div class="g2">
+                ${gc('rgba(59,130,246,.1)', '#2563eb', ic('calendar', 18), 'بەروار', '5/10/2026')}
+                ${gc('rgba(16,185,129,.1)', '#059669', ic('clock', 18), 'کات', SEL_TIME)}
+                ${gc('rgba(245,158,11,.1)', '#d97706', '<img src="logo.png" style="width:20px;height:20px;border-radius:6px">', 'سەرتاش', SHOP)}
+                <div style="position:relative">
+                  <div class="gc A" id="stP" style="inset:0;background:rgba(255,251,235,.6);border-color:#fef3c7"><div class="gi" style="background:rgba(245,158,11,.1);color:#d97706">${ic('circle-check-big', 18)}</div><div><div class="gl" style="color:rgba(217,119,6,.7)">دۆخ</div><div class="gv" style="color:#d97706">چاوەڕوان</div></div></div>
+                  <div class="gc" id="stC" style="background:#ecfdf5;border-color:#d1fae5"><div class="gi" style="background:rgba(16,185,129,.12);color:#059669">${ic('circle-check-big', 18)}</div><div><div class="gl" style="color:rgba(5,150,105,.7)">دۆخ</div><div class="gv" style="color:#059669">بەسەندکراوە</div></div></div>
+                  <div id="stGlow" class="A" style="inset:-4px;border-radius:20px;box-shadow:0 0 0 3px rgba(16,185,129,.5),0 0 24px rgba(16,185,129,.5)"></div>
+                </div>
+              </div>
+              <div style="margin:0 14px 14px;border-radius:16px;background:#eff6ff;border:1px solid #bfdbfe;padding:10px;text-align:center;font-size:12px;font-weight:700;color:#1d4ed8">تکایە ٥ خولەک زووتر ئامادەبە</div>
+            </div>
+          </div>
+        </div></div>
+      </div>
+      <div class="homeInd"></div>
+    </div></div>
+  </div>
+
+  <!-- FULL-SCREEN FACE SCAN -->
+  <div id="scan" class="L">
+    <div id="sTitle" class="A stitle">دڵنیاکردنەوەی ناسنامە</div>
+    <div id="scanWrap" class="A">
+      <div class="sring" id="sRing"></div>
+      <div id="sInner"></div>
+      <div id="sOuterA"></div>
+      <div id="sOuterG"></div>
+      <div id="cam">
+        ${faceSVG('sc', { lm: true, pose: poseStr(110, 22, 14, .95) })}
+        <div id="sArc" class="L" style="border-radius:50%;-webkit-mask:radial-gradient(circle,transparent 86%,#000 87.5%);mask:radial-gradient(circle,transparent 86%,#000 87.5%)"></div>
+        <div id="sLine"></div>
+        <div id="sSweep"></div>
+        <div id="sDim" class="L fx" style="background:rgba(0,0,0,.5)"><div class="spin" id="sSpin" style="width:54px;height:54px;border-width:3px;border-color:#60a5fa;border-top-color:transparent"></div></div>
+        <div id="sOk" class="L fx" style="background:rgba(0,0,0,.25)"><div id="sOkC" class="fx" style="width:92px;height:92px;border-radius:50%;background:#10b981;box-shadow:0 10px 30px rgba(16,185,129,.5);color:#fff">${ic('circle-check', 46)}</div></div>
+      </div>
+      <div class="brk" id="bk0" style="top:17px;left:17px;border-top-width:3px;border-left-width:3px"></div>
+      <div class="brk" id="bk1" style="top:17px;right:17px;border-top-width:3px;border-right-width:3px"></div>
+      <div class="brk" id="bk2" style="bottom:17px;left:17px;border-bottom-width:3px;border-left-width:3px"></div>
+      <div class="brk" id="bk3" style="bottom:17px;right:17px;border-bottom-width:3px;border-right-width:3px"></div>
+      <div id="sBadge"><i id="sBadgeDot"></i><span>ڕووخسار دۆزرایەوە</span></div>
+    </div>
+
+    <div class="stx" id="txLoad"><div class="t1" style="color:rgba(255,255,255,.85);font-size:21px">ناسینی ڕووخسار بارکردن...</div><div class="t2">ئامادەکردنی تەکنەلۆژیای ناسینی ڕووخسار</div></div>
+    <div class="stx" id="txSearch"><div class="t1" style="color:#fbbf24">کامێرا بکە سەر ڕوخسارت</div><div class="t2">گەڕان بۆ ڕووخسار...</div><div class="dots"><i id="dA0"></i><i id="dA1"></i><i id="dA2"></i></div></div>
+    <div class="stx" id="txPartial"><div class="t1" style="color:#fbbf24;font-size:22px">تکایە ڕوخسارت بهێنە ناوەڕاستی چوارچێوەکە</div><div class="t2" style="font-size:15px">ڕووخسار دۆزرایەوە، بەڵام پێویستە ڕوخسارت بە شێوازێکی ڕێک بێت بەرامبەر کامێرا</div><div class="dots"><i id="dB0"></i><i id="dB1"></i><i id="dB2"></i></div></div>
+    <div class="stx" id="txFound"><div class="t1" style="color:#34d399">ڕووخسار ڕێکە</div><div class="t2" id="blinkTx" style="color:#fff;font-size:20px;font-weight:700">ئێستا چاو بتروکێنە</div><div class="t3">یان چاوەڕوان بە بۆ وێنەگرتنی خۆکار</div><div class="pbar"><b id="sBar"></b></div></div>
+    <div class="stx" id="txCapt"><div class="t1" style="color:#34d399;font-size:27px;display:flex;align-items:center;gap:8px">وێنەکەت تۆمار کرا ${ic('check', 26, 'stroke-width:3')}</div><div class="t2">کارەکەت سەرکەوتووبوو</div></div>
+    <div class="sbtns" id="sBtns"><div class="use" id="btnUse">بەکاربهێنە ${ic('check', 20, 'stroke-width:3')}</div><div class="rt">${ic('refresh-cw', 20)}</div></div>
+
+    <div class="fchip" id="fc0"><span class="ci" style="background:rgba(251,191,36,.18);color:#fbbf24">${ic('zap', 20)}</span>ڕێنمایی ڕاستەوخۆ بۆ ڕێکخستنی ڕووخسار</div>
+    <div class="fchip" id="fc1"><span class="ci" style="background:rgba(16,185,129,.18);color:#34d399">${ic('scan-face', 20)}</span>${KD(68)} خاڵی ڕووخسار دەپشکنرێت</div>
+    <div class="fchip" id="fc2"><span class="ci" style="background:rgba(96,165,250,.2);color:#93c5fd">${ic('eye', 20)}</span>ناسینی چاوتروکاندن ← وێنەی خۆکار</div>
+
+    <div id="benT" class="A benT">بۆچی <span class="gradG">سکانی ڕووخسار</span>؟</div>
+    <div class="ben" id="bn0" style="top:524px"><span class="ci">${ic('shield-check', 22)}</span>ڕێگری لە تۆمارکردنی ساختە دەکات</div>
+    <div class="ben" id="bn1" style="top:598px"><span class="ci">${ic('user-check', 22)}</span>سەرتاش دەزانێت کێ سەردانی دەکات</div>
+    <div class="ben" id="bn2" style="top:672px"><span class="ci">${ic('zap', 22)}</span>خێرا و ئاسان، بێ دابەزاندنی هیچ ئەپێک</div>
+  </div>
+
+  <!-- BARBER NOTIFICATION -->
+  <div id="notif" class="A">
+    <div class="ncap">${ic('bell-ring', 20)}ئاگادارکردنەوە بۆ مۆبایلی سەرتاش</div>
+    <div class="ncard">
+      <div class="nrow"><img src="logo.png"><span style="font-weight:700;color:#334155">${SHOP}</span><span>•</span><span>ئێستا</span></div>
+      <div class="nt">داواکاری نوێ 📅</div>
+      <div class="nb">${CUST} — دووشەممە 5/10 — 13:00</div>
+      <div class="nbtns">
+        <div class="nbtn" id="nfBtn" style="background:#2563eb;color:#fff"><span id="nfA">پەسەندە</span><span id="nfB" style="display:none;align-items:center;gap:6px">${ic('check', 16, 'stroke-width:3')}پەسەندکرا</span></div>
+        <div class="nbtn" style="background:#f1f5f9;color:#64748b">دواتر</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OUTRO -->
+  <div id="outro" class="L">
+    <div id="oLogo" class="A" style="left:170px;top:170px;width:200px;height:200px">
+      <div class="A" style="inset:-70px;border-radius:50%;background:radial-gradient(circle,rgba(226,188,116,.3),rgba(226,188,116,0) 66%)"></div>
+      <div id="oOrbit" class="orbit" style="inset:-22px"></div>
+      <div class="logoRing" style="inset:0"><div class="cg" id="oRing"></div><div class="in"></div><img src="logo.png"></div>
+    </div>
+    <div id="oName" class="A" style="left:0;right:0;top:398px;text-align:center;font-size:30px;font-weight:700;color:#e2bc74">${SHOP}</div>
+    <div id="oCta" class="A cta" style="left:0;right:0;top:470px">ئێستا <span class="grad">کاتەکەت</span> تۆمار بکە</div>
+    <div id="oUrl" class="A" style="left:0;right:0;top:560px;display:flex;justify-content:center"><div class="url">${ic('globe', 30, 'color:#93c5fd')}zhewar.shop</div></div>
+    <div id="oTag" class="A" style="left:0;right:0;top:668px;text-align:center;font-size:21px;color:#cbd5e1">خێرا · زیرەک · ئاسان</div>
+    <div id="oSub" class="A" style="left:0;right:0;top:708px;text-align:center;font-size:17px;color:#94a3b8">تەنها بە یەک چاوتروکاندن</div>
+  </div>
+
+  <div id="tap" class="A"><div id="tapRip"></div><div id="tapDot"></div></div>
+  <div id="flash" class="L"></div>
+  <div id="fade" class="L"></div>`;
+
+  // landmark dots + mesh (scanner instance)
+  const pts = $('scpts'), mesh = $('scmesh');
+  let ph = '';
+  for (let i = 0; i < 68; i++) ph += `<g id="lp${i}"><circle r="2" fill="#10b981" opacity=".35"/><circle r="1" fill="#a7f3d0"/></g>`;
+  pts.innerHTML = ph;
+  let mh = '';
+  MESH.forEach((_, j) => { mh += `<path id="lm${j}" pathLength="1" fill="none" stroke="#34d399" stroke-width=".45" stroke-opacity=".7" stroke-dasharray="1 1"/>`; });
+  mesh.innerHTML = mh;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Per-frame update
+// ─────────────────────────────────────────────────────────────────────────────
+let FLY = null;           // measured target for the photo → form avatar flight
+
+function seek(t) {
+  bgU(t); introU(t); hookU(t); hdrU(t); phoneU(t); scanU(t); notifU(t); outroU(t); tapU(t);
+  vis('flash', t >= SC.flash && t < SC.flash + .5 ? .8 * (1 - P(t, SC.flash, .45, E.out)) : 0);
+  vis('fade', Math.max(1 - P(t, 0, .5), P(t, DUR - .8, .8, E.io)));
+}
+
+function bgU(t) {
+  const o = (t * 12) % 141;
+  $('bgStripes').style.backgroundPosition = `${o}px ${o}px`;
+  tf('blobB', `translate(${430 + Math.sin(t * .35) * 40}px,${170 + Math.cos(t * .3) * 50}px)`);
+  tf('blobR', `translate(${110 + Math.cos(t * .28) * 40}px,${800 + Math.sin(t * .33) * 50}px)`);
+  tf('blobG', `translate(270px,330px)`);
+  vis('blobG', Math.max(1 - P(t, 4.6, 1), P(t, TL.outro, 1)));
+  vis('bgScan', env(t, SC.zoom, SC.flyEnd, .8, .9));
+}
+
+function introU(t) {
+  if (t > TL.s1 + .5) { vis('intro', 0); return; }
+  vis('intro', 1);
+  const pin = P(t, .25, 1.1, E.back);
+  // logo: pop in, then shrink to the top for the hook
+  const mv = P(t, 4.55, .8, E.io);
+  const sc = lerp(lerp(.55, 1, pin), .5, mv);
+  const ty = lerp(0, -178, mv);
+  const out = P(t, 9.7, .5, E.in);
+  vis('iLogo', Math.min(P(t, .25, .5), 1 - out));
+  tf('iLogo', `translateY(${ty - out * 30}px) scale(${sc})`);
+  tf('iRing', `rotate(${t * 360 / 3.5}deg)`);
+  tf('iOrbit1', `rotate(${-t * 20}deg)`);
+  tf('iOrbit2', `rotate(${t * 12}deg)`);
+  vis('iOrbit1', 1 - mv); vis('iOrbit2', 1 - mv);
+  const ex = P(t, 4.45, .5, E.in);
+  const item = (id, a) => { const p = P(t, a, .75); vis(id, p * (1 - ex)); tf(id, `translateY(${(1 - p) * 26 - ex * 30}px)`); };
+  item('iGold', .95); item('iName', 1.15); item('iTag', 1.85);
+  const pd = P(t, 1.55, .8);
+  vis('iDiv', pd * (1 - ex)); tf('iDiv', `scaleX(${pd}) translateY(${-ex * 30}px)`);
+}
+
+function hookU(t) {
+  if (t < TL.hook - .1 || t > TL.s1 + .3) { vis('hook', 0); return; }
+  vis('hook', 1);
+  const ex = P(t, 9.7, .5, E.in);
+  const line = (id, a) => { const p = P(t, a, .7); vis(id, p * (1 - ex)); tf(id, `translateY(${(1 - p) * 30 - ex * 24}px)`); };
+  line('hk1', 5.15); line('hk2', 5.45); line('hk3', 6.25);
+  const lp = P(t, 6.65, 1.3, E.io);
+  vis('rmLine', 1 - ex); tf('rmLine', `scaleX(${lp})`);
+  for (let i = 0; i < 4; i++) {
+    const p = P(t, 6.7 + i * .3, .5, E.back);
+    vis('rm' + i, clamp(p * 3) * (1 - ex));
+    let extra = '';
+    if (i === 0) { // highlight the face-scan node
+      const g = P(t, 7.9, .6);
+      const pulse = .5 + .5 * Math.sin(t * 5);
+      $('rm0').style.borderColor = `rgba(52,211,153,${.15 + g * .7})`;
+      $('rm0').style.boxShadow = `0 0 ${g * (22 + pulse * 16)}px rgba(16,185,129,${g * .55})`;
+      $('rm0').style.color = g > .5 ? '#6ee7b7' : '#93c5fd';
+      extra = ` scale(${1 + g * .08})`;
+    }
+    tf('rm' + i, `scale(${p})${extra}`);
+    const pl = P(t, 6.9 + i * .3, .5);
+    vis('rl' + i, pl * (1 - ex)); tf('rl' + i, `translateY(${(1 - pl) * 12}px)`);
+  }
+}
+
+function stepAt(t) {
+  if (t < TL.s2) return 0; if (t < TL.s3) return 1; if (t < TL.s4) return 2;
+  if (t < TL.s5) return 3; if (t < TL.s6) return 4; return 5;
+}
+function hdrU(t) {
+  vis('segs', env(t, TL.s1, TL.outro, .5, .5));
+  const starts = [TL.s1, TL.s2, TL.s3, TL.s4, TL.s5, TL.s6];
+  for (let i = 0; i < 6; i++) $('seg' + i).style.width = (P(t, starts[i], .6, E.io) * 100) + '%';
+  const H = [['h1', 10.4, 14.95], ['h2', 15.15, SC.out + .2], ['h3', 31.95, 39.1], ['h4', 39.35, 47.1], ['h5', 47.35, 53.1], ['h6', 53.35, 60.35]];
+  const nf = notifVis(t);
+  H.forEach(([id, a, b]) => {
+    let o = env(t, a, b, .5, .35);
+    if (id === 'h6') o *= 1 - nf;
+    vis(id, o);
+    tf(id, `translateY(${(1 - P(t, a, .5)) * 18}px)`);
+  });
+  const sw = P(t, 57.2, .4);
+  vis('h6a', 1 - sw); vis('h6b', sw);
+}
+
+// ── phone ───────────────────────────────────────────────────────────────────
+const SCREENS = [
+  ['scHome', 10.2, 14.95], ['scReg', 14.75, 19.1], ['scForm', 31.7, 39.45],
+  ['scDT', 39.2, 47.45], ['scSum', 47.2, 53.45], ['scOk', 53.2, 61.2],
+];
+function phoneU(t) {
+  const on1 = t >= TL.s1 - .05 && t < 19.05, on2 = t >= SC.fly && t < TL.outro + .7;
+  if (!on1 && !on2) { vis('phone', 0); vis('phoneGlow', 0); return; }
+  let y = 0, s = 1, o = 1, rotY = Math.sin(t * .6) * 3, rotX = Math.cos(t * .5) * 1.5;
+  const fl = Math.sin(t * 1.2) * 4;
+  if (on1) {
+    y = (1 - P(t, TL.s1, .95, E.out5)) * 780;
+    const z = P(t, SC.zoom, .65, E.in);
+    s = lerp(1, 2.7, z); o = 1 - P(t, SC.zoom + .08, .32);
+    if (z > 0) { rotY *= 1 - z; rotX *= 1 - z; }
+  } else {
+    const p = P(t, SC.fly + .2, .8, E.out);
+    s = lerp(1.1, 1, p); o = p;
+    const ex = P(t, TL.outro - .55, .6, E.in);
+    y = ex * 260; o *= 1 - ex; s *= 1 - ex * .1;
+  }
+  $('phone').style.transformOrigin = '165px 390px';
+  vis('phone', o);
+  tf('phone', `translateY(${y + fl}px) perspective(1600px) rotateY(${rotY}deg) rotateX(${rotX}deg) scale(${s})`);
+  vis('phoneGlow', o * .9); tf('phoneGlow', `translateY(${y}px)`);
+
+  $('appStripes').style.backgroundPosition = `${(t * 6) % 141}px ${(t * 6) % 141}px`;
+  // screens: slide in from the left (RTL "forward"), slide out to the right
+  SCREENS.forEach(([id, a, b]) => {
+    const pin = P(t, a, .45, E.out), pout = P(t, b - .45, .45, E.in);
+    const o2 = (a <= TL.s1 + .01 ? (t >= a ? 1 : 0) : pin) * (1 - pout);
+    vis(id, o2);
+    tf(id, `translateX(${(1 - pin) * -60 + pout * 60}px)`);
+  });
+  tf('homeRing', `rotate(${t * 360 / 3.5}deg)`);
+  tf('regRing', `rotate(${t * 360 / 4}deg)`);
+  tf('formRing', `rotate(${t * 360 / 4}deg)`);
+
+  // reg → camera overlay
+  vis('camOv', P(t, 17.95, .3));
+  tf('miniRing', `rotate(${t * 360 / 2.2}deg)`);
+  tf('miniSpin', `rotate(${t * 360 / .8}deg)`);
+
+  formU(t); dtU(t); sumU(t); okU(t);
+}
+
+const PLACEHOLDER = { fName: 'ناوی تەواو', fPhone: '+964 7XX XXX XXXX', fNote: 'ئایا تێبینییەکت هەیە؟ وەک جۆری مووی، خواستەکانت…' };
+function typed(id, str, a, b, t, focus) {
+  const chars = Array.from(str);
+  const n = Math.round(clamp((t - a) / (b - a)) * chars.length);
+  const caret = focus && (t < b + .05 || Math.floor(t * 2.4) % 2 === 0) ? '<span class="caret"></span>' : '';
+  $(id).innerHTML = n === 0
+    ? `${caret}<span class="ph">${PLACEHOLDER[id]}</span>`
+    : chars.slice(0, n).join('') + caret;
+}
+function formU(t) {
+  if (t < SC.fly - .1 || t > TL.s4 + .5) return;
+  vis('formAvImg', P(t, SC.flyEnd - .08, .12, E.lin));
+  const bp = P(t, SC.flyEnd + .05, .4, E.back);
+  vis('formBadge', clamp(bp * 2)); tf('formBadge', `scale(${bp})`);
+  const F = [['fName', 32.8, 34.45], ['fPhone', 34.45, 36.05], ['fNote', 36.05, 37.3]];
+  TYPE.forEach((f, i) => {
+    const focus = t >= F[i][1] && t < F[i][2];
+    typed(f.id, f.str, f.a, f.b, t, focus);
+    $(f.id + 'Box').classList.toggle('focus', focus);
+  });
+  const saving = t > 38.28;
+  $('btnStart').className = 'btn ' + (saving ? 'dis' : 'blue');
+  $('btnStartTxt').innerHTML = saving
+    ? `<span class="spin" style="width:20px;height:20px;border-color:#94a3b8;border-top-color:transparent;transform:rotate(${t * 450}deg)"></span>چاوەڕوانبە...`
+    : `دەستپێبکە ${ic('arrow-left', 18)}`;
+}
+
+function dtU(t) {
+  if (t < TL.s4 - .2 || t > TL.s5 + .5) return;
+  const selD = t >= 40.75;
+  $('day' + SEL_DAY).className = 'day' + (selD ? ' sel' : '');
+  vis('dtLblA', selD ? 0 : 1); vis('dtLblB', selD ? 1 : 0);
+  vis('dtEmpty', selD ? 0 : 1);
+  vis('dtSkel', selD && t < 41.35 ? .5 + .5 * Math.sin(t * 12) * .5 + .25 : 0);
+  for (let i = 0; i < SLOTS.length; i++) {
+    const p = P(t, 41.35 + i * .045, .35, E.back);
+    const el = vis('slot' + i, clamp(p * 2));
+    tf(el, `scale(${lerp(.8, 1, p)})`);
+    if (i === SEL_SLOT) el.className = 'slot ' + (t >= 43.95 ? 's' : SLOT_ST[i]);
+  }
+  const ok = t >= 43.95;
+  $('ctaDT').className = 'btn ' + (ok ? 'blue' : 'dis');
+  $('ctaDTa').style.display = ok ? 'none' : 'inline';
+  $('ctaDTb').style.display = ok ? 'flex' : 'none';
+}
+
+function sumU(t) {
+  if (t < TL.s5 - .2 || t > TL.s6 + .5) return;
+  $('pole1').style.backgroundPosition = `${(t * 47) % 113}px 0`;
+  const p1 = P(t, 47.45, .6), p2 = P(t, 47.8, .6);
+  vis('sumProf', p1); tf('sumProf', `translateY(${(1 - p1) * 16}px)`);
+  vis('sumGrid', p2); tf('sumGrid', `translateY(${(1 - p2) * 16}px)`);
+  const busy = t >= 51.98;
+  $('ctaSum').className = 'btn ' + (busy ? 'load' : 'blue');
+  $('ctaSumA').style.display = busy ? 'none' : 'inline';
+  $('ctaSumB').style.display = busy ? 'flex' : 'none';
+  tf('sumSpin', `rotate(${t * 450}deg)`);
+}
+
+function okU(t) {
+  if (t < TL.s6 - .2) return;
+  $('pole2').style.backgroundPosition = `${(t * 47) % 113}px 0`;
+  const c = P(t, 53.45, .5, E.back);
+  vis('okC', clamp(c * 2)); tf('okC', `scale(${c})`);
+  const pg = ((t - 53.6) % 2.5) / 2.5;
+  vis('okPing', t > 53.6 ? (1 - pg) * .9 : 0); tf('okPing', `scale(${1 + pg * .45})`);
+  const tx = P(t, 53.65, .5); vis('okTx', tx); tf('okTx', `translateY(${(1 - tx) * 14}px)`);
+  const tk = P(t, 53.85, .6); vis('okTk', tk); tf('okTk', `translateY(${(1 - tk) * 22}px)`);
+  const cf = P(t, 57.35, .35);
+  vis('bdgP', 1 - cf); vis('bdgC', cf); tf('bdgC', `scale(${lerp(.6, 1, P(t, 57.35, .4, E.back))})`);
+  vis('stP', 1 - cf); vis('stC', cf);
+  vis('stGlow', t > 57.35 ? Math.max(0, 1 - (t - 57.35) / 1.6) : 0);
+}
+
+// ── face scan ───────────────────────────────────────────────────────────────
+function phase(t) {
+  if (t < SC.loadEnd) return 'loading';
+  if (t < SC.lock) return 'searching';
+  if (t < SC.capt) return 'found';
+  return 'captured';
+}
+function facePose(t) {
+  if (t >= SC.capt) return [0, 4, 0, 1.2];
+  const ein = P(t, SC.faceIn, 1.0, E.out);
+  const wob = 1 - P(t, SC.cA, 1.2, E.io);
+  let tx = lerp(110, 34, ein) + Math.sin(t * 1.7) * 3 * wob;
+  let ty = 22 + Math.sin(t * 2.3) * 2.2 * wob;
+  let r = 14 + Math.sin(t * 1.3) * 2 * wob;
+  let s = .95;
+  const c = P(t, SC.cA, SC.cB - SC.cA, E.io);
+  tx = lerp(tx, 0, c); ty = lerp(ty, 4, c); r = lerp(r, 0, c); s = lerp(s, 1.2, c);
+  const idle = c >= 1 ? 1 : 0;
+  tx += Math.sin(t * 1.1) * .5 * idle; ty += Math.sin(t * 1.6) * .4 * idle; r += Math.sin(t * .9) * .4 * idle;
+  return [tx, ty, r, s];
+}
+function blinkAt(t) {
+  const a = SC.blink;
+  if (t < a || t > a + .55) return 0;
+  if (t < a + .14) return E.io((t - a) / .14);
+  if (t < a + .3) return 1;
+  return 1 - E.io((t - a - .3) / .25);
+}
+
+function scanU(t) {
+  const onA = t >= SC.in - .05 && t < SC.flyEnd + .1;
+  if (!onA) { vis('scan', 0); return; }
+  vis('scan', 1);
+  const ph = phase(t);
+
+  // wrap: zoom-in entrance → push-in on blink → move up for benefits → fly into form avatar
+  const pin = P(t, SC.in, .65, E.out);
+  let tx = 0, ty = lerp(146, 0, pin), s = lerp(.43, 1, pin);
+  const push = P(t, SC.pushA, 1.4, E.io) * (1 - P(t, SC.capt, .5, E.io));
+  s *= 1 + push * .06;
+  const up = P(t, SC.up, .85, E.io);
+  ty = lerp(ty, -122, up); s = lerp(s, .6, up);
+  if (FLY) {
+    const f = P(t, SC.fly, SC.flyEnd - SC.fly, E.io);
+    tx = lerp(tx, FLY.x - 270, f); ty = lerp(ty, FLY.y - 440, f); s = lerp(s, FLY.s, f);
+  }
+  vis('scanWrap', Math.min(P(t, SC.in, .3), t > SC.flyEnd - .05 ? 0 : 1));
+  tf('scanWrap', `translate(${tx}px,${ty}px) scale(${s})`);
+  const flying = P(t, SC.fly, .35);
+  vis('sTitle', env(t, SC.in + .2, SC.up + .2, .4, .3));
+
+  // ring
+  const ringO = 1 - flying;
+  const ring = $('sRing');
+  vis(ring, ringO); vis('sInner', ringO);
+  if (ph === 'loading' || ph === 'searching') {
+    ring.style.background = 'conic-gradient(#f59e0b 0deg,#f59e0b 180deg,transparent 180deg)';
+    tf(ring, `rotate(${t * 360 / 2.2}deg)`);
+  } else if (ph === 'found') {
+    ring.style.background = 'conic-gradient(#10b981 0deg,#6ee7b7 90deg,#10b981 180deg,#059669 270deg,#10b981 360deg)';
+    tf(ring, `rotate(${t * 360 / 1.2}deg)`);
+  } else {
+    ring.style.background = '#10b981'; tf(ring, 'none');
+  }
+  vis('sOuterA', ph === 'searching' ? (.55 + .45 * Math.sin(t * Math.PI)) * ringO : 0);
+  vis('sOuterG', (ph === 'found' || ph === 'captured') ? ringO * (ph === 'found' ? 1 : .7) : 0);
+  const bcol = ph === 'found' ? '#10b981' : '#fbbf24';
+  for (let i = 0; i < 4; i++) { const b = $('bk' + i); b.style.borderColor = bcol; vis(b, ph === 'searching' || ph === 'found' ? 1 : 0); }
+  const bd = vis('sBadge', ph === 'found' ? P(t, SC.lock, .35) : 0);
+  tf(bd, `translateX(-50%) scale(${lerp(.7, 1, P(t, SC.lock, .35, E.back))})`);
+  vis('sBadgeDot', .4 + .6 * Math.abs(Math.sin(t * 3)));
+
+  // camera content
+  vis('sDim', ph === 'loading' ? 1 : 1 - P(t, SC.loadEnd, .3));
+  tf('sSpin', `rotate(${t * 360 / .8}deg)`);
+  const lt = ((t - SC.loadEnd) % 2.2) / 2.2;
+  const lineEl = vis('sLine', ph === 'searching' ? (lt < .08 ? lt / .08 : lt > .92 ? (1 - lt) / .08 : 1) : 0);
+  lineEl.style.top = (18 + lt * 64) + '%';
+  const sw = P(t, SC.lock, .9, E.io);
+  vis('sSweep', ph === 'found' && sw < 1 ? 1 : 0); $('sSweep').style.top = (lerp(-90, 348, sw)) + 'px';
+  const prog = ph === 'found' ? clamp((t - SC.lock) / 3.4) * 100 : 0;
+  $('sArc').style.background = `conic-gradient(rgba(52,211,153,.85) ${prog * 3.6}deg, transparent ${prog * 3.6}deg)`;
+  vis('sArc', ph === 'found' ? 1 : 0);
+  $('sBar').style.width = prog + '%';
+  const okp = P(t, SC.capt + .1, .45, E.back);
+  vis('sOk', ph === 'captured' ? clamp(P(t, SC.capt, .2)) * (1 - flying) : 0);
+  tf('sOkC', `scale(${okp})`);
+  $('cam').style.boxShadow = `0 0 0 ${flying * 3}px #bfdbfe`;
+
+  // face pose + blink
+  const [fx, fy, fr, fs] = facePose(t);
+  $('scpose').setAttribute('transform', poseStr(fx, fy, fr, fs));
+  const bl = blinkAt(t);
+  $('sclidR').setAttribute('d', lidD(82, bl)); $('sclashR').setAttribute('d', lashD(82, bl));
+  $('sclidL').setAttribute('d', lidD(118, bl)); $('sclashL').setAttribute('d', lashD(118, bl));
+
+  // detection box (axis aligned, like face-api)
+  const box = $('scbox');
+  const boxO = ph === 'searching' ? P(t, SC.partial, .3) : ph === 'found' ? 1 - P(t, SC.lmA + .6, .5) : 0;
+  if (boxO > 0) {
+    const rr = Math.abs(fr) * Math.PI / 180;
+    const hw = fs * (44 * Math.cos(rr) + 54 * Math.sin(rr)), hh = fs * (56 * Math.cos(rr) + 44 * Math.sin(rr));
+    const cx = 100 + fx, cy = 93 + fy;
+    box.setAttribute('x', cx - hw); box.setAttribute('y', cy - hh); box.setAttribute('width', hw * 2); box.setAttribute('height', hh * 2);
+    box.setAttribute('stroke', ph === 'found' ? '#34d399' : '#fbbf24');
+    box.setAttribute('stroke-dashoffset', -t * 12);
+  }
+  box.setAttribute('opacity', boxO);
+
+  // landmarks + mesh
+  const lmOn = (ph === 'found' || (ph === 'captured' && t < SC.capt + .25));
+  const lmFade = ph === 'captured' ? 1 - P(t, SC.capt, .2) : 1;
+  const blinkDim = 1 - .7 * clamp(1 - Math.abs(t - (SC.blink + .2)) / .45);
+  $('scpts').setAttribute('opacity', lmOn ? lmFade * blinkDim : 0);
+  $('scmesh').setAttribute('opacity', lmOn ? lmFade * blinkDim : 0);
+  if (lmOn) {
+    const L = landmarks(bl);
+    const glowEye = bl > 0 ? 1 : 0;
+    for (let i = 0; i < 68; i++) {
+      const p = P(t, SC.lmA + i * (1.25 / 68), .28, E.back);
+      const g = $('lp' + i);
+      const eyeBoost = (i >= 36 && i <= 47) ? 1 + glowEye * .15 : 1;
+      g.setAttribute('transform', `translate(${L[i][0]} ${L[i][1]}) scale(${Math.max(0, p) * eyeBoost})`);
+    }
+    MESH.forEach((seq, j) => {
+      const d = 'M' + seq.map(k => L[k][0].toFixed(2) + ',' + L[k][1].toFixed(2)).join('L');
+      const el = $('lm' + j);
+      el.setAttribute('d', d);
+      el.setAttribute('stroke-dashoffset', 1 - P(t, SC.meshA + j * (1.1 / MESH.length), .4, E.io));
+    });
+  }
+
+  // instruction text
+  const txt = (id, a, b) => { const o = env(t, a, b, .3, .25); vis(id, o); tf(id, `translateY(${(1 - P(t, a, .3)) * 10}px)`); };
+  txt('txLoad', SC.in + .3, SC.loadEnd);
+  txt('txSearch', SC.loadEnd, SC.partial);
+  txt('txPartial', SC.partial, SC.lock);
+  txt('txFound', SC.lock, SC.capt);
+  txt('txCapt', SC.capt, SC.up + .15);
+  for (let i = 0; i < 3; i++) {
+    const v = .3 + .7 * (.5 + .5 * Math.sin((t - i * .2) * Math.PI * 2 / 1.4));
+    vis('dA' + i, v); vis('dB' + i, v);
+    tf('dA' + i, `scale(${.8 + .4 * v})`); tf('dB' + i, `scale(${.8 + .4 * v})`);
+  }
+  const bt = $('blinkTx');
+  const pulse = t > SC.pushA && t < SC.blink + .4 ? .5 + .5 * Math.sin(t * 9) : 0;
+  bt.style.textShadow = `0 0 ${pulse * 18}px rgba(52,211,153,.9)`;
+  const sb = P(t, SC.btns, .4, E.back);
+  vis('sBtns', clamp(sb * 2) * (1 - P(t, SC.up, .25)));
+  tf('sBtns', `translateY(${(1 - sb) * 16}px)`);
+  const pr = bump(t, SC.use, .14);
+  $('btnUse').style.scale = 1 - pr * .05;
+
+  // feature chips
+  const chip = (id, a, b) => { const o = env(t, a, b, .4, .3); vis(id, o); tf(id, `translateX(-50%) translateY(${(1 - P(t, a, .4)) * 20}px) scale(${lerp(.92, 1, P(t, a, .4, E.back))})`); };
+  chip('fc0', SC.partial + .1, SC.cB);
+  chip('fc1', SC.lmA + .1, SC.blink - .25);
+  chip('fc2', SC.blink - .2, SC.up + .1);
+
+  // benefits
+  const bo = 1 - P(t, SC.out, .4, E.in);
+  const bT = P(t, SC.benT, .5);
+  vis('benT', bT * bo); tf('benT', `translateY(${(1 - bT) * 20}px)`);
+  SC.ben.forEach((a, i) => {
+    const p = P(t, a, .55, E.out);
+    vis('bn' + i, p * bo);
+    tf('bn' + i, `translateX(${(1 - p) * -60}px)`);
+  });
+}
+
+// ── notification ────────────────────────────────────────────────────────────
+function notifVis(t) { return env(t, 54.9, 57.3, .35, .35); }
+function notifU(t) {
+  const o = notifVis(t);
+  vis('notif', o);
+  const pin = P(t, 54.9, .5, E.back), pout = P(t, 56.95, .35, E.in);
+  tf('notif', `translateY(${(1 - pin) * -150 - pout * 160}px)`);
+  const done = t >= 56.25;
+  $('nfBtn').style.background = done ? '#10b981' : '#2563eb';
+  $('nfA').style.display = done ? 'none' : 'inline';
+  $('nfB').style.display = done ? 'flex' : 'none';
+}
+
+// ── outro ───────────────────────────────────────────────────────────────────
+function outroU(t) {
+  if (t < TL.outro - .1) { vis('outro', 0); return; }
+  vis('outro', 1);
+  const l = P(t, TL.outro + .15, 1.0, E.back);
+  vis('oLogo', clamp(l * 2)); tf('oLogo', `scale(${lerp(.4, 1, l)})`);
+  tf('oRing', `rotate(${t * 360 / 3.5}deg)`); tf('oOrbit', `rotate(${-t * 18}deg)`);
+  const it = (id, a, dy = 24) => { const p = P(t, a, .7); vis(id, p); tf(id, `translateY(${(1 - p) * dy}px)`); };
+  it('oName', 61.0); it('oCta', 61.35);
+  const u = P(t, 61.85, .7, E.back);
+  vis('oUrl', clamp(u * 2)); tf('oUrl', `scale(${lerp(.7, 1, u)})`);
+  it('oTag', 62.4); it('oSub', 62.7);
+}
+
+// ── tap indicator ───────────────────────────────────────────────────────────
+function tapU(t) {
+  const tp = TAPS.find(x => t >= x.t - .55 && t <= x.t + .5);
+  TAPS.forEach(x => { const el = $(x.id); if (el && x.id !== 'btnUse') el.style.scale = 1 - bump(t, x.t, .14) * .05; });
+  if (!tp) { vis('tap', 0); return; }
+  const el = $(tp.id);
+  const r = el.getBoundingClientRect();
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  const a = P(t, tp.t - .55, .4, E.out);
+  const out = P(t, tp.t + .2, .3, E.in);
+  vis('tap', a * (1 - out));
+  const press = bump(t, tp.t, .12);
+  const drift = (1 - a) * 40;
+  tf('tap', `translate(${cx + drift * .6}px,${cy + drift}px)`);
+  tf('tapDot', `scale(${lerp(1.25, 1, a) - press * .22})`);
+  const rp = P(t, tp.t, .45, E.out);
+  vis('tapRip', t >= tp.t ? (1 - rp) * .9 : 0); tf('tapRip', `scale(${1 + rp * 1.4})`);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+function init() {
+  build();
+  buildSfx();
+  // Measure where the form avatar sits once the phone has settled, so the
+  // captured photo can fly exactly into it.
+  seek(SC.flyEnd);
+  const r = $('formAv').getBoundingClientRect();
+  FLY = { x: r.left + r.width / 2, y: r.top + r.height / 2, s: r.width / 348 };
+  seek(0);
+}
+window.DUR = DUR; window.SFX = SFX; window.seek = seek; window.init = init;
+if (!navigator.webdriver) window.addEventListener('load', () => { init(); let t0 = performance.now(); (function loop() { seek(((performance.now() - t0) / 1000) % DUR); requestAnimationFrame(loop); })(); });
+</script>
+</body>
+</html>

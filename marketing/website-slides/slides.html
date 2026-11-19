@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="ckb" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Zhewar booking — clickgroup.site slides (source)</title>
+<!--
+  Source for the clickgroup.site homepage slider images (barber booking system).
+  #char-<id>  → 1000×1000 transparent "Character / Product Image" (rendered at 1.6x → 1600px WebP)
+  #bg-<id>    → 1920×1080 "Background Image" (JPG)
+  Render with:  node render.js
+  Shop name / logo shown inside the mockups: SHOP + LOGO below.
+-->
+<script src="../video-src/icons.js"></script>
+<style>
+@font-face{font-family:'Kurdish';src:url('../../public/font/kurdish.ttf') format('truetype');font-weight:100 900}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:transparent}
+body{font-family:'Kurdish','Segoe UI',system-ui,sans-serif;color:#fff;padding:20px;-webkit-font-smoothing:antialiased}
+svg.i{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;display:block}
+img{display:block}
+.A{position:absolute}
+.fx{display:flex;align-items:center;justify-content:center}
+.lat{font-family:'Segoe UI',sans-serif;direction:ltr;unicode-bidi:isolate}
+
+.char{position:relative;width:1000px;height:1000px;overflow:hidden;margin-bottom:40px}
+.bgs{position:relative;width:1920px;height:1080px;overflow:hidden;margin-bottom:40px}
+.fit{position:absolute;inset:0;transform:scale(.88);transform-origin:44% 100%}
+.at{position:absolute;transform-origin:0 0}
+.face-l{transform:perspective(2600px) rotateY(-14deg) rotateX(4deg)}
+
+/* ── iPhone (customer web app) — from the promo ── */
+.iph{position:relative;width:330px;height:700px}
+.frame{position:absolute;inset:0;border-radius:54px;background:linear-gradient(150deg,#5b6474 0%,#1a2130 16%,#0b0f17 55%,#3a4252 100%);box-shadow:0 40px 90px rgba(0,0,0,.55)}
+.frame:before{content:'';position:absolute;inset:3px;border-radius:51px;background:#04060a}
+.pbtn{position:absolute;width:4px;border-radius:2px;background:#3a4252}
+.screen{position:absolute;left:9px;top:9px;width:312px;height:682px;border-radius:46px;overflow:hidden;background:#fafafa}
+.screen:after{content:'';position:absolute;inset:0;z-index:20;pointer-events:none;background:linear-gradient(118deg,rgba(255,255,255,.22) 0%,rgba(255,255,255,.05) 26%,rgba(255,255,255,0) 40%)}
+.lg360{position:absolute;left:0;top:0;width:360px;height:787px;transform:scale(.8666667);transform-origin:0 0;direction:rtl;color:#0f172a}
+.sbar{position:absolute;left:0;right:0;top:0;height:46px;display:flex;align-items:center;justify-content:space-between;padding:4px 30px 0;direction:ltr;font-family:'Segoe UI',sans-serif;font-size:15px;font-weight:700;color:#0f172a;background:#fff;z-index:5}
+.island{position:absolute;left:50%;top:12px;width:104px;height:30px;margin-left:-52px;border-radius:20px;background:#000;z-index:6}
+.ubar{position:absolute;left:0;right:0;top:46px;height:46px;background:#fff;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;padding:0 14px;z-index:5;direction:ltr}
+.upill{height:34px;flex:1;border-radius:17px;background:#f1f3f6;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'Segoe UI',sans-serif;font-size:14px;color:#334155}
+.area{position:absolute;left:0;right:0;top:92px;bottom:0;overflow:hidden;background:#fafafa}
+.appstripes{position:absolute;inset:0;background-image:repeating-linear-gradient(-45deg,transparent 0 24px,#ef4444 24px 38px,transparent 38px 62px,#3b82f6 62px 76px,transparent 76px 100px);background-size:141px 141px;opacity:.045}
+.scr{position:absolute;inset:0;overflow:hidden}
+.homeInd{position:absolute;left:50%;bottom:8px;width:120px;height:5px;margin-left:-60px;border-radius:3px;background:#0f172a;opacity:.85;z-index:9}
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:56px;border-radius:16px;font-weight:700;font-size:16px;color:#fff;flex-shrink:0}
+.btn.blue{background:#2563eb;box-shadow:0 4px 10px rgba(147,197,253,.55)}
+.btn.red{background:#ef4444;height:50px;font-size:14px}
+.home{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:0 30px 34px}
+.aring{position:relative;border-radius:50%;flex-shrink:0}
+.aring .cg{position:absolute;inset:0;border-radius:50%;background:conic-gradient(#ef4444 0deg,#ef4444 110deg,#f8fafc 135deg,#3b82f6 160deg,#3b82f6 290deg,#f8fafc 315deg,#ef4444 360deg)}
+.aring .w{position:absolute;inset:3px;border-radius:50%;background:#fff}
+.aring img{position:absolute;inset:5px;width:calc(100% - 10px);height:calc(100% - 10px);border-radius:50%}
+.hname{font-size:42px;font-weight:700;color:#171717;line-height:1.1}
+.htag{font-size:15px;color:#737373;font-weight:500}
+.hsmall{font-size:11px;color:#a3a3a3;margin-top:4px}
+.hdiv{display:flex;align-items:center;gap:10px}
+.hdiv i{display:block;height:2px;width:80px;border-radius:2px}
+.diamond{width:6px;height:6px;background:#a3a3a3;transform:rotate(45deg)}
+.cardwrap{position:absolute;inset:0;padding:26px 16px}
+.card{background:rgba(255,255,255,.95);border:1px solid #f1f5f9;border-radius:24px;box-shadow:0 25px 50px -12px rgba(203,213,225,.8);padding:22px;display:flex;flex-direction:column;gap:16px}
+.ctop{display:flex;align-items:center;justify-content:space-between}
+.homebtn{width:40px;height:40px;border-radius:16px;border:1px solid #e2e8f0;background:#fff;color:#64748b;display:flex;align-items:center;justify-content:center}
+.wel{font-size:28px;font-weight:700;color:#0f172a;line-height:1.2;margin-top:12px}
+.wels{font-size:14px;color:#64748b;margin-top:4px;line-height:1.6}
+.av{position:relative;width:80px;height:80px;margin:0 auto}
+.avc{width:100%;height:100%;border-radius:50%;overflow:hidden;border:2px solid #bfdbfe;background:#eff6ff}
+.avc svg,.cav svg,.bigav svg,.fa svg{width:100%;height:100%;display:block}
+.avb{position:absolute;top:-4px;right:-4px;width:26px;height:26px;border-radius:50%;background:#10b981;border:2px solid #fff;color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.chg{display:flex;align-items:center;justify-content:center;gap:4px;color:#3b82f6;font-size:12px;margin-top:6px}
+.fields{display:flex;flex-direction:column;gap:14px}
+.inp{position:relative;height:56px;border-radius:16px;border:1px solid #e2e8f0;background:#f8fafc;display:flex;align-items:center;padding:0 46px 0 16px;font-size:15px;color:#0f172a;white-space:nowrap}
+.inp .ico{position:absolute;right:16px;top:50%;margin-top:-8px;color:#94a3b8}
+.ta{height:70px;border-radius:16px;border:1px solid #e2e8f0;background:#f8fafc;padding:12px 16px;font-size:14px;line-height:1.6}
+.lblrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:12px}
+.stepbar{position:absolute;left:0;right:0;top:0;height:3px;background:#e2e8f0;z-index:2}
+.stepbar b{position:absolute;right:0;top:0;height:100%;background:#2563eb;border-radius:3px}
+.dtw{position:absolute;inset:0;padding:22px 16px 0}
+.stl{font-size:12px;color:#2563eb;font-weight:500;text-align:right}
+.h2{font-size:28px;font-weight:700;color:#0f172a;line-height:1.25;text-align:right;margin-top:2px}
+.cchip{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding:10px 12px;border-radius:16px;background:#fff;border:1px solid #e2e8f0;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.cav{width:40px;height:40px;border-radius:50%;overflow:hidden;border:2px solid #e2e8f0;flex-shrink:0}
+.cname{font-size:14px;font-weight:700;color:#0f172a;line-height:1.2}
+.cph{font-size:10.5px;color:#94a3b8;margin-top:2px;direction:ltr;text-align:right;font-family:'Segoe UI',sans-serif;white-space:nowrap}
+.mini{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.secl{font-size:10px;color:#64748b;margin:14px 0 8px;text-align:right}
+.strip{display:flex;gap:5px;direction:ltr}
+.day{flex:0 0 auto;width:42px;height:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:16px;border:1px solid #e2e8f0;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.day .dn{font-size:7.5px;font-weight:700;color:#64748b;text-align:center;line-height:1.2;width:100%;padding:0 1px;white-space:nowrap;overflow:hidden}
+.day .dd{font-size:17px;font-weight:700;color:#1e293b;line-height:1;font-family:'Segoe UI',sans-serif}
+.day .dt{width:6px;height:6px;border-radius:50%;background:transparent}
+.day.today{background:#eff6ff;border-color:#93c5fd}.day.today .dn{color:#2563eb}.day.today .dd{color:#1d4ed8}.day.today .dt{background:#3b82f6}
+.day.sel{background:#2563eb;border-color:#2563eb;box-shadow:0 4px 10px rgba(147,197,253,.6)}.day.sel .dn{color:rgba(255,255,255,.85)}.day.sel .dd{color:#fff}.day.sel .dt{background:rgba(255,255,255,.45)}
+.day.off{opacity:.35;background:#f8fafc;border-color:#f1f5f9}
+.legend{display:flex;justify-content:space-between;align-items:center;margin:14px 0 10px}
+.lgs{display:flex;gap:10px;font-size:10px;font-weight:500;color:#475569}
+.lgs span{display:flex;align-items:center;gap:4px}
+.lgs i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.slot{height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff}
+.slot.g{background:#10b981}.slot.a{background:#fbbf24}.slot.r{background:#dc2626}.slot.s{background:#2563eb;box-shadow:0 0 0 4px rgba(37,99,235,.2),0 6px 16px rgba(59,130,246,.5)}
+.ctaw{position:absolute;left:0;right:0;bottom:0;padding:56px 16px 26px;background:linear-gradient(to top,#fff 0%,rgba(255,255,255,.85) 50%,rgba(255,255,255,0) 100%);z-index:3}
+
+/* ── booking ticket ── */
+.tkw{position:relative;width:330px}
+.notch{position:absolute;width:24px;height:24px;border-radius:50%;background:#0b1020;z-index:2}
+.tk{background:#fff;color:#0f172a;border-radius:24px;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.5)}
+.pole{height:10px;background-image:repeating-linear-gradient(-45deg,#ef4444,#ef4444 20px,#fff 20px,#fff 40px,#3b82f6 40px,#3b82f6 60px,#fff 60px,#fff 80px);background-size:113px 100%}
+.prof{display:flex;flex-direction:column;align-items:center;padding:18px 24px 14px;gap:3px}
+.bigav{width:84px;height:84px;border-radius:50%;padding:4px;background:#fff;box-shadow:0 0 0 4px rgba(59,130,246,.1),0 4px 8px rgba(0,0,0,.1)}
+.bigav>div{width:100%;height:100%;border-radius:50%;overflow:hidden}
+.pn2{font-size:19px;font-weight:700;color:#1f2937;margin-top:6px}
+.pp{font-size:13px;color:#6b7280;direction:ltr;font-family:'Segoe UI',sans-serif}
+.tear{border-top:2px dashed #e5e7eb;margin:0 16px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px}
+.gc{display:flex;align-items:center;gap:10px;padding:10px;background:#f9fafb;border-radius:16px;border:1px solid #f3f4f6}
+.gi{width:34px;height:34px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.gl{font-size:10px;color:#9ca3af;font-weight:500}
+.gv{font-size:13px;font-weight:700;color:#374151;margin-top:1px;line-height:1.25;white-space:nowrap}
+.barcode{width:180px;height:30px;background:repeating-linear-gradient(90deg,#0f172a 0px,#0f172a 2px,transparent 2px,transparent 4px,#0f172a 4px,#0f172a 5px,transparent 5px,transparent 8px,#0f172a 8px,#0f172a 9px,transparent 9px,transparent 12px)}
+.badge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;border:1px solid}
+
+/* ── Android phone (barber admin app) ── */
+.adr{position:relative;width:350px;height:740px;border-radius:40px;padding:9px;
+  background:linear-gradient(150deg,#4b5563 0%,#1f2937 14%,#0b0f17 55%,#374151 100%);box-shadow:0 40px 90px rgba(0,0,0,.55),inset 0 0 0 2px rgba(255,255,255,.08)}
+.adr .scrn{position:relative;width:100%;height:100%;border-radius:32px;overflow:hidden;background:#f8fafc}
+.adr .scrn:after{content:'';position:absolute;inset:0;z-index:20;pointer-events:none;background:linear-gradient(118deg,rgba(255,255,255,.2) 0%,rgba(255,255,255,.04) 26%,rgba(255,255,255,0) 40%)}
+.adr .hole{position:absolute;left:50%;top:14px;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:#000;z-index:9;box-shadow:0 0 0 2px #1f2937}
+.adr .side{position:absolute;right:-3px;width:4px;border-radius:2px;background:#4b5563}
+.m3{position:absolute;left:0;top:0;width:360px;height:763px;transform:scale(.9222);transform-origin:0 0;direction:rtl;color:#0f172a}
+.asb{height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;direction:ltr;font-family:'Segoe UI',sans-serif;font-size:14px;font-weight:600;color:#0f172a}
+.atop{display:flex;align-items:center;justify-content:space-between;padding:8px 16px 12px}
+.atop .t{display:flex;align-items:center;gap:10px}
+.atop b{display:block;font-size:19px;line-height:1.2}
+.atop small{display:block;font-size:12px;color:#64748b}
+.ibtn{width:40px;height:40px;border-radius:50%;background:#e2e8f0;color:#334155;display:flex;align-items:center;justify-content:center}
+.seg3{display:flex;margin:0 16px 12px;border:1px solid #cbd5e1;border-radius:999px;overflow:hidden}
+.seg3 span{flex:1;height:40px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:700;color:#334155}
+.seg3 span+span{border-right:1px solid #cbd5e1}
+.seg3 .on{background:#dbeafe;color:#1e3a8a}
+.seg3 .cnt{min-width:20px;height:20px;border-radius:10px;background:#2563eb;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;padding:0 5px;font-family:'Segoe UI',sans-serif}
+.srch{margin:0 16px 12px;height:46px;border-radius:999px;background:#e2e8f0;display:flex;align-items:center;gap:10px;padding:0 16px;font-size:13px;color:#64748b}
+.apc{margin:0 16px 12px;padding:14px;border-radius:20px;background:#fff;box-shadow:0 1px 3px rgba(15,23,42,.08),0 1px 2px rgba(15,23,42,.06)}
+.apc .r1{display:flex;align-items:center;justify-content:space-between}
+.apc .who{display:flex;align-items:center;gap:10px}
+.fa{width:46px;height:46px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid #e2e8f0}
+.ini{width:46px;height:46px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff}
+.apc b{display:block;font-size:16px;line-height:1.25}
+.apc .ph{font-size:12px;color:#64748b;direction:ltr;text-align:right;font-family:'Segoe UI',sans-serif}
+.st{font-size:12px;font-weight:700;padding:4px 12px;border-radius:999px}
+.st.p{background:#fffbeb;color:#b45309;border:1px solid #fde68a}
+.st.c{background:#d1fae5;color:#047857;border:1px solid #a7f3d0}
+.apc .r2{display:flex;gap:8px;margin-top:12px}
+.apc .r2 span{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:12px;background:#f1f5f9;font-size:13px;color:#334155;font-weight:500}
+.apc .r3{display:flex;gap:8px;margin-top:12px}
+.apc .r3 div{flex:1;height:42px;border-radius:999px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:700}
+.bnav{position:absolute;left:0;right:0;bottom:0;height:80px;background:#eef2f7;display:flex;justify-content:space-around;align-items:center;padding:0 6px 8px;border-top:1px solid #e2e8f0}
+.bnav div{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:600;color:#475569}
+.bnav i{width:52px;height:30px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-style:normal}
+.bnav .on i{background:#dbeafe;color:#1e3a8a}
+.bnav .on{color:#0f172a}
+
+/* ── floating pieces ── */
+.ncard{width:430px;background:rgba(248,250,252,.98);border-radius:26px;padding:14px 16px;color:#0f172a;box-shadow:0 30px 60px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.5)}
+.nrow{display:flex;align-items:center;gap:8px;font-size:13px;color:#64748b}
+.nrow img{width:24px;height:24px;border-radius:50%}
+.nt{font-size:19px;font-weight:700;margin-top:6px}
+.nb{font-size:15px;color:#475569;margin-top:2px}
+.nbtns{display:flex;gap:8px;margin-top:12px}
+.nbtn{flex:1;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:15px;font-weight:700}
+.fchip{display:flex;align-items:center;gap:12px;padding:10px 24px 10px 10px;border-radius:999px;width:max-content;
+  background:linear-gradient(160deg,rgba(30,41,59,.95),rgba(11,16,32,.95));border:1.5px solid rgba(255,255,255,.16);font-size:22px;font-weight:700;color:#f1f5f9;box-shadow:0 20px 50px rgba(0,0,0,.45)}
+.fchip .ci{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.lgi{display:flex;align-items:center;gap:8px;padding:8px 18px;border-radius:999px;font-size:20px;font-weight:700;width:max-content;box-shadow:0 14px 34px rgba(0,0,0,.4)}
+.lgi i{width:11px;height:11px;border-radius:50%;display:block}
+.wcard{width:360px;padding:18px 20px;border-radius:26px;background:#fff;color:#0f172a;box-shadow:0 30px 70px rgba(0,0,0,.5)}
+.wcard h6{display:flex;align-items:center;gap:8px;font-size:18px;margin-bottom:10px}
+.wrow{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-top:1px solid #f1f5f9;font-size:15px}
+.wrow small{display:block;font-size:12px;color:#64748b;font-family:'Segoe UI',sans-serif;direction:ltr;text-align:right}
+.sw{width:46px;height:26px;border-radius:13px;background:#2563eb;position:relative;flex-shrink:0}
+.sw:after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff}
+.sw.off{background:#cbd5e1}.sw.off:after{left:auto;right:3px}
+.apk{width:170px;height:170px;border-radius:44px;background:linear-gradient(145deg,#4ade80,#16a34a);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  box-shadow:0 0 0 6px rgba(255,255,255,.12),0 26px 50px rgba(22,163,74,.45)}
+.apk b{font:800 30px 'Segoe UI',sans-serif;letter-spacing:3px;color:#fff}
+
+/* barber pole */
+.bpole{position:absolute;width:150px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 30px 40px rgba(0,0,0,.5))}
+.bpole .ball{width:78px;height:78px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fffbe8,#e2bc74 38%,#8a6a2f 100%);margin-bottom:-12px;z-index:2}
+.bpole .col{width:150px;height:30px;border-radius:10px;background:linear-gradient(90deg,#6b5224,#f5deae 38%,#e2bc74 55%,#6b5224);z-index:2;box-shadow:inset 0 -3px 0 rgba(0,0,0,.2)}
+.bpole .tube{position:relative;width:122px;height:470px;overflow:hidden;
+  background:repeating-linear-gradient(-32deg,#ef4444 0 36px,#f8fafc 36px 62px,#2563eb 62px 98px,#f8fafc 98px 124px);box-shadow:0 0 60px rgba(59,130,246,.45),0 0 90px rgba(239,68,68,.25)}
+.bpole .tube:after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.5) 0%,rgba(0,0,0,.05) 26%,rgba(255,255,255,.55) 38%,rgba(255,255,255,0) 52%,rgba(0,0,0,.1) 72%,rgba(0,0,0,.55) 100%)}
+.bpole .base{width:120px;height:40px;border-radius:6px 6px 20px 20px;background:linear-gradient(90deg,#6b5224,#f5deae 38%,#e2bc74 55%,#6b5224);margin-top:-2px}
+/* face scan ring */
+.ring{position:relative;width:560px;height:560px}
+.ring .prog{position:absolute;inset:0;border-radius:50%;background:conic-gradient(#34d399 0 74%,rgba(255,255,255,.12) 74% 100%)}
+.ring .inner{position:absolute;inset:7px;border-radius:50%;background:#050a16}
+.ring .outer{position:absolute;inset:-22px;border-radius:50%;border:3px solid #10b981;box-shadow:0 0 70px rgba(16,185,129,.45),inset 0 0 40px rgba(16,185,129,.15)}
+.ring .orb{position:absolute;inset:-58px;border-radius:50%;border:2px dashed rgba(110,231,183,.25)}
+.ring .cam{position:absolute;left:24px;top:24px;width:512px;height:512px;border-radius:50%;overflow:hidden;background:#0f172a}
+.ring .cam>svg{position:absolute;inset:0;width:100%;height:100%}
+.ring .sweep{position:absolute;left:0;right:0;top:48%;height:130px;background:linear-gradient(to bottom,rgba(16,185,129,0),rgba(16,185,129,.22) 70%,rgba(110,231,183,.65) 97%,rgba(16,185,129,0))}
+.ring .brk{position:absolute;width:62px;height:62px;border:0 solid #34d399;border-radius:6px}
+.ring .sb{position:absolute;left:50%;bottom:-26px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:9px 22px;border-radius:999px;background:rgba(6,40,30,.95);border:1.5px solid rgba(16,185,129,.6);white-space:nowrap;color:#6ee7b7;font-size:22px;font-weight:700}
+.ring .sb i{width:11px;height:11px;border-radius:50%;background:#34d399;box-shadow:0 0 10px #34d399}
+.fbadge{position:absolute;width:190px;height:190px;border-radius:50%;padding:7px;background:conic-gradient(#34d399 0 100%);box-shadow:0 0 50px rgba(16,185,129,.5),0 26px 50px rgba(0,0,0,.45)}
+.fbadge .in{width:100%;height:100%;border-radius:50%;overflow:hidden;border:4px solid #050a16}
+.fbadge .in svg{width:100%;height:100%;display:block}
+.fbadge .ok{position:absolute;right:4px;bottom:4px;width:56px;height:56px;border-radius:50%;background:#10b981;border:4px solid #fff;color:#fff;display:flex;align-items:center;justify-content:center}
+
+/* ── backgrounds ── */
+.bgs > *{position:absolute}
+.bgs .base{inset:0}
+.bgs .wash,.bgs .bk{border-radius:50%}
+.bgs .grain{inset:0;opacity:.09;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.bgs .vig{inset:0;background:radial-gradient(ellipse at 65% 45%,rgba(0,0,0,0) 45%,rgba(0,0,0,.55) 100%)}
+</style>
+</head>
+<body>
+
+<section class="char" id="char-overview"></section>
+<section class="char" id="char-face-scan"></section>
+<section class="char" id="char-booking"></section>
+<section class="char" id="char-barber-app"></section>
+
+<section class="bgs" id="bg-overview" data-bg="barber"></section>
+<section class="bgs" id="bg-face-scan" data-bg="scan"></section>
+<section class="bgs" id="bg-booking" data-bg="vanity"></section>
+<section class="bgs" id="bg-barber-app" data-bg="night"></section>
+
+<script>
+// ─── what the mockups show (swap for a neutral sample shop if needed) ───
+const SHOP = 'ژێوار عزیز', LOGO = '../video-src/logo.png', URL = 'zhewar.shop';
+const CUST = 'ئاراس ئەحمەد', CPHONE = '+964 750 123 4567';
+
+Object.assign(ICONS, {
+  'layout-dashboard': '<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>',
+  'image': '<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>',
+  'share-2': '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/>',
+  'settings': '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+  'log-out': '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
+});
+const ic = (n, sz, st = '') => `<svg class="i" viewBox="0 0 24 24" style="width:${sz}px;height:${sz}px;${st}">${ICONS[n]}</svg>`;
+
+// ─── cartoon customer face + 68-point landmark mesh (same model as the promo / face-api order) ───
+const lerp = (a, b, t) => a + (b - a) * t;
+const bz = (p0, p1, p2, p3, t) => { const u = 1 - t; return [u*u*u*p0[0] + 3*u*u*t*p1[0] + 3*u*t*t*p2[0] + t*t*t*p3[0], u*u*u*p0[1] + 3*u*u*t*p1[1] + 3*u*t*t*p2[1] + t*t*t*p3[1]]; };
+function landmarks() {
+  const A = [[61,95],[61,112],[68,130],[82,141]], B = [[82,141],[88,146],[94,149.5],[100,149.5]];
+  const left = [[60,82],[60.5,92], bz(...A,.3), bz(...A,.6), bz(...A,.85), bz(...B,0), bz(...B,.4), bz(...B,.75), [100,149.5]];
+  const jaw = [...left]; for (let i = 7; i >= 0; i--) jaw.push([200 - left[i][0], left[i][1]]);
+  const eye = cx => [[cx-8,88],[cx-3.5,85.8],[cx+3.5,85.8],[cx+8,88],[cx+3.5,90],[cx-3.5,90]];
+  return [...jaw, [70,79],[75,75.2],[81,73.2],[87,73.3],[92,75.2], [108,75.2],[113,73.3],[119,73.2],[125,75.2],[130,79],
+    [100,82],[100,89],[100,96],[100,103.5], [93,107],[96.3,109.8],[100,111],[103.7,109.8],[107,107], ...eye(82), ...eye(118),
+    [89.5,123.5],[93,122],[97,121.5],[100,122.3],[103,121.5],[107,122],[110.5,123.5],[107,126.6],[103.5,127.9],[100,128.2],[96.5,127.9],[93,126.6],
+    [91,123.8],[95,123.6],[100,124.2],[105,123.6],[109,123.8],[105,124.9],[100,125.2],[95,124.9]];
+}
+const rg = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
+const MESH = [rg(0,16), rg(17,21), rg(22,26), rg(27,30), rg(31,35), [30,33], [...rg(36,41),36], [...rg(42,47),42], [...rg(48,59),48], [...rg(60,67),60],
+  [17,36],[21,39],[22,42],[26,45],[21,27],[22,27],[27,39],[27,42],[0,36],[16,45],[1,41],[15,46],[31,48],[35,54],[3,48],[13,54],
+  [5,59],[11,55],[57,8],[39,31],[42,35],[30,39],[30,42],[33,51],[2,31],[14,35]];
+const poseStr = (tx, ty, r, s) => `translate(${100 + tx} ${95 + ty}) rotate(${r}) scale(${s}) translate(-100 -95)`;
+function faceSVG(p, { lm = false, pose = poseStr(0, 4, 0, 1.2) } = {}) {
+  const eye = (cx, sd) => `
+    <clipPath id="${p}c${sd}"><path d="M${cx-8},88 Q${cx},82.5 ${cx+8},88 Q${cx},93 ${cx-8},88 Z"/></clipPath>
+    <path d="M${cx-8},88 Q${cx},82.5 ${cx+8},88 Q${cx},93 ${cx-8},88 Z" fill="#f4ede6"/>
+    <g clip-path="url(#${p}c${sd})"><circle cx="${cx}" cy="87.9" r="3.5" fill="#4a2c1a"/><circle cx="${cx}" cy="87.9" r="1.8" fill="#0b0705"/><circle cx="${cx + 1.2}" cy="86.6" r=".95" fill="#fff"/></g>
+    <path d="M${cx-8.6},88 Q${cx},79.4 ${cx+8.6},88 Q${cx},82.5 ${cx-8.6},88 Z" fill="url(#${p}skin)"/>
+    <path d="M${cx-8.4},88 Q${cx},82.5 ${cx+8.4},88" fill="none" stroke="#1a120d" stroke-width="1.4" stroke-linecap="round"/>
+    <path d="M${cx-6.5},89.9 Q${cx},92.6 ${cx+6.5},89.9" fill="none" stroke="#8f5a3c" stroke-width=".55" opacity=".55"/>`;
+  let mesh = '';
+  if (lm) {
+    const L = landmarks();
+    mesh = `<g fill="none" stroke="rgba(52,211,153,.6)" stroke-width=".55">${MESH.map(s => `<path d="M${s.map(k => L[k][0].toFixed(1) + ',' + L[k][1].toFixed(1)).join('L')}"/>`).join('')}</g>
+      <g>${L.map(([x, y], i) => `<circle cx="${x}" cy="${y}" r="${i >= 36 && i <= 47 ? 1.35 : 1.1}" fill="#a7f3d0" stroke="#10b981" stroke-width=".5"/>`).join('')}</g>`;
+  }
+  return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="${p}bg" cx="100" cy="70" r="150" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#4a5872"/><stop offset=".55" stop-color="#202b3f"/><stop offset="1" stop-color="#0b111d"/></radialGradient>
+    <radialGradient id="${p}lamp"><stop offset="0" stop-color="#fbbf24" stop-opacity=".55"/><stop offset="1" stop-color="#fbbf24" stop-opacity="0"/></radialGradient>
+    <radialGradient id="${p}lampb"><stop offset="0" stop-color="#60a5fa" stop-opacity=".5"/><stop offset="1" stop-color="#60a5fa" stop-opacity="0"/></radialGradient>
+    <radialGradient id="${p}skin" cx="98" cy="84" r="64" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#e2ab82"/><stop offset=".6" stop-color="#c98b63"/><stop offset="1" stop-color="#a3674a"/></radialGradient>
+    <linearGradient id="${p}shirt" x1="0" y1="150" x2="0" y2="205" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#3b76f2"/><stop offset="1" stop-color="#1b3a8f"/></linearGradient>
+    <linearGradient id="${p}hair" x1="0" y1="25" x2="0" y2="92" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#33241a"/><stop offset="1" stop-color="#130c08"/></linearGradient>
+  </defs>
+  <rect width="200" height="200" fill="url(#${p}bg)"/>
+  <circle cx="30" cy="38" r="36" fill="url(#${p}lamp)"/><circle cx="174" cy="56" r="28" fill="url(#${p}lampb)"/><circle cx="170" cy="164" r="32" fill="url(#${p}lamp)" opacity=".35"/>
+  <g transform="${pose}">
+    <path d="M10,206 C14,180 40,166 70,160 L87,155 C92,161 108,161 113,155 L130,160 C160,166 186,180 190,206 Z" fill="url(#${p}shirt)"/>
+    <path d="M87,155 C92,163.5 108,163.5 113,155" fill="none" stroke="#163282" stroke-width="3.2"/>
+    <path d="M85,124 L85,157 C92,163 108,163 115,157 L115,124 Z" fill="#a3674a"/>
+    <ellipse cx="100" cy="142" rx="16" ry="7" fill="#7a4a32" opacity=".55"/>
+    <ellipse cx="60.5" cy="93" rx="6.5" ry="11" fill="#b97a54"/><ellipse cx="60.9" cy="93" rx="3" ry="6.5" fill="#92583b"/>
+    <ellipse cx="139.5" cy="93" rx="6.5" ry="11" fill="#b97a54"/><ellipse cx="139.1" cy="93" rx="3" ry="6.5" fill="#92583b"/>
+    <path d="M100,44 C124,44 139,60 140,86 C141,106 134,124 122,136 C114,143 107,147 100,147 C93,147 86,143 78,136 C66,124 59,106 60,86 C61,60 76,44 100,44 Z" fill="url(#${p}skin)"/>
+    <path d="M59,92 C55,74 57,56 67,44 C77,32 92,26 108,27 C125,28 139,38 143,56 C145,68 143,80 141,92 C140,82 137,72 132,66 C125,60 115,57 104,58 C92,58 81,60 73,65 C66,70 61,80 59,92 Z" fill="url(#${p}hair)"/>
+    <path d="M70,56 C74,40 90,31 110,32 C126,33 136,42 139,53 C131,45 118,41 104,42 C90,43 78,48 70,56 Z" fill="#46342a" opacity=".65"/>
+    <path d="M70,78 Q80,69.5 92,74 L92,76.8 Q80,73 70,80 Z" fill="#1a120d"/><path d="M130,78 Q120,69.5 108,74 L108,76.8 Q120,73 130,80 Z" fill="#1a120d"/>
+    ${eye(82, 'R')}${eye(118, 'L')}
+    <path d="M97.5,84 C96.5,94 94.5,101 93.2,105.5" fill="none" stroke="#a3674a" stroke-width="1" opacity=".55"/>
+    <path d="M93,106 C92.6,110 96,111.6 100,111.6 C104,111.6 107.4,110 107,106" fill="none" stroke="#8a5538" stroke-width="1.3" stroke-linecap="round"/>
+    <path d="M61,95 C61,112 68,130 82,141 C88,146 94,149.5 100,149.5 C106,149.5 112,146 118,141 C132,130 139,112 139,95 C137,103 133,110 127,115 C122,119 116,120 111,121 C108,118.5 104,117.5 100,117.5 C96,117.5 92,118.5 89,121 C84,120 78,119 73,115 C67,110 63,103 61,95 Z" fill="#1a120d" opacity=".9"/>
+    <path d="M85,120 C89,114.5 95,114 100,116.5 C105,114 111,114.5 115,120 C110,118.6 105,118.8 100,120 C95,118.8 90,118.6 85,120 Z" fill="#140d09"/>
+    <path d="M89.5,123.5 C93.5,121.8 97,121.4 100,122.3 C103,121.4 106.5,121.8 110.5,123.5 C106,124.3 103,124.4 100,124.6 C97,124.4 94,124.3 89.5,123.5 Z" fill="#7d3b2c"/>
+    <path d="M90,123.9 C94.5,128.6 105.5,128.6 110,123.9 C106,125 94,125 90,123.9 Z" fill="#a0503e"/>
+    ${mesh}
+  </g>
+  ${lm ? '<rect x="49" y="34" width="102" height="138" rx="4" fill="none" stroke="#34d399" stroke-width="1" stroke-dasharray="4 3"/>' : ''}
+</svg>`;
+}
+
+// ─── device building blocks ───
+const logoRing = sz => `<div class="aring" style="width:${sz}px;height:${sz}px"><div class="cg"></div><div class="w"></div><img src="${LOGO}"></div>`;
+const iphone = inner => `
+  <div class="iph"><div class="frame"></div>
+    <div class="pbtn" style="left:-3px;top:130px;height:34px"></div><div class="pbtn" style="left:-3px;top:180px;height:56px"></div><div class="pbtn" style="right:-3px;top:160px;height:80px"></div>
+    <div class="screen"><div class="lg360">
+      <div class="sbar"><span>9:41</span><span style="display:flex;gap:5px;align-items:center">${ic('signal', 16)}${ic('wifi', 16)}${ic('battery-full', 20)}</span></div><div class="island"></div>
+      <div class="ubar"><div class="upill">${ic('lock', 13, 'color:#16a34a')}<span>${URL}</span></div></div>
+      <div class="area"><div class="appstripes"></div>${inner}</div>
+      <div class="homeInd"></div>
+    </div></div>
+  </div>`;
+const gc = (bg, fg, icon, label, val, st = '') => `<div class="gc" style="${st}"><div class="gi" style="background:${bg};color:${fg}">${icon}</div><div style="min-width:0"><div class="gl">${label}</div><div class="gv">${val}</div></div></div>`;
+
+const SCREEN = {
+  home: `<div class="scr"><div class="home">
+      ${logoRing(176)}
+      <div class="hname">${SHOP}</div>
+      <div class="hdiv"><i style="background:linear-gradient(to right,transparent,#ef4444)"></i><span class="diamond"></span><i style="background:linear-gradient(to left,transparent,#3b82f6)"></i></div>
+      <div class="htag">ستایلێکی نوێ، متمانەیەکی نوێ</div>
+      <div class="btn blue" style="margin-top:6px">${ic('calendar-plus', 20)}<span>ناو تۆمار کردن</span></div>
+      <div class="hsmall">کلیک بکە بۆ بیبنی کاتی سەردانیکردن</div>
+      <div class="btn red">${ic('search', 16)}<span>بینین و دڵنیاکردنەوەی کاتی سەردانیکردن</span></div>
+    </div></div>`,
+  form: `<div class="scr"><div class="cardwrap"><div class="card">
+      <div><div class="ctop">${logoRing(48)}<div class="homebtn">${ic('house', 16)}</div></div>
+        <div class="wel">بەخێربێیت</div><div class="wels">زانیارییەکانت داخڵ بکە بۆ تۆمارکردنی کاتی سەردانیکردن</div></div>
+      <div><div class="av"><div class="avc">${faceSVG('fm')}</div><div class="avb">${ic('check', 14, 'stroke-width:3')}</div></div>
+        <div class="chg">${ic('refresh-cw', 12)}<span>گۆڕینی وێنە</span></div></div>
+      <div class="fields">
+        <div class="inp"><span class="ico">${ic('user', 16)}</span><span>${CUST}</span></div>
+        <div class="inp" style="direction:ltr;justify-content:flex-end;font-family:'Segoe UI',sans-serif"><span class="ico">${ic('phone', 16)}</span><span>${CPHONE}</span></div>
+        <div><div class="lblrow"><span style="color:#334155;font-weight:500">تێبینی</span><span style="color:#94a3b8">ئارەزوومەند</span></div><div class="ta">قژ و ڕیش</div></div>
+      </div>
+      <div class="btn blue"><span style="display:flex;align-items:center;gap:8px">دەستپێبکە ${ic('arrow-left', 18)}</span></div>
+    </div></div></div>`,
+  datetime: (() => {
+    const DAY = ['یەکشەممە','دووشەممە','سێشەممە','چوارشەممە','پێنجشەممە','هەینی','شەممە'];
+    const days = Array.from({ length: 7 }, (_, i) => ({ d: 3 + i, dow: (6 + i) % 7 })).map((d, i) =>
+      `<div class="day ${i === 0 ? 'today' : ''} ${i === 2 ? 'sel' : ''} ${d.dow === 5 ? 'off' : ''}"><span class="dn">${DAY[d.dow]}</span><span class="dd">${d.d}</span><span class="dt"></span></div>`).join('');
+    const T = ['10 بەیانی','10:30 بەیانی','11 بەیانی','11:30 بەیانی','12 نیوەڕۆ','12:30 نیوەڕۆ','1 دوا نیوەڕۆ','1:30 دوا نیوەڕۆ','2 دوا نیوەڕۆ','2:30 دوا نیوەڕۆ'];
+    const S = ['r','r','a','g','g','r','s','a','g','g'];
+    return `<div class="scr"><div class="stepbar"><b style="width:50%"></b></div><div class="dtw">
+      <div class="stl">هەنگاوی ١ لە ٢</div><div class="h2">ڕۆژ و کات هەڵبژێرە</div>
+      <div class="cchip"><div style="display:flex;align-items:center;gap:10px"><div class="cav">${faceSVG('dc')}</div><div><div class="cname">${CUST}</div><div class="cph">${CPHONE}</div></div></div>
+        <div style="display:flex;gap:6px"><span class="mini" style="background:#f1f5f9;border:1px solid #e2e8f0;color:#64748b">${ic('pencil', 10)}دەستکاری</span><span class="mini" style="background:#eff6ff;border:1px solid #bfdbfe;color:#2563eb">کاتی سەردانیکردن</span></div></div>
+      <div class="secl">ڕۆژ هەڵبژێرە</div><div class="strip">${days}</div>
+      <div class="legend"><div class="lgs"><span><i style="background:#fbbf24"></i>چاوەڕوان</span><span><i style="background:#f87171"></i>پەسەندکراوە</span><span><i style="background:#10b981"></i>بەردەستە</span></div>
+        <div style="font-size:10px;color:#64748b">کاتە بەردەستەکان</div></div>
+      <div class="grid">${T.map((t, i) => `<div class="slot ${S[i]}">${t}</div>`).join('')}</div>
+    </div><div class="ctaw"><div class="btn blue"><span style="display:flex;align-items:center;gap:8px">${ic('arrow-left', 18)}تۆمار کردن</span></div></div></div>`;
+  })(),
+};
+
+const ticket = `
+  <div class="tkw"><div class="notch" style="left:-12px;top:50%"></div><div class="notch" style="right:-12px;top:50%"></div>
+    <div class="tk"><div class="pole"></div>
+      <div class="prof"><div class="bigav"><div>${faceSVG('tk')}</div></div><div class="pn2">${CUST}</div><div class="pp">${CPHONE}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px"><span style="font-family:Consolas,monospace;font-size:12px;font-weight:700;color:#2563eb">#7F3A9C2E</span>
+          <span class="badge" style="background:#ecfdf5;color:#059669;border-color:#d1fae5">پەسەندکراوە</span></div></div>
+      <div class="tear"></div>
+      <div class="g2">
+        ${gc('rgba(59,130,246,.1)', '#2563eb', ic('calendar', 18), 'بەروار', '5/10/2026')}
+        ${gc('rgba(16,185,129,.1)', '#059669', ic('clock', 18), 'کات', '1 دوا نیوەڕۆ')}
+        ${gc('rgba(245,158,11,.1)', '#d97706', `<img src="${LOGO}" style="width:20px;height:20px;border-radius:6px">`, 'سەرتاش', SHOP)}
+        ${gc('rgba(16,185,129,.12)', '#059669', ic('circle-check-big', 18), '<span style="color:rgba(5,150,105,.7)">دۆخ</span>', '<span style="color:#059669">پەسەندکراوە</span>', 'background:#ecfdf5;border-color:#d1fae5')}
+      </div>
+      <div class="tear"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 0 18px"><div class="barcode"></div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:#334155">${ic('scissors', 11)}${SHOP}${ic('scissors', 11, 'transform:scaleX(-1)')}</div></div>
+    </div></div>`;
+
+const notif = `
+  <div class="ncard">
+    <div class="nrow"><img src="${LOGO}"><span style="font-weight:700;color:#334155">${SHOP} ئەدمین</span><span>•</span><span>ئێستا</span></div>
+    <div class="nt">داواکاری نوێ 📅</div>
+    <div class="nb">${CUST} — دووشەممە 5/10 — 1 دوا نیوەڕۆ</div>
+    <div class="nbtns"><div class="nbtn" style="background:#2563eb;color:#fff">${ic('check', 16, 'stroke-width:3')}پەسەندە</div><div class="nbtn" style="background:#e2e8f0;color:#475569">دواتر</div></div>
+  </div>`;
+
+const apc = (who, name, phone, st, day, time, actions) => `
+  <div class="apc"><div class="r1"><div class="who">${who}<div><b>${name}</b><div class="ph">${phone}</div></div></div>
+    <span class="st ${st}">${st === 'p' ? 'چاوەڕوان' : 'پەسەندکراوە'}</span></div>
+    <div class="r2"><span>${ic('calendar', 14)}${day}</span><span>${ic('clock', 14)}${time}</span></div>
+    ${actions ? `<div class="r3"><div style="background:#2563eb;color:#fff">${ic('check', 16, 'stroke-width:3')}پەسەندکردن</div><div style="border:1px solid #fca5a5;color:#dc2626">${ic('x', 16)}هەڵوەشاندن</div></div>` : ''}
+  </div>`;
+const android = `
+  <div class="adr"><div class="side" style="top:150px;height:70px"></div><div class="side" style="top:240px;height:44px"></div>
+    <div class="scrn"><div class="hole"></div><div class="m3">
+      <div class="asb"><span>12:30</span><span style="display:flex;gap:6px;align-items:center">${ic('signal', 15)}${ic('wifi', 15)}${ic('battery-full', 19)}</span></div>
+      <div class="atop"><div class="t">${logoRing(44)}<div><b>پانێڵی ئەدمین</b><small>${SHOP}</small></div></div>
+        <div style="display:flex;gap:8px"><span class="ibtn">${ic('refresh-cw', 18)}</span><span class="ibtn">${ic('log-out', 18)}</span></div></div>
+      <div class="seg3"><span class="on">ئەمڕۆ <i class="cnt">3</i></span><span>داهاتوو</span><span>هەموو</span></div>
+      <div class="srch">${ic('search', 16)}گەڕان — ناو یان ژمارەی مۆبایل...</div>
+      ${apc(`<div class="fa">${faceSVG('a1')}</div>`, CUST, CPHONE, 'p', 'دووشەممە 5/10', '1 دوا نیوەڕۆ', true)}
+      ${apc('<div class="ini" style="background:#2563eb">ه</div>', 'هێمن کەریم', '+964 751 987 6543', 'c', 'دووشەممە 5/10', '2 دوا نیوەڕۆ')}
+      ${apc('<div class="ini" style="background:#ef4444">د</div>', 'دیار عومەر', '+964 770 456 1122', 'c', 'دووشەممە 5/10', '3 دوا نیوەڕۆ')}
+      <div class="bnav">${[['layout-dashboard','سەردان',1],['clock','خشتە'],['user','پرۆفایل'],['image','گەلەری'],['share-2','سۆشیاڵ'],['settings','ڕێکخستن']]
+        .map(([n, l, on]) => `<div class="${on ? 'on' : ''}"><i>${ic(n, 19)}</i>${l}</div>`).join('')}</div>
+    </div></div></div>`;
+
+const fchip = (icon, col, bg, text, st) => `<div class="at fchip" style="${st}"><span class="ci" style="background:${bg};color:${col}">${ic(icon, 24)}</span>${text}</div>`;
+const scissors = `<svg viewBox="0 0 24 24" fill="none" stroke="url(#gold)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width:100%;height:100%;overflow:visible">
+  <defs><linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3d0"/><stop offset=".5" stop-color="#e2bc74"/><stop offset="1" stop-color="#9a7434"/></linearGradient></defs>${ICONS.scissors}</svg>`;
+const androidBot = `<svg viewBox="0 0 64 40" style="width:96px;height:60px"><path d="M8 38a24 24 0 0 1 48 0z" fill="#fff"/><circle cx="22" cy="27" r="3" fill="#16a34a"/><circle cx="42" cy="27" r="3" fill="#16a34a"/>
+  <path d="M16 12 10 3M48 12l6-9" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/></svg>`;
+
+// ─── compositions ───
+const COMP = {
+  'overview': `
+    <div class="bpole" style="left:70px;top:230px"><div class="ball"></div><div class="col"></div><div class="tube"></div><div class="col"></div><div class="base"></div></div>
+    <div class="at" style="left:310px;top:250px;transform:scale(1.02)"><div class="face-l">${iphone(SCREEN.home)}</div></div>
+    <div class="at" style="left:540px;top:120px;transform:scale(.92)">${notif}</div>
+    <div class="fbadge" style="left:175px;top:660px"><div class="in">${faceSVG('ob')}</div><div class="ok">${ic('check', 30, 'stroke-width:3.2')}</div></div>
+    <div class="A" style="left:760px;top:560px;width:150px;height:150px;transform:rotate(-20deg);filter:drop-shadow(0 16px 24px rgba(0,0,0,.5))">${scissors}</div>`,
+  'face-scan': `
+    <div class="ring" style="position:absolute;left:70px;top:290px">
+      <div class="orb"></div><div class="outer"></div><div class="prog"></div><div class="inner"></div>
+      <div class="cam">${faceSVG('sc', { lm: true, pose: poseStr(0, 6, 0, 1.12) })}<div class="sweep"></div></div>
+      <div class="brk" style="top:40px;left:40px;border-top-width:4px;border-left-width:4px"></div><div class="brk" style="top:40px;right:40px;border-top-width:4px;border-right-width:4px"></div>
+      <div class="brk" style="bottom:40px;left:40px;border-bottom-width:4px;border-left-width:4px"></div><div class="brk" style="bottom:40px;right:40px;border-bottom-width:4px;border-right-width:4px"></div>
+      <div class="sb"><i></i>ڕووخسار دۆزرایەوە</div>
+    </div>
+    <div class="at" style="left:690px;top:390px;transform:scale(.72)"><div class="face-l">${iphone(SCREEN.form)}</div></div>
+    ${fchip('scan-face', '#34d399', 'rgba(16,185,129,.2)', '٦٨ خاڵی ڕووخسار دەپشکنرێت', 'left:40px;top:150px')}
+    ${fchip('eye', '#93c5fd', 'rgba(96,165,250,.22)', 'ناسینی چاوتروکاندن ← وێنەی خۆکار', 'left:420px;top:236px')}
+    ${fchip('shield-check', '#34d399', 'rgba(16,185,129,.2)', 'ڕێگری لە تۆمارکردنی ساختە دەکات', 'left:30px;top:920px')}`,
+  'booking': `
+    <div class="at" style="left:470px;top:150px;transform:scale(1.1)"><div class="face-l">${iphone(SCREEN.datetime)}</div></div>
+    <div class="at" style="left:70px;top:340px;transform:rotate(-6deg)">${ticket}</div>
+    <div class="at" style="left:90px;top:170px;display:flex;gap:12px">
+      <div class="lgi" style="background:#10b981;color:#fff"><i style="background:#fff"></i>بەردەستە</div>
+      <div class="lgi" style="background:#fbbf24;color:#422006"><i style="background:#422006"></i>چاوەڕوان</div>
+      <div class="lgi" style="background:#dc2626;color:#fff"><i style="background:#fff"></i>پەسەندکراوە</div>
+    </div>`,
+  'barber-app': `
+    <div class="at" style="left:420px;top:210px"><div class="face-l">${android}</div></div>
+    <div class="at" style="left:300px;top:110px">${notif}</div>
+    <div class="at apk" style="left:130px;top:300px;transform:rotate(-8deg)">${androidBot}<b>APK</b></div>
+    <div class="at wcard" style="left:30px;top:560px;transform:rotate(-4deg)">
+      <h6>${ic('clock', 20, 'color:#2563eb')}خشتەی کاری</h6>
+      <div class="wrow"><div>شەممە<small>10 AM — 9 PM</small></div><span class="sw"></span></div>
+      <div class="wrow"><div>یەکشەممە<small>10 AM — 9 PM</small></div><span class="sw"></span></div>
+      <div class="wrow"><div>هەینی<small>دادەخرێت</small></div><span class="sw off"></span></div>
+      <div class="wrow"><div>${ic('scan-face', 16, 'display:inline-block;vertical-align:-3px;color:#10b981')} سکانی ڕووخسار</div><span class="sw" style="background:#10b981"></span></div>
+    </div>`,
+};
+for (const [id, html] of Object.entries(COMP)) document.getElementById('char-' + id).innerHTML = `<div class="fit">${html}</div>`;
+
+// ─── bokeh backgrounds (right half stays brightest: the slider darkens the left 92%) ───
+function rnd(seed) { return () => (seed = (seed * 16807) % 2147483647) / 2147483647; }
+const BG = {
+  barber: { seed: 7,  base: 'linear-gradient(120deg,#04071a 0%,#0a1233 55%,#101a4a 100%)',
+            washes: [['239,68,68', .38, 1500, 1550, 250], ['59,130,246', .50, 1700, 1250, 820], ['226,188,116', .22, 1100, 1800, 950]],
+            colors: ['239,68,68', '59,130,246', '226,188,116', '147,197,253'], n: 70, stripes: true },
+  scan:   { seed: 19, base: 'linear-gradient(120deg,#020d0a 0%,#051c17 55%,#082a23 100%)',
+            washes: [['16,185,129', .42, 1600, 1350, 420], ['45,212,191', .30, 1200, 1750, 900], ['59,130,246', .22, 1200, 900, -100]],
+            colors: ['16,185,129', '52,211,153', '45,212,191', '56,189,248'], n: 60, rings: true },
+  vanity: { seed: 29, base: 'linear-gradient(120deg,#0e0505 0%,#1b0a0a 55%,#27100c 100%)',
+            washes: [['239,68,68', .30, 1500, 1500, 750], ['251,191,36', .30, 1400, 1450, 120], ['59,130,246', .18, 1100, 1850, 1000]],
+            colors: ['251,191,36', '255,170,80', '239,68,68', '255,210,140'], n: 55, bulbs: true },
+  night:  { seed: 43, base: 'linear-gradient(120deg,#030615 0%,#0a1030 55%,#101a44 100%)',
+            washes: [['59,130,246', .45, 1700, 1300, 350], ['99,102,241', .30, 1300, 1750, 900], ['61,220,132', .20, 1100, 1650, 80]],
+            colors: ['59,130,246', '99,102,241', '61,220,132', '147,197,253'], n: 65 },
+};
+function makeBg(el, c) {
+  const r = rnd(c.seed), add = (cls, css) => { const d = document.createElement('i'); d.className = cls; d.style.cssText = css; el.appendChild(d); return d; };
+  add('base', `background:${c.base}`);
+  for (const [col, a0, size, cx, cy] of c.washes)
+    add('wash', `left:${cx - size / 2}px;top:${cy - size / 2}px;width:${size}px;height:${size}px;background:radial-gradient(circle,rgba(${col},${a0 * .8}) 0%,rgba(${col},0) 65%)`);
+  if (c.stripes)   // a blurred barber-pole band glowing on the right
+    add('', `left:1380px;top:-200px;width:260px;height:1500px;transform:rotate(14deg);filter:blur(10px);opacity:.30;border-radius:130px;
+      background:repeating-linear-gradient(-32deg,#ef4444 0 70px,#f8fafc 70px 120px,#2563eb 120px 190px,#f8fafc 190px 240px)`);
+  if (c.rings) for (let k = 0; k < 5; k++)   // scanner rings
+    add('', `left:${1400 - 120 - k * 110}px;top:${520 - 120 - k * 110}px;width:${240 + k * 220}px;height:${240 + k * 220}px;border-radius:50%;
+      border:${k ? 2 : 4}px ${k % 2 ? 'dashed' : 'solid'} rgba(52,211,153,${.45 - k * .07});filter:blur(1.5px)`);
+  if (c.bulbs) for (let k = 0; k < 9; k++) {   // vanity-mirror bulbs along an arc
+    const x = 1060 + k * 105, y = 130 + Math.pow((k - 4) / 4, 2) * 120;
+    add('', `left:${x - 45}px;top:${y - 45}px;width:90px;height:90px;border-radius:50%;filter:blur(5px);
+      background:radial-gradient(circle,rgba(255,250,230,.95) 0%,rgba(255,214,140,.75) 35%,rgba(255,170,60,.25) 60%,rgba(255,170,60,0) 72%)`);
+  }
+  for (let pass = 0; pass < 2; pass++) {
+    const n = pass ? Math.round(c.n * .28) : c.n;
+    for (let i = 0; i < n; i++) {
+      const s = pass ? 90 + r() * 170 : 14 + r() * 70;
+      const x = 1920 * (1 - Math.pow(r(), 1.5)) - s / 2, y = r() * 1080 - s / 2;
+      const col = c.colors[Math.floor(r() * c.colors.length)], a = pass ? .12 + r() * .22 : .22 + r() * .42;
+      add('bk', `left:${x}px;top:${y}px;width:${s}px;height:${s}px;filter:blur(${pass ? 1 + r() * 3 : 2 + r() * 6}px);` +
+        `background:radial-gradient(circle,rgba(${col},${a * .55}) 0%,rgba(${col},${a * .7}) 58%,rgba(${col},${a}) 67%,rgba(${col},0) 72%)`);
+    }
+  }
+  add('grain', ''); add('vig', '');
+}
+document.querySelectorAll('[data-bg]').forEach(el => makeBg(el, BG[el.dataset.bg]));
+</script>
+</body>
+</html>
